@@ -85,7 +85,8 @@ export default function Mint() {
   const [ratio, setRatio] = useState(0);
   const [ratioNew, setRatioNew] = useState(0);
   useEffect(() => {
-    const value = ((deposits * rosePrice) / debt) * 100;
+    const value = ((deposits * rosePrice) / debt) * 100 || 0;
+
     setRatio(value);
     if (collateralRatio && ratioType == "Auto") {
       setRatioNew(collateralRatio);
@@ -94,6 +95,15 @@ export default function Mint() {
         (((deposits + Number(collAmount)) * rosePrice) /
           (debt + Number(debtAmount))) *
         100;
+      console.log({
+        valueNew,
+        collAmount: Number(collAmount),
+        value,
+        deposits,
+        rosePrice,
+        debt,
+        debtAmount: Number(debtAmount),
+      });
       setRatioNew(valueNew);
     }
   }, [collAmount, rosePrice, collateralRatio, debtAmount, ratioType]);
@@ -141,7 +151,7 @@ export default function Mint() {
           new BigNumber(debtAmount).multipliedBy(1e18).toFixed(),
           pre,
           next,
-          { value: new BigNumber(collAmount).multipliedBy(1e18).toFixed() }
+          { value: new BigNumber(0).multipliedBy(1e18).toFixed() }
         );
         setCurrentWaitInfo({
           type: "loading",
@@ -226,7 +236,7 @@ export default function Mint() {
           <div className={styles.topType}>
             <h3>Mint bitUSD</h3>
             <p>
-              Deposit your $ROSE as collateral in Vault to mint bitUSD. Stake
+              Deposit your $wBTC as collateral in Vault to mint bitUSD. Stake
               bitUSD or provide liquidity to earn rewards using the Bit
               Protocol.
             </p>
@@ -242,7 +252,7 @@ export default function Mint() {
                 <span>Enter amount</span>
                 <span style={{ fontSize: "12px" }}>
                   Balance {Number(Number(balance).toFixed(4)).toLocaleString()}{" "}
-                  $ROSE
+                  $wBTC
                 </span>
               </div>
               <div className="inputTxt3">
@@ -255,7 +265,7 @@ export default function Mint() {
                   onChange={changeCollAmount.bind(this)}
                   value={collAmount}
                 ></input>
-                <span>$ROSE</span>
+                <span>$wBTC</span>
               </div>
               <div className="changeBalance">
                 <span onClick={() => changeCollVaule(0.25)}>25%</span>
@@ -399,7 +409,7 @@ export default function Mint() {
                 <div className={styles.dataItem}>
                   <p>Liquidation Price</p>
                   <span>
-                    ROSE = $
+                    wBTC = $
                     {Number((debt * 1.5) / deposits)
                       .toFixed(4)
                       .toLocaleString()}

@@ -687,11 +687,18 @@ export default function Earn() {
                   <div className="button rightAngle height">Manage</div>
                 </div>
               </div>
+
               <div className={styles.earnInfo}>
                 <p className={styles.earnTip}>
                   Lock $bitGOV to boost your APR to {boost}x.
                 </p>
-                <div className={styles.CoinType}>
+                <div
+                  className="button rightAngle height disable"
+                  style={{ marginTop: "10px", border: "1px solid #333" }}
+                >
+                  COMING SOON
+                </div>
+                {/* <div className={styles.CoinType}>
                   <img
                     style={{ width: "65px" }}
                     src="/dapp/vineArose.svg"
@@ -730,13 +737,20 @@ export default function Earn() {
                   onClick={() => changeManage("bitGOV/ROSE LP")}
                 >
                   <div className="button rightAngle height">Manage</div>
-                </div>
+                </div> */}
               </div>
+
               <div className={styles.earnInfo}>
                 <p className={styles.earnTip}>
                   Lock $bitGOV to boost your APR to {boost}x.
                 </p>
-                <div className={styles.CoinType}>
+                <div
+                  className="button rightAngle height disable"
+                  style={{ marginTop: "10px", border: "1px solid #333" }}
+                >
+                  COMING SOON
+                </div>
+                {/* <div className={styles.CoinType}>
                   <img
                     style={{ width: "65px" }}
                     src="/dapp/usdc.svg"
@@ -775,8 +789,9 @@ export default function Earn() {
                   onClick={() => changeManage("bitUSD/USDC LP")}
                 >
                   <div className="button rightAngle height">Manage</div>
-                </div>
+                </div> */}
               </div>
+
               <div className={styles.earnInfo}>
                 <p className={styles.earnTip}>
                   Lock $bitGOV to boost your APR to {boost}x.

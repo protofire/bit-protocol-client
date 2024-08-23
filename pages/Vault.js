@@ -25,6 +25,8 @@ export default function Vault() {
     pre,
     next,
     rosePrice,
+    wrappedCoin,
+    borrowerOperations,
   } = useContext(UserContext);
   const onKeyDown = async (e) => {
     const invalidChars = ["-", "+", "e", "E"];
@@ -72,12 +74,13 @@ export default function Vault() {
   const [collAmount, setCollAmount] = useState("");
   const changeCollAmount = async (e) => {
     const value = Number(e.target.value);
-    const maxBalance = balance - 1 > 0 ? balance - 1 : 0;
+    const maxBalance = balance - 0 > 0 ? balance : 0;
     if (value < maxBalance) {
       setCollAmount(value == 0 ? "" : value);
     } else {
       setCollAmount(maxBalance);
     }
+    setCollAmount(value);
   };
 
   const changeWithdrawAmount = async (e) => {
@@ -102,7 +105,7 @@ export default function Vault() {
   const [currentRatio, setCurrentRatio] = useState(0);
   const [afterRatio, setAfterRatio] = useState(0);
   useEffect(() => {
-    const ratio1 = ((deposits * rosePrice) / debt) * 100;
+    const ratio1 = ((deposits * rosePrice) / debt) * 100 || 0;
     setCurrentRatio(ratio1);
     if (collAmount) {
       const ratio2 =
@@ -138,6 +141,18 @@ export default function Vault() {
     if (status == 0 || status == 2) {
       // console.log("0/2----------", troveManager, account, (new BigNumber(1e16)).toFixed(), (new BigNumber(collAmount).multipliedBy(1e18)).toFixed(), (new BigNumber(10).multipliedBy(1e18)).toFixed(), pre, next, { value: (new BigNumber(collAmount).multipliedBy(1e18)).toFixed() })
       try {
+        const allowance = await wrappedCoin.allowance(
+          account,
+          borrowerOperations
+        );
+        if (new BigNumber(allowance._hex).div(1e18).toFixed() < collAmount) {
+          const approveTx = await wrappedCoin.approve(
+            borrowerOperations,
+            new BigNumber(collAmount).multipliedBy(1e18).toFixed()
+          );
+          await approveTx.wait();
+        }
+        console.log(new BigNumber(collAmount).multipliedBy(1e18).toFixed());
         const mintTx = await borrowerOperationsMint.openTrove(
           troveManager,
           account,
@@ -145,15 +160,15 @@ export default function Vault() {
           new BigNumber(collAmount).multipliedBy(1e18).toFixed(),
           new BigNumber(10).multipliedBy(1e18).toFixed(),
           pre,
-          next,
-          { value: new BigNumber(collAmount).multipliedBy(1e18).toFixed() }
+          next
+          // { value: new BigNumber(collAmount).multipliedBy(1e18).toFixed() }
         );
         setCurrentWaitInfo({
           type: "loading",
           info:
             "Deposit " +
             Number(collAmount.toFixed(4)).toLocaleString() +
-            " $ROSE",
+            " $wBTC",
         });
         setCurrentState(true);
         const mintResult = await mintTx.wait();
@@ -191,7 +206,7 @@ export default function Vault() {
           info:
             "Deposit " +
             Number(collAmount.toFixed(4)).toLocaleString() +
-            " $ROSE",
+            " $wBTC",
         });
         setCurrentState(true);
         const mintResult = await mintTx.wait();
@@ -234,7 +249,7 @@ export default function Vault() {
         info:
           "Withdraw " +
           Number(collAmount.toFixed(4)).toLocaleString() +
-          " $ROSE",
+          " $wBTC",
       });
       setCurrentState(true);
       const result = await withdrawTx.wait();
@@ -377,7 +392,7 @@ export default function Vault() {
             <div className={styles.topType}>
               <h3>Vault</h3>
               <p>
-                Boost the value of your $ROSE by depositing it into Vault to
+                Boost the value of your $wBTC by depositing it into Vault to
                 elevate your collateral ratio and unlock its full potential via
                 Bit protocol.
               </p>
@@ -394,8 +409,13 @@ export default function Vault() {
           <div className={styles.rose}>
             {isFirst ? null : (
               <div className={styles.CoinType}>
-                <img src="/dapp/rose.svg" alt="rose" />
-                $ROSE
+                <img
+                  src="/dapp/wbtc-logo.svg"
+                  width="56"
+                  height="56"
+                  alt="rose"
+                />
+                $wBTC
               </div>
             )}
             <div className={styles.enterAmount}>
@@ -427,13 +447,13 @@ export default function Vault() {
                     className={operateType2 == "Deposit" ? styles.active : ""}
                     onClick={() => changeOperateType2("Deposit")}
                   >
-                    Deposit $ROSE
+                    Deposit $wBTC
                   </div>
                   <div
                     className={operateType2 == "Withdraw" ? styles.active : ""}
                     onClick={() => changeOperateType2("Withdraw")}
                   >
-                    Withdraw $ROSE
+                    Withdraw $wBTC
                   </div>
                 </div>
               ) : null}
@@ -445,7 +465,7 @@ export default function Vault() {
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
                       {Number(Number(balance).toFixed(4)).toLocaleString()}{" "}
-                      $ROSE
+                      $wBTC
                     </span>
                   </div>
                   <div className="inputTxt3">
@@ -458,7 +478,7 @@ export default function Vault() {
                       onChange={changeCollAmount.bind(this)}
                       value={collAmount}
                     ></input>
-                    <span>$ROSE</span>
+                    <span>$wBTC</span>
                   </div>
                 </>
               ) : buttonName == "Withdraw" ? (
@@ -468,7 +488,7 @@ export default function Vault() {
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
                       {Number(Number(withdrawMax).toFixed(4)).toLocaleString()}{" "}
-                      $ROSE
+                      $wBTC
                     </span>
                   </div>
                   <div className="inputTxt3">
@@ -481,7 +501,7 @@ export default function Vault() {
                       onChange={changeWithdrawAmount.bind(this)}
                       value={collAmount}
                     ></input>
-                    <span>$ROSE</span>
+                    <span>$wBTC</span>
                   </div>
                 </>
               ) : buttonName == "Repay" ? (
@@ -561,7 +581,7 @@ export default function Vault() {
                     <span>Total Collateral</span>
                     <span>
                       {Number(Number(deposits).toFixed(4)).toLocaleString()}{" "}
-                      $ROSE
+                      $wBTC
                     </span>
                   </div>
                   <div
@@ -686,7 +706,7 @@ export default function Vault() {
               />
             </div>
             <div className={styles.tipDesc}>
-              A minimum of 10 bitUSD will be minted when depositing $ROSE.
+              A minimum of 10 bitUSD will be minted when depositing $wBTC.
             </div>
             <div className={styles.button}>
               <span className="button" onClick={() => Deposit()}>
@@ -715,7 +735,7 @@ export default function Vault() {
               />
             </div>
             <div className={styles.closeTitle}>
-              You are about to close your $ROSE account
+              You are about to close your $wBTC account
             </div>
             <p className={styles.closeDesc}>
               You will need to repay any outstanding bitUSD debt:
@@ -733,8 +753,8 @@ export default function Vault() {
             <div className={styles.closeCoin}>
               <p>{Number(Number(deposits).toFixed(4)).toLocaleString()}</p>
               <div>
-                <img src="/dapp/rose.svg" alt="rose"></img>
-                $ROSE
+                <img src="/dapp/wbtc-logo.svg" alt="rose"></img>
+                $wBTC
               </div>
             </div>
             <div className={styles.button}>

@@ -51,7 +51,7 @@ export default function Header(props) {
           method: "wallet_switchEthereumChain",
           params: [
             {
-              chainId: "0x5afe",
+              chainId: "0x12585A9",
             },
           ],
         });
@@ -63,14 +63,16 @@ export default function Header(props) {
               method: "wallet_addEthereumChain",
               params: [
                 {
-                  chainId: "0x5afe",
-                  chainName: "Oasis Sapphire",
+                  chainId: "0x12585A9",
+                  chainName: "ZkBTC Testnet",
                   nativeCurrency: {
-                    name: "ROSE",
-                    symbol: "ROSE",
+                    name: "Bitcoin",
+                    symbol: "BTC",
                     decimals: 18,
                   },
-                  rpcUrls: ["https://sapphire.oasis.io"],
+                  rpcUrls: [
+                    "https://devilmorallyelephant-rpc.eu-north-2.gateway.fm/",
+                  ],
                 },
               ],
             });
@@ -261,13 +263,13 @@ export default function Header(props) {
   };
 
   let timerLoading = useRef(null);
-  useEffect(() => {
-    queryData();
-    timerLoading.current = setInterval(() => {
-      queryData();
-    }, 2000);
-    return () => clearInterval(timerLoading.current);
-  }, [account]);
+  // useEffect(() => {
+  //   queryData();
+  //   timerLoading.current = setInterval(() => {
+  //     queryData();
+  //   }, 2000);
+  //   return () => clearInterval(timerLoading.current);
+  // }, [account]);
 
   const [Claimed, setClaimed] = useState(0);
   const [Remaining, setRemaining] = useState(0);
@@ -754,7 +756,7 @@ export default function Header(props) {
         )
       ) : null}
 
-      {showSignIn ? (
+      {/* {showSignIn ? (
         <div className="promptBox">
           <div className="boxMain">
             <div className="boxInfo">
@@ -769,9 +771,9 @@ export default function Header(props) {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null} */}
 
-      {showSignInToken ? (
+      {/* {showSignInToken ? (
         <div className="promptBox">
           <div className="boxMain">
             <div className="boxInfo">
@@ -783,7 +785,7 @@ export default function Header(props) {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null} */}
 
       {showClaim2 ? (
         <div className="infoTip">

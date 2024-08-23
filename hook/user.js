@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, useRef } from "react";
 import { ethers } from "ethers";
-import * as sapphire from "@oasisprotocol/sapphire-paratime";
+// import * as sapphire from "@oasisprotocol/sapphire-paratime";
 import BigNumber from "bignumber.js";
 import { useConnectWallet } from "@web3-onboard/react";
 import idoHook from "../abi/ido";
@@ -96,6 +96,7 @@ export const UserContext = createContext({
   boostCalculatorQuery: "",
   vineLpTokenPoolMain: "",
   troveManagerMain: "",
+  wrappedCoin: "",
   incentiveVotingMain: "",
   mockLpQuery: "",
   vineLpTokenPoolQuery: "",
@@ -153,35 +154,35 @@ export const UserContextProvider = ({ children }) => {
   };
 
   const [signer, setSigner] = useState(undefined);
-  const infuraRPC = "https://sapphire.oasis.io";
+  const infuraRPC = "https://devilmorallyelephant-rpc.eu-north-2.gateway.fm/";
   // const infuraRPC = "https://testnet.sapphire.oasis.dev/";
 
-  const idoAddr = "0xfc340b4bAA34Ce98c312d4b6B739CCD56f5359c5";
-  const usdcAddr = "0x5A80eA8e945312D24a85d1F1C684f092aD43B566";
+  const idoAddr = "0x0000000000000000000000000000000000000000";
+  const usdcAddr = "0x0000000000000000000000000000000000000000";
   const idoAbi = idoHook;
   const tokenAbi = tokenHook;
 
-  const troveManager = "0x06eBC049Fa9d394Aa660E79b94c0278C677ba773";
-  const sortedTroves = "0xfAc36524Eb744fDc7cE6Ac52608D88aA4E90a7fA";
-  const borrowerOperations = "0x942432ad0F0D55AC01C8661619be93d8940A1820";
-  const troveManagerGetters = "0xBf2fe64DCaA032b33e4412798a5DbF9BDafcC05E";
-  const priceFeed = "0xee6A971FECE446AFD6181bACFb1F8Ae5fCa787fc";
-  const debtToken = "0xB0159B1f625d83539D6db40CB2bc3DC4309038Ac";
-  const vineToken = "0xf7E952095be89627e77c85633F7567CfB30f07c1";
-  const tokenLocker = "0x3A2c1D25c2F97E144d43d6B421022F976FcB3D09";
-  const BoostCalculator = "0xCd2327F3631d220972aEdb4d07Ed42efe157CF71";
-  const mockLp = "0xf1E00B2B98d9c796963C4251738f5f6e2b31453d"; //VinelpToken
-  const VineLpTokenPool = "0xE4F88f60f3C3262Be66FDfca40FA9Fbd64Cf7aD9";
-  const LPPriceOracle = "0x6b7BC9dD2b851587863fa5c77636869fe1206d9a";
-  const stabilityPool = "0x6D920d36A6D1948c1d911aCB457b2545c4012ccf";
+  const troveManager = "0x5ACdCC77C064713Ac80a8Db43ac0ff9E9F756Df3";
+  const sortedTroves = "0x1B5F877BC57BCd2B02089A8758d3aa007d56bA03";
+  const borrowerOperations = "0x211554fb6b2b0068c231072335Be1cbDF88E3dB3";
+  const troveManagerGetters = "0x327dbE693C56236C421430eEdd70FE606aA74988";
+  const priceFeed = "0xc881e4bE73945Bc627DD731745916c6FCCe49bE9";
+  const debtToken = "0xE70339B928F9b6620778866a62e953D115155433";
+  const vineToken = "0x2C9E89e77Ad6b2A8c2cC127782DE811c89e8C4Cc";
+  const tokenLocker = "0x06652790cb2C6CddE1FC204b8e7c3d099aF4f21e";
+  const BoostCalculator = "0x07A793f9d906256d9E598b204C9B78d1F52F8f02";
+  const mockLp = "0x0000000000000000000000000000000000000000"; //VinelpToken
+  const VineLpTokenPool = "0x0000000000000000000000000000000000000000";
+  const LPPriceOracle = "0x1b20014e1878e3F3ba8d8653aE61BAABbDAE4163";
+  const stabilityPool = "0x60137625845CbcE178a8b1AF62c6eEddaABd5B5C";
   const MultiCollateralHintHelpers =
-    "0x195C411887ef06119Efe3DF523D75930863C4172";
-  const incentiveVoting = "0x0f4F2E81eA524a0bEA415187Cf5c98eAfAACF45c";
-  const idovesting = "0xAA854f386fe35983ac5bA8d9998224cdBd89c72c"; //iDOTokenVesting
-  const vineVault = "0xc5cEdeF3c75Bb5b5Ca653A5E937995E29350FadE";
-  const VUSDUSDCLP = "0x2BCD9a9Cc2a49E00cB58b9EE3855dF5bC80dfFee";
-  const usdcPool = "0x7EAAB9F7C992eE3cD1D9F055511Af5741B372124";
-  const wRose = "0x8Bc2B030b299964eEfb5e1e0b36991352E56D2D3";
+    "0x4CB5Ab4cc7F2f05148664b7DE2DEEAE7e7714Cc7";
+  const incentiveVoting = "0xa86a14E9E237bA939fBDA8735d8709FAa82173ef";
+  const idovesting = "0x8B5A01307BEd478d3d442910113Bef0E317bddcA"; //iDOTokenVesting
+  const vineVault = "0x5E632549CcDbCf6B8a90745fE54aF2501C8dD624";
+  const VUSDUSDCLP = "0x0000000000000000000000000000000000000000";
+  const usdcPool = "0x0000000000000000000000000000000000000000";
+  const wRose = "0xB5EA3151e1edED183CC9571916B435b6B188D508";
 
   const BorrowerOperationsAbi = BorrowerOperationsHook;
   const SortedTrovesAbi = SortedTrovesHook;
@@ -207,31 +208,25 @@ export const UserContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (account) {
-      setSapphireProvider(
-        sapphire.wrap(new ethers.providers.Web3Provider(wallet.provider))
-      );
+      setSapphireProvider(new ethers.providers.Web3Provider(wallet.provider));
       setSapphireProviderSigner(
-        sapphire.wrap(
-          new ethers.providers.Web3Provider(wallet.provider).getSigner()
-        )
+        new ethers.providers.Web3Provider(wallet.provider).getSigner()
       );
     } else {
-      setSapphireProvider(
-        sapphire.wrap(new ethers.providers.JsonRpcProvider(infuraRPC))
-      );
+      setSapphireProvider(new ethers.providers.JsonRpcProvider(infuraRPC));
       setSapphireProviderSigner(
-        sapphire.wrap(
-          new ethers.providers.JsonRpcProvider(infuraRPC).getSigner()
-        )
+        new ethers.providers.JsonRpcProvider(infuraRPC).getSigner()
       );
     }
   }, [account]);
 
   const [totalRose, setTotalRose] = useState(0);
   const getBalance = async () => {
-    const user = await ethersProvider.getBalance(account);
+    // const user = await ethersProvider.getBalance(account);
+    const user = await await wRoseQuery.balanceOf(account);
     setBalance(new BigNumber(user._hex).div(1e18).toFixed());
-    const totalRose = await ethersProvider.getBalance(stabilityPool);
+    // const totalRose = await ethersProvider.getBalance(stabilityPool);
+    const totalRose = await wRoseQuery.balanceOf(stabilityPool);
     setTotalRose(new BigNumber(totalRose._hex).div(1e18).toFixed());
   };
 
@@ -341,26 +336,27 @@ export const UserContextProvider = ({ children }) => {
 
       // setBorrowerOperationsQuery(new ethers.Contract(borrowerOperations, BorrowerOperationsAbi, sapphireProvider));
 
-      if (signInAuth) {
-        setTroveManagerGettersSigner(
-          new ethers.Contract(
-            troveManagerGetters,
-            TroveManagerGettersAbi,
-            sapphireProvider
-          )
-        );
+      // if (signInAuth) {
+      setTroveManagerGettersSigner(
+        new ethers.Contract(
+          troveManagerGetters,
+          TroveManagerGettersAbi,
+          sapphireProvider
+        )
+      );
 
-        setTroveManagerSigner(
-          new ethers.Contract(troveManager, TroveManagerAbi, sapphireProvider)
-        );
-      }
-      if (signInAuthToken) {
-        setDebtTokenQuery(
-          new ethers.Contract(debtToken, tokenAbi, sapphireProvider)
-        );
-      }
+      setTroveManagerSigner(
+        new ethers.Contract(troveManager, TroveManagerAbi, sapphireProvider)
+      );
+      // }
+      // if (signInAuthToken) {
+      setDebtTokenQuery(
+        new ethers.Contract(debtToken, tokenAbi, sapphireProvider)
+      );
+      // }
     }
-  }, [sapphireProvider, signInAuth, signInAuthToken]);
+  }, [sapphireProvider]);
+  // }, [sapphireProvider, signInAuth, signInAuthToken]);
 
   const [borrowerOperationsMint, setBorrowerOperationsMint] = useState(null);
   const [tokenLockerMain, setTokenLockerMain] = useState(null);
@@ -370,6 +366,7 @@ export const UserContextProvider = ({ children }) => {
   const [incentiveVotingMain, setIncentiveVotingMain] = useState(null);
   const [idovestingMain, setIdovestingMain] = useState(null);
   const [vineVaultMain, setVineVaultMain] = useState(null);
+  const [wrappedCoin, setWrappedCoin] = useState(null);
 
   const [VUSDUSDCLPMain, setVUSDUSDCLPMain] = useState(null);
   const [usdcPoolMain, setusdcPoolMain] = useState(null);
@@ -409,6 +406,9 @@ export const UserContextProvider = ({ children }) => {
           TroveManagerAbi,
           sapphireProviderSigner
         )
+      );
+      setWrappedCoin(
+        new ethers.Contract(wRose, tokenAbi, sapphireProviderSigner)
       );
       setIncentiveVotingMain(
         new ethers.Contract(
@@ -452,12 +452,9 @@ export const UserContextProvider = ({ children }) => {
   const [stabilityEarned, setstabilityEarned] = useState(0);
   const [vusdUsdcEarned, setvusdUsdcEarned] = useState(0);
   const getData = async () => {
-    if (account && signInAuth.user && signInAuthToken.user) {
+    if (account) {
       getBalance();
-      const trove = await troveManagerGettersSigner.getTrove(
-        signInAuth,
-        troveManager
-      );
+      const trove = await troveManagerMain.getTrove(account);
       setDeposits(Number(new BigNumber(trove.coll._hex).div(1e18).toFixed()));
       setDebt(Number(new BigNumber(trove.debt._hex).div(1e18).toFixed()));
       setStatus(trove.status);
@@ -466,8 +463,8 @@ export const UserContextProvider = ({ children }) => {
       const next = await sortedTrovesToken.getNext(account);
       setPre(pre);
       setNext(next);
-      const balanceOf = await debtTokenQuery.checkBalanceOf(signInAuthToken);
-      // const balanceOf = await debtTokenQuery.balanceOf(account);
+      // const balanceOf = await debtTokenQuery.checkBalanceOf(signInAuthToken);
+      const balanceOf = await debtTokenQuery.balanceOf(account);
       setvUSDbalance(new BigNumber(balanceOf._hex).div(1e18).toFixed());
 
       const boost = await boostCalculatorQuery.getBoostedAmount(
@@ -515,7 +512,7 @@ export const UserContextProvider = ({ children }) => {
       // setvusdUsdcEarned(Number(vusdUsdcEarned.adjustedAmount._hex) / 1e18);
     }
     const rosePrice = await priceFeedToken.loadPrice(
-      "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+      "0xB5EA3151e1edED183CC9571916B435b6B188D508"
     );
     setRosePrice(Number(rosePrice) / 1e18);
     // const lpPrice = await lPPriceOracleQuery.getReferenceData("LP", "USD");
@@ -529,12 +526,7 @@ export const UserContextProvider = ({ children }) => {
       (Number(wRosebalance._hex) * Number(rosePrice)) /
         1e18 /
         Number(wRosebalance2._hex) || 1;
-    // console.log("vine price", {
-    //   vPrice,
-    //   wROse: Number(wRosebalance._hex),
-    //   rosePrice: Number(rosePrice),
-    //   wRose2: Number(wRosebalance2._hex),
-    // });
+
     setVinePrice(vPrice);
 
     const totalTvl = await ethersProvider.getBalance(borrowerOperations);
@@ -660,6 +652,7 @@ export const UserContextProvider = ({ children }) => {
         tokenLockerMain,
         vineLpTokenPoolMain,
         troveManagerMain,
+        wrappedCoin,
         incentiveVotingMain,
         mockLpQuery,
         vineLpTokenPoolQuery,

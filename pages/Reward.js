@@ -41,13 +41,13 @@ export default function Reward() {
   const [accountDeposits, setAccountDeposits] = useState(0);
   const [unStakeLpBalance2, setUnStakeLpBalance2] = useState(0);
   const queryData = async () => {
-    const deposit1 = await vineLpTokenPoolQuery.balanceOf(account);
-    setUnStakeLpBalance(new BigNumber(deposit1._hex).div(1e18).toFixed());
+    // const deposit1 = await vineLpTokenPoolQuery.balanceOf(account);
+    // setUnStakeLpBalance(new BigNumber(deposit1._hex).div(1e18).toFixed());
     const deposit2 = await stabilityPoolQuery.accountDeposits(account);
     setAccountDeposits(new BigNumber(deposit2[0]._hex).div(1e18).toFixed());
 
-    const deposit3 = await usdcPoolQuery.balanceOf(account);
-    setUnStakeLpBalance2(new BigNumber(deposit3._hex).div(1e18).toFixed());
+    // const deposit3 = await usdcPoolQuery.balanceOf(account);
+    // setUnStakeLpBalance2(new BigNumber(deposit3._hex).div(1e18).toFixed());
   };
 
   let timerLoading = useRef(null);

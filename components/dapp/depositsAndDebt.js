@@ -16,8 +16,13 @@ export default function DepositsAndDebt(props) {
           <div>
             <p>{Number(deposits.toFixed(4)).toLocaleString()}</p>
             <p>
-              <img src="/dapp/rose.svg" alt="rose" />
-              ROSE
+              <img
+                src="/dapp/wbtc-logo.svg"
+                width="24"
+                height="24"
+                alt="rose"
+              />
+              wBTC
             </p>
           </div>
         </div>
