@@ -91,7 +91,7 @@ export default function Home() {
           <img
             className="h5Show"
             style={{ width: "100%" }}
-            src="/home/h5Banner.svg"
+            src="/home/bannerBg.svg"
             alt="banner"
           />
           <div className={styles.bannerMain}>
@@ -127,11 +127,11 @@ export default function Home() {
             <div className={styles.worksItem}>
               {/* <img src='/home/mint.svg' alt='mint' />  data-aos="fade-right"*/}
               <div className={styles.mintDiv}>
-                <img
+                {/* <img
                   src="/home/mint02.svg"
                   alt="mint"
                   className={styles.img01}
-                />
+                /> */}
                 <img
                   src="/home/mint01.svg"
                   alt="mint"

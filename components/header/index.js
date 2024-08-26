@@ -498,26 +498,26 @@ export default function Header(props) {
                 <span>Earn</span>
               </Link>
             </div>
-            <div className={styles.h5Item}>
+            {/* <div className={styles.h5Item}>
               <Link href="/Reward" rel="nofollow noopener noreferrer">
                 <span>Reward</span>
               </Link>
-            </div>
-            <div className={styles.h5Item}>
+            </div> */}
+            {/* <div className={styles.h5Item}>
               <Link href="/Lock" rel="nofollow noopener noreferrer">
                 <span>Lock</span>
               </Link>
-            </div>
+            </div> */}
             <div className={styles.h5Item}>
               <Link href="/Redeem" rel="nofollow noopener noreferrer">
                 <span>Redeem</span>
               </Link>
             </div>
-            <div className={styles.h5Item}>
+            {/* <div className={styles.h5Item}>
               <Link href="/Vote" rel="nofollow noopener noreferrer">
                 <span>Vote</span>
               </Link>
-            </div>
+            </div> */}
             <div className="h5user">
               {wallet ? (
                 <>
