@@ -20,7 +20,7 @@ export default function DepositsAndDebt(props) {
                 src="/dapp/wbtc-logo.svg"
                 width="24"
                 height="24"
-                alt="rose"
+                alt="wbtc"
               />
               wBTC
             </p>
@@ -32,7 +32,7 @@ export default function DepositsAndDebt(props) {
           <div>
             <p>{Number(debt.toFixed(4)).toLocaleString()}</p>
             <p>
-              <img src="/dapp/vUSD.svg" alt="vUSD" />
+              <img src="/dapp/bitUSD.svg" width="24" height="24" alt="bitUSD" />
               bitUSD
             </p>
           </div>

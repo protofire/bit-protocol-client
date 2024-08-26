@@ -13,10 +13,10 @@ export default function Redeem() {
     currentState,
     setCurrentState,
     setCurrentWaitInfo,
-    vUSDbalance,
+    bitUSDbalance,
     multiCollateralHintHelpersQuery,
     troveManager,
-    rosePrice,
+    wbtcPrice,
     sortedTrovesToken,
     troveManagerMain,
     troveManagerQuery,
@@ -33,15 +33,15 @@ export default function Redeem() {
   const [amount, setAmount] = useState("");
   const changeAmount = async (e) => {
     const value = Number(e.target.value);
-    if (value < Number(vUSDbalance)) {
+    if (value < Number(bitUSDbalance)) {
       setAmount(value == 0 ? "" : value);
     } else {
-      setAmount(Number(vUSDbalance));
+      setAmount(Number(bitUSDbalance));
     }
   };
 
   const changeAmountVaule = (value) => {
-    setAmount(Number(vUSDbalance) * value);
+    setAmount(Number(bitUSDbalance) * value);
   };
 
   const [startTime, setStartTime] = useState(0);
@@ -71,15 +71,15 @@ export default function Redeem() {
     useState(0);
   useEffect(() => {
     if (amount) {
-      setFeeAmount((Number(amount) / rosePrice) * fee);
+      setFeeAmount((Number(amount) / wbtcPrice) * fee);
       setExpectedCollateralReceived(
-        Number(amount) / rosePrice - (Number(amount) / rosePrice) * fee
+        Number(amount) / wbtcPrice - (Number(amount) / wbtcPrice) * fee
       );
     } else {
       setFeeAmount(0);
       setExpectedCollateralReceived(0);
     }
-  }, [amount, rosePrice, fee]);
+  }, [amount, wbtcPrice, fee]);
 
   let timerLoading = useRef(null);
   useEffect(() => {
@@ -127,7 +127,7 @@ export default function Redeem() {
       await multiCollateralHintHelpersQuery.getRedemptionHints(
         troveManager,
         new BigNumber(amount).multipliedBy(1e18).toFixed(),
-        new BigNumber(rosePrice).multipliedBy(1e18).toFixed(),
+        new BigNumber(wbtcPrice).multipliedBy(1e18).toFixed(),
         0
       );
     // console.log(Number(redemptionHints.truncatedDebtAmount._hex), Number(new BigNumber(amount).multipliedBy(1e18).toFixed()))
@@ -221,7 +221,7 @@ export default function Redeem() {
             <div className={styles.inputMain}>
               <div className="balance">
                 <p>Redeem bitUSD</p>
-                <span>Balance {formatNum(vUSDbalance)} bitUSD</span>
+                <span>Balance {formatNum(bitUSDbalance)} bitUSD</span>
               </div>
               <div className="inputTxt2">
                 <div>
@@ -269,7 +269,7 @@ export default function Redeem() {
               <div className={styles.data} style={{ borderTop: "none" }}>
                 <div className={styles.dataItem}>
                   <p>Collateral Price</p>
-                  <span>${formatNum(rosePrice)}</span>
+                  <span>${formatNum(wbtcPrice)}</span>
                 </div>
                 <div className={styles.dataItem}>
                   <p>Redemption Fee</p>
@@ -286,7 +286,7 @@ export default function Redeem() {
                 <div className={styles.dataItem}>
                   <p>Value of Collateral Received</p>
                   <span>
-                    ${formatNum(expectedCollateralReceived * rosePrice)}
+                    ${formatNum(expectedCollateralReceived * wbtcPrice)}
                   </span>
                 </div>
                 <div className={styles.dataItem}>

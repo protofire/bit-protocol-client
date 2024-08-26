@@ -105,7 +105,7 @@
 }
 
 .Vault {
-  .rose {
+  .wbtc {
     margin-top: 8px;
     border: 1px solid #333;
     background: #010101;
@@ -150,7 +150,7 @@
       cursor: pointer;
 
       &.active {
-        background: #509d7b;
+        background: #00d7ca;
       }
     }
   }
@@ -170,8 +170,8 @@
       width: 50%;
 
       &.active {
-        color: #57cc99;
-        border-bottom: 1px solid #57cc99;
+        color: #00d7ca;
+        border-bottom: 1px solid #00d7ca;
       }
     }
   }
@@ -309,7 +309,7 @@
 
 .topType {
   h3 {
-    color: #509d7b;
+    color: #00d7ca;
     font-size: 24px;
     font-weight: 900;
     line-height: 60px;
@@ -449,8 +449,8 @@
             cursor: pointer;
 
             &.active {
-              color: #57cc99;
-              border-bottom: 1px solid #57cc99;
+              color: #00d7ca;
+              border-bottom: 1px solid #00d7ca;
             }
           }
         }
@@ -479,7 +479,7 @@
     .desc {
       border: 1px solid #333;
       padding: 16px;
-      color: #509d7b;
+      color: #00d7ca;
       background: #010101;
 
       p {
@@ -645,7 +645,7 @@
       width: 50%;
 
       p {
-        color: #509d7b;
+        color: #00d7ca;
         font-size: 20px;
         font-weight: 900;
         letter-spacing: -0.4px;
@@ -740,7 +740,7 @@
             gap: 5px;
 
             span {
-              color: #509d7b;
+              color: #00d7ca;
             }
           }
         }
@@ -860,7 +860,7 @@
             gap: 5px;
 
             span {
-              color: #509d7b;
+              color: #00d7ca;
             }
           }
         }

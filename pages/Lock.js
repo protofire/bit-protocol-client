@@ -11,18 +11,16 @@ import "rc-slider/assets/index.css";
 
 export default function Lock() {
   const {
-    vineTokenQuery,
+    bitTokenQuery,
     tokenLockerMain,
-    tokenLocker,
     tokenLockerQuery,
-    boostCalculatorQuery,
     account,
     currentState,
     setCurrentState,
     setCurrentWaitInfo,
     boost,
     formatNum,
-    vinePrice,
+    bitPrice,
   } = useContext(UserContext);
 
   const onKeyDown = async (e) => {
@@ -55,7 +53,7 @@ export default function Lock() {
   const [penaltyAmountPaid, setPenaltyAmountPaid] = useState(0);
   const queryData = async () => {
     if (account) {
-      const balanceOf = await vineTokenQuery.balanceOf(account);
+      const balanceOf = await bitTokenQuery.balanceOf(account);
       setBalance(new BigNumber(balanceOf._hex).div(1e18).toFixed());
       const accountWeight = await tokenLockerQuery.getAccountWeight(account);
       setAccountWeight(new BigNumber(accountWeight._hex).toFixed());
@@ -77,8 +75,8 @@ export default function Lock() {
       const totalWeight = await tokenLockerQuery.getTotalWeight();
       setTotalWeight(new BigNumber(totalWeight._hex).toFixed());
     }
-    // if (vineTokenQuery) {
-    //     const balanceOf = await vineTokenQuery.balanceOf(tokenLocker);
+    // if (bitTokenQuery) {
+    //     const balanceOf = await bitTokenQuery.balanceOf(tokenLocker);
     //     setTotalLock((new BigNumber(balanceOf._hex).div(1e18)).toFixed());
     // }
   };
@@ -161,7 +159,7 @@ export default function Lock() {
       const lockTx = await tokenLockerMain.lock(account, amount, currentValue);
       setCurrentWaitInfo({
         type: "loading",
-        info: "Lock " + Number(amount.toFixed(4)).toLocaleString() + " $VINE",
+        info: "Lock " + Number(amount.toFixed(4)).toLocaleString() + " $bitGOV",
       });
       setCurrentState(true);
       const result = await lockTx.wait();
@@ -256,7 +254,7 @@ export default function Lock() {
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: "Early Unlock " + Math.floor(claimAmount) + " $VINE",
+        info: "Early Unlock " + Math.floor(claimAmount) + " $bitGOV",
       });
       setCurrentState(true);
       const result = await lockTx.wait();
@@ -294,20 +292,20 @@ export default function Lock() {
                 <div>
                   <p>{boost}x</p>
                 </div>
-                {/* <span className={styles.span}>Up to 0.00 $VINE</span> */}
+                {/* <span className={styles.span}>Up to 0.00 $bitGOV</span> */}
               </div>
               <div className={styles.value}>
                 <span>Locked $bitGOV</span>
                 <div style={{ display: "flex" }}>
                   <img
                     style={{ width: "26px" }}
-                    src="/dapp/vine.svg"
-                    alt="vUSD"
+                    src="/dapp/bit.svg"
+                    alt="bitUSD"
                   />
                   <p>{formatNum(accountLock + accountUnLock)}</p>
                 </div>
                 <span className={styles.span}>
-                  ≈ ${formatNum((accountLock + accountUnLock) * vinePrice)}
+                  ≈ ${formatNum((accountLock + accountUnLock) * bitPrice)}
                 </span>
                 {accountLock + accountUnLock > 0 ? (
                   <div
@@ -355,7 +353,7 @@ export default function Lock() {
                   <span>Enter amount</span>
                   <span style={{ fontSize: "12px" }}>
                     Balance{" "}
-                    {Number(Number(balance).toFixed(2)).toLocaleString()}$VINE
+                    {Number(Number(balance).toFixed(2)).toLocaleString()}$bitGOV
                   </span>
                 </div>
                 <div className="inputTxt3">
@@ -502,7 +500,7 @@ export default function Lock() {
           <div className="info infoNoPadding">
             <div className="infoTitle">
               <div>
-                <img className="vUSD" src="/dapp/vUSD.svg" alt="vUSD" />
+                <img className="bitUSD" src="/dapp/bitUSD.svg" alt="bitUSD" />
                 <p>Claim $bitGOV</p>
               </div>
               <div className="close">
@@ -543,7 +541,7 @@ export default function Lock() {
                   }}
                 >
                   Early Unlock Penalty:{" "}
-                  <span style={{ color: "#509D7B" }}>
+                  <span style={{ color: "#00D7CA" }}>
                     {formatNum(penaltyAmountPaid)}$bitGOV
                   </span>
                 </p>
@@ -563,7 +561,7 @@ export default function Lock() {
                 <div className='info infoNoPadding'>
                     <div className='infoTitle'>
                         <div>
-                            <img className='vUSD' src='/dapp/vUSD.svg' alt='vUSD' />
+                            <img className='bitUSD' src='/dapp/bitUSD.svg' alt='bitUSD' />
                             <p>Early Unlock</p>
                         </div>
                         <div className="close">
@@ -572,8 +570,8 @@ export default function Lock() {
                     </div>
                     <div className="data">
                         <div className="dataItem">
-                            <p>Unlocking early will incur a penalty fee. Currently, you have locked <span style={{ "color": "#509D7B" }}>{formatNum(accountLock)}vine</span>.
-                                Unlocking early will grant you <span style={{ "color": "#509D7B" }}>{Math.floor(amountWithdrawn)}vine</span>.
+                            <p>Unlocking early will incur a penalty fee. Currently, you have locked <span style={{ "color": "#00D7CA" }}>{formatNum(accountLock)}bit</span>.
+                                Unlocking early will grant you <span style={{ "color": "#00D7CA" }}>{Math.floor(amountWithdrawn)}bit</span>.
                             </p>
                         </div>
                         <div className={styles.buttonTwo}>

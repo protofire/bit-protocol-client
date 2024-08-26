@@ -18,33 +18,26 @@ export default function Earn() {
     setCurrentState,
     setCurrentWaitInfo,
     account,
-    vineLpTokenPoolMain,
-    vineLpTokenPoolQuery,
+    bitLpTokenPoolMain,
     mockLpMain,
-    mockLpQuery,
-    VineLpTokenPool,
+    BitLpTokenPool,
     lpPrice,
     stabilityPoolMain,
     stabilityPoolQuery,
-    vUSDbalance,
-    rosePrice,
-    totalRose,
+    bitUSDbalance,
+    wbtcPrice,
+    totalWbtc,
     debtTokenQuery,
     debt,
     troveManagerQuery,
-    vinePrice,
+    bitPrice,
     boost,
     formatNum,
-    VUSDUSDCLPQuery,
-    usdcPoolQuery,
-    VUSDUSDCLPMain,
+    BITUSDUSDCLPMain,
     usdcPoolMain,
     usdcPool,
-    VUSDUSDCLP,
     vaultEarned,
-    vineRoseEarned,
     stabilityEarned,
-    vusdUsdcEarned,
   } = useContext(UserContext);
 
   const [showEarnMain, setShowEarnMain] = useState(false);
@@ -62,7 +55,7 @@ export default function Earn() {
 
   const changeManage = (value) => {
     setTypeName(value);
-    if (value == "bitGOV/ROSE LP") {
+    if (value == "bitGOV/wBTC LP") {
       changeTypeCoin("Stake", "LP");
     } else if (value == "bitUSD/USDC LP") {
       changeTypeCoin("Stake", "LP");
@@ -103,20 +96,20 @@ export default function Earn() {
   const [allowance2, setAllowance2] = useState(0);
 
   const [mockLpBanace, setMockLpBanace] = useState(0);
-  const [VUSDLpBanace, setVUSDLpBanace] = useState(0);
+  const [BITUSDLpBanace, setBITUSDLpBanace] = useState(0);
   const [stabilityPoolBanace, setStabilityPoolBanace] = useState(0);
 
-  //vUSD Minting
-  const [vUSDCirc, setvUSDCirc] = useState(0);
+  //bitUSD Minting
+  const [bitUSDCirc, setbitUSDCirc] = useState(0);
   const [baseAPR1, setBaseAPR1] = useState(0);
 
-  //VINE/ROSE LP
+  //BIT/wBTC LP
   const [baseAPR2, setBaseAPR2] = useState(0);
 
   //Stability Pool
   const [baseAPR3, setBaseAPR3] = useState(0);
 
-  //vUSD/USDC LP
+  //bitUSD/USDC LP
   const [baseAPR4, setBaseAPR4] = useState(0);
   const [USDCtotalSupply, setUSDCtotalSupply] = useState(0);
 
@@ -124,21 +117,21 @@ export default function Earn() {
 
   const queryData = async () => {
     if (account) {
-      //VINE/ROSE LP
+      //BIT/wBTC LP
       //stake
       // const balanceOf1 = await mockLpQuery.balanceOf(account);
       // setStakeLpBalance((new BigNumber(balanceOf1._hex).div(1e18)).toFixed());
-      // const allowance = await mockLpQuery.allowance(account, VineLpTokenPool);
+      // const allowance = await mockLpQuery.allowance(account, BitLpTokenPool);
       // setAllowance((new BigNumber(allowance._hex).div(1e18)).toFixed());
       // //unstake
-      // const balanceOf2 = await vineLpTokenPoolQuery.balanceOf(account);
+      // const balanceOf2 = await bitLpTokenPoolQuery.balanceOf(account);
       // setUnStakeLpBalance((new BigNumber(balanceOf2._hex).div(1e18)).toFixed());
 
-      // //vUSD/USDC LP
+      // //bitUSD/USDC LP
       // //stake
-      // const balanceOf4 = await VUSDUSDCLPQuery.balanceOf(account);
+      // const balanceOf4 = await BITUSDUSDCLPQuery.balanceOf(account);
       // setStakeLpBalance2((new BigNumber(balanceOf4._hex).div(1e6)).toFixed());
-      // const allowance2 = await VUSDUSDCLPQuery.allowance(account, usdcPool);
+      // const allowance2 = await BITUSDUSDCLPQuery.allowance(account, usdcPool);
       // setAllowance2((new BigNumber(allowance2._hex).div(1e18)).toFixed());
       // //unstake
       // const balanceOf5 = await usdcPoolQuery.balanceOf(account);
@@ -156,29 +149,29 @@ export default function Earn() {
       );
     }
     // if (mockLpQuery) {
-    //     const balanceOf = await mockLpQuery.balanceOf(VineLpTokenPool);
+    //     const balanceOf = await mockLpQuery.balanceOf(BitLpTokenPool);
     //     setMockLpBanace((new BigNumber(balanceOf._hex).div(1e18)).toFixed());
     // }
     if (stabilityPoolQuery) {
       const balanceOf = await stabilityPoolQuery.getTotalDebtTokenDeposits();
       setStabilityPoolBanace(new BigNumber(balanceOf._hex).div(1e18).toFixed());
     }
-    // const balanceOf = await debtTokenQuery.balanceOf(VUSDUSDCLP);
-    // setVUSDLpBanace(new BigNumber(balanceOf._hex).div(1e18).toFixed());
+    // const balanceOf = await debtTokenQuery.balanceOf(BITUSDUSDCLP);
+    // setBITUSDLpBanace(new BigNumber(balanceOf._hex).div(1e18).toFixed());
 
-    //vUSD Minting
-    const vUSDCirc = await debtTokenQuery.totalSupply();
-    setvUSDCirc(Number(vUSDCirc._hex) / 1e18);
+    //bitUSD Minting
+    const bitUSDCirc = await debtTokenQuery.totalSupply();
+    setbitUSDCirc(Number(bitUSDCirc._hex) / 1e18);
     const baseAPR1 = await troveManagerQuery.rewardRate();
     setBaseAPR1(Number(baseAPR1._hex) === 0 ? 0 : Number(baseAPR1._hex) / 1e18);
-    // const baseAPR2 = await vineLpTokenPoolQuery.rewardRate();
+    // const baseAPR2 = await bitLpTokenPoolQuery.rewardRate();
     // setBaseAPR2(Number(baseAPR2._hex) / 1e18);
     const baseAPR3 = await stabilityPoolQuery.rewardRate();
     setBaseAPR3(Number(baseAPR3._hex) / 1e18);
     // const baseAPR4 = await usdcPoolQuery.rewardRate();
     // setBaseAPR4(Number(baseAPR4._hex) / 1e18);
 
-    // const totalSupply = await VUSDUSDCLPQuery.totalSupply();
+    // const totalSupply = await BITUSDUSDCLPQuery.totalSupply();
     // setUSDCtotalSupply(Number(totalSupply._hex) / 1e18);
   };
 
@@ -191,41 +184,42 @@ export default function Earn() {
     return () => clearInterval(timerLoading.current);
   }, [account]);
 
-  const [vUSDBaseApr1, setvUSDBaseApr1] = useState(0);
-  const [vUSDBaseApr2, setvUSDBaseApr2] = useState(0);
-  const [vUSDBaseApr3, setvUSDBaseApr3] = useState(0);
-  const [vUSDBaseApr4, setvUSDBaseApr4] = useState(0);
+  const [bitUSDBaseApr1, setbitUSDBaseApr1] = useState(0);
+  const [bitUSDBaseApr2, setbitUSDBaseApr2] = useState(0);
+  const [bitUSDBaseApr3, setbitUSDBaseApr3] = useState(0);
+  const [bitUSDBaseApr4, setbitUSDBaseApr4] = useState(0);
   useEffect(() => {
-    const vUSDBaseApr1 = (baseAPR1 * 86400 * 365 * vinePrice * 100) / vUSDCirc;
-    setvUSDBaseApr1(vUSDBaseApr1);
-    const vUSDBaseApr2 =
-      (baseAPR2 * 86400 * 365 * vinePrice * 100) /
+    const bitUSDBaseApr1 =
+      (baseAPR1 * 86400 * 365 * bitPrice * 100) / bitUSDCirc;
+    setbitUSDBaseApr1(bitUSDBaseApr1);
+    const bitUSDBaseApr2 =
+      (baseAPR2 * 86400 * 365 * bitPrice * 100) /
       (Number(mockLpBanace) * lpPrice);
-    setvUSDBaseApr2(vUSDBaseApr2);
-    const vUSDBaseApr4 =
-      (baseAPR4 * 86400 * 365 * vinePrice * 100) / (Number(VUSDLpBanace) * 2);
-    setvUSDBaseApr4(vUSDBaseApr4);
-    const vUSDBaseApr3 =
-      (baseAPR3 * 86400 * 365 * vinePrice * 100) /
-      (Number(stabilityPoolBanace) + Number(totalRose) * rosePrice);
-    setvUSDBaseApr3(vUSDBaseApr3);
+    setbitUSDBaseApr2(bitUSDBaseApr2);
+    const bitUSDBaseApr4 =
+      (baseAPR4 * 86400 * 365 * bitPrice * 100) / (Number(BITUSDLpBanace) * 2);
+    setbitUSDBaseApr4(bitUSDBaseApr4);
+    const bitUSDBaseApr3 =
+      (baseAPR3 * 86400 * 365 * bitPrice * 100) /
+      (Number(stabilityPoolBanace) + Number(totalWbtc) * wbtcPrice);
+    setbitUSDBaseApr3(bitUSDBaseApr3);
   }, [
-    vUSDCirc,
+    bitUSDCirc,
     baseAPR1,
     baseAPR2,
     baseAPR3,
-    vinePrice,
+    bitPrice,
     mockLpBanace,
     lpPrice,
     stabilityPoolBanace,
-    totalRose,
-    rosePrice,
+    totalWbtc,
+    wbtcPrice,
     baseAPR4,
-    VUSDLpBanace,
+    BITUSDLpBanace,
   ]);
 
   useEffect(() => {
-    if (typeName == "bitGOV/ROSE LP") {
+    if (typeName == "bitGOV/wBTC LP") {
       if (changeType == "Stake") {
         setMaxBalance(Number(stakeLpBalance));
       } else {
@@ -239,7 +233,7 @@ export default function Earn() {
       }
     } else {
       if (changeType == "Deposit") {
-        setMaxBalance(Number(vUSDbalance));
+        setMaxBalance(Number(bitUSDbalance));
       } else if (changeType == "Withdraw") {
         setMaxBalance(Number(accountDeposits));
       } else {
@@ -259,7 +253,7 @@ export default function Earn() {
 
   useEffect(() => {
     if (changeType == "Stake") {
-      if (typeName == "bitGOV/ROSE LP") {
+      if (typeName == "bitGOV/wBTC LP") {
         if (Number(amount) > Number(allowance)) {
           setButtonName("Approve");
         } else {
@@ -280,12 +274,12 @@ export default function Earn() {
   const [tvl, setTvl] = useState(0);
   useEffect(() => {
     let num = 0;
-    if (typeName == "bitGOV/ROSE LP") {
+    if (typeName == "bitGOV/wBTC LP") {
       num = Number(mockLpBanace) * lpPrice;
     } else if (typeName == "bitUSD/USDC LP") {
-      num = Number(VUSDLpBanace) * 2;
+      num = Number(BITUSDLpBanace) * 2;
     } else {
-      num = Number(stabilityPoolBanace) + Number(totalRose) * rosePrice;
+      num = Number(stabilityPoolBanace) + Number(totalWbtc) * wbtcPrice;
     }
     setTvl(formatNum(num));
   }, [
@@ -293,15 +287,15 @@ export default function Earn() {
     mockLpBanace,
     lpPrice,
     stabilityPoolBanace,
-    rosePrice,
-    totalRose,
-    VUSDLpBanace,
+    wbtcPrice,
+    totalWbtc,
+    BITUSDLpBanace,
   ]);
 
   const stakeApprove = async () => {
     try {
       const tx = await mockLpMain.approve(
-        VineLpTokenPool,
+        BitLpTokenPool,
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
       setCurrentWaitInfo({
@@ -333,7 +327,7 @@ export default function Earn() {
 
   const stakeLp = async () => {
     try {
-      const tx = await vineLpTokenPoolMain.deposit(
+      const tx = await bitLpTokenPoolMain.deposit(
         account,
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
@@ -366,7 +360,7 @@ export default function Earn() {
 
   const unStakeLp = async () => {
     try {
-      const tx = await vineLpTokenPoolMain.withdraw(
+      const tx = await bitLpTokenPoolMain.withdraw(
         account,
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
@@ -399,7 +393,7 @@ export default function Earn() {
 
   const stakeApprove2 = async () => {
     try {
-      const tx = await VUSDUSDCLPMain.approve(
+      const tx = await BITUSDUSDCLPMain.approve(
         usdcPool,
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
@@ -593,7 +587,7 @@ export default function Earn() {
   };
 
   const Operate = () => {
-    if (typeName == "bitGOV/ROSE LP") {
+    if (typeName == "bitGOV/wBTC LP") {
       if (!amount) {
         return;
       }
@@ -651,7 +645,7 @@ export default function Earn() {
                   Lock $bitGOV to boost your APR to {boost}x.
                 </p>
                 <div className={styles.CoinType}>
-                  <img src="/dapp/vUSD.svg" alt="bitUSD" />
+                  <img src="/dapp/bitUSD.svg" alt="bitUSD" />
                   bitUSD Minting
                 </div>
                 <div className={styles.data}>
@@ -661,15 +655,15 @@ export default function Earn() {
                   </div>
                   <div className={styles.dataItem}>
                     <p>bitUSD Circ.</p>
-                    <span>${formatNum(vUSDCirc)}</span>
+                    <span>${formatNum(bitUSDCirc)}</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Base APR</p>
-                    <span>{formatNum(vUSDBaseApr1)}%</span>
+                    <span>{formatNum(bitUSDBaseApr1)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Boosted APR</p>
-                    <span>{formatNum(vUSDBaseApr1 * boost)}%</span>
+                    <span>{formatNum(bitUSDBaseApr1 * boost)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Your Minted bitUSD</p>
@@ -701,10 +695,10 @@ export default function Earn() {
                 {/* <div className={styles.CoinType}>
                   <img
                     style={{ width: "65px" }}
-                    src="/dapp/vineArose.svg"
-                    alt="vUSD"
+                    src="/dapp/bitAwbtc.svg"
+                    alt="bitUSD"
                   />
-                  bitGOV/ROSE LP
+                  bitGOV/wBTC LP
                 </div>
                 <div className={styles.data}>
                   <div className={styles.dataItem}>
@@ -717,11 +711,11 @@ export default function Earn() {
                   </div>
                   <div className={styles.dataItem}>
                     <p>Base APR</p>
-                    <span>{formatNum(vUSDBaseApr2)}%</span>
+                    <span>{formatNum(bitUSDBaseApr2)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Boosted APR</p>
-                    <span>{formatNum(vUSDBaseApr2 * boost)}%</span>
+                    <span>{formatNum(bitUSDBaseApr2 * boost)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Your Deposits</p>
@@ -729,12 +723,12 @@ export default function Earn() {
                   </div>
                   <div className={styles.dataItem}>
                     <p>Earned</p>
-                    <span>{formatNum(vineRoseEarned)}</span>
+                    <span>{formatNum(bitWbtcEarned)}</span>
                   </div>
                 </div>
                 <div
                   className={styles.button}
-                  onClick={() => changeManage("bitGOV/ROSE LP")}
+                  onClick={() => changeManage("bitGOV/wBTC LP")}
                 >
                   <div className="button rightAngle height">Manage</div>
                 </div> */}
@@ -765,15 +759,15 @@ export default function Earn() {
                   </div>
                   <div className={styles.dataItem}>
                     <p>TVL</p>
-                    <span>${formatNum(Number(VUSDLpBanace) * 2)}</span>
+                    <span>${formatNum(Number(BITUSDLpBanace) * 2)}</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Base APR</p>
-                    <span>{formatNum(vUSDBaseApr4)}%</span>
+                    <span>{formatNum(bitUSDBaseApr4)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Boosted APR</p>
-                    <span>{formatNum(vUSDBaseApr4 * boost)}%</span>
+                    <span>{formatNum(bitUSDBaseApr4 * boost)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Your Deposits</p>
@@ -781,7 +775,7 @@ export default function Earn() {
                   </div>
                   <div className={styles.dataItem}>
                     <p>Earned</p>
-                    <span>{formatNum(vusdUsdcEarned)}</span>
+                    <span>{formatNum(bitusdUsdcEarned)}</span>
                   </div>
                 </div>
                 <div
@@ -797,7 +791,7 @@ export default function Earn() {
                   Lock $bitGOV to boost your APR to {boost}x.
                 </p>
                 <div className={styles.CoinType}>
-                  <img src="/dapp/vUSD.svg" alt="vUSD" />
+                  <img src="/dapp/bitUSD.svg" alt="bitUSD" />
                   Stability Pool
                 </div>
                 <div className={styles.data}>
@@ -811,17 +805,17 @@ export default function Earn() {
                       $
                       {formatNum(
                         Number(stabilityPoolBanace) +
-                          Number(totalRose) * rosePrice
+                          Number(totalWbtc) * wbtcPrice
                       )}
                     </span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Base APR</p>
-                    <span>{formatNum(vUSDBaseApr3)}%</span>
+                    <span>{formatNum(bitUSDBaseApr3)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Boosted APR</p>
-                    <span>{formatNum(vUSDBaseApr3 * boost)}%</span>
+                    <span>{formatNum(bitUSDBaseApr3 * boost)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Your Deposits</p>
@@ -851,7 +845,7 @@ export default function Earn() {
             </div>
             <div className={styles.earnMain}>
               <div className={styles.title}>
-                <img src="/dapp/vUSD.svg" alt="vUSD" />
+                <img src="/dapp/bitUSD.svg" alt="bitUSD" />
                 {typeName}
               </div>
               <div className={styles.dataInfo}>
@@ -859,11 +853,11 @@ export default function Earn() {
                   <span>APR</span>
                   <div>
                     <p>
-                      {typeName == "bitGOV/ROSE LP"
-                        ? formatNum(vUSDBaseApr2 * boost)
+                      {typeName == "bitGOV/wBTC LP"
+                        ? formatNum(bitUSDBaseApr2 * boost)
                         : typeName == "bitUSD/USDC LP"
-                        ? formatNum(vUSDBaseApr4 * boost)
-                        : formatNum(vUSDBaseApr3 * boost)}{" "}
+                        ? formatNum(bitUSDBaseApr4 * boost)
+                        : formatNum(bitUSDBaseApr3 * boost)}{" "}
                       ({boost}x)
                     </p>
                   </div>
@@ -878,18 +872,18 @@ export default function Earn() {
                   <div className={styles.manageDesc}>
                     <p>{"Manage " + typeName}</p>
                     <div>
-                      {typeName == "bitGOV/ROSE LP"
-                        ? "Stake bitGOV/ROSE LP to earn bitGOV rewards."
+                      {typeName == "bitGOV/wBTC LP"
+                        ? "Stake bitGOV/wBTC LP to earn bitGOV rewards."
                         : typeName == "bitUSD/USDC LP"
                         ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
                         : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
                       {typeName == "Stability Pool" ? (
                         <Link
                           target="_blank"
-                          href="https://vine-money.gitbook.io/vine-money/protocol/stability-pool-and-liquidations"
+                          href=""
                           rel="nofollow noopener noreferrer"
                         >
-                          <span style={{ color: "#57CC99" }}> Read more.</span>
+                          <span style={{ color: "#00D7CA" }}> Read more.</span>
                         </Link>
                       ) : null}
                     </div>
@@ -915,7 +909,7 @@ export default function Earn() {
                         </span>
                       </>
                     ) : null}
-                    {typeName == "bitGOV/ROSE LP" ||
+                    {typeName == "bitGOV/wBTC LP" ||
                     typeName == "bitUSD/USDC LP" ? (
                       <>
                         <span
@@ -958,7 +952,7 @@ export default function Earn() {
                           className={
                             changeType == "Claim" ? `${styles.active}` : null
                           }
-                          onClick={() => changeTypeCoin("Claim", "$ROSE")}
+                          onClick={() => changeTypeCoin("Claim", "$wBTC")}
                         >
                           Reward
                         </span>
@@ -989,7 +983,7 @@ export default function Earn() {
                           />
                           <span className="font_12_gray">
                             ≈$
-                            {typeName == "bitGOV/ROSE LP"
+                            {typeName == "bitGOV/wBTC LP"
                               ? formatNum(Number(amount) * lpPrice)
                               : typeName == "bitUSD/USDC LP"
                               ? formatNum(

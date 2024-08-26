@@ -3,7 +3,7 @@
     padding: 30px 0;
 
     .bannerMain {
-      background: url('../public/home/bannerBg.svg');
+      background: url("../public/home/bannerBg.svg");
       height: 600px;
       background-size: 100% 100%;
       display: grid;
@@ -16,7 +16,7 @@
         padding: 20% 0 0 80px;
 
         h2 {
-          color: #F2F2F2;
+          color: #f2f2f2;
           font-size: 48px;
           font-style: normal;
           font-weight: 900;
@@ -55,10 +55,8 @@
           position: absolute;
           bottom: 40px;
           right: 40px;
-
         }
       }
-
     }
   }
 
@@ -73,7 +71,7 @@
 
       .worksItem {
         text-align: center;
-        background: url('../public/home/itemBG.svg');
+        background: url("../public/home/itemBG.svg");
         background-size: 100% 100%;
         background-repeat: no-repeat;
         padding: 65px 38px;
@@ -108,7 +106,6 @@
             height: 88.819px;
           }
 
-
           // @keyframes slideInFromLeft {
           //   0% {
           //     transform: translateX(-100%);
@@ -121,7 +118,7 @@
         }
 
         p {
-          color: #F2F2F2;
+          color: #f2f2f2;
           text-align: center;
           font-size: 36px;
           font-style: normal;
@@ -157,20 +154,18 @@
       }
 
       span {
-        background-color: #509D7B;
+        background-color: #00d7ca;
         padding: 0 10px;
       }
 
-
-
       .redBorder {
         border-radius: 6px;
-        border: 1px solid #812E1B;
+        border: 1px solid #812e1b;
         padding: 20px;
         margin-top: 24px;
 
         p {
-          color: #F2F2F2;
+          color: #f2f2f2;
           line-height: 28px;
           letter-spacing: -0.4px;
           // font-family: 'Inter';
@@ -178,7 +173,6 @@
           font-weight: 600;
         }
       }
-
 
       .vUSD {
         width: 400px;
@@ -210,7 +204,6 @@
             transform: rotate(180deg);
           }
 
-
           100% {
             transform: rotate(360deg);
           }
@@ -230,7 +223,7 @@
         margin-top: 32px;
 
         .faqItem {
-          border-bottom: 1px solid #4F4F4F;
+          border-bottom: 1px solid #4f4f4f;
           box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
 
           .question {
@@ -254,8 +247,6 @@
               // font-family: "Inter";
               // color: #B4B4B4;
             }
-
-
           }
 
           img {
@@ -271,7 +262,7 @@
   }
 
   h2 {
-    color: #F2F2F2;
+    color: #f2f2f2;
     font-size: 48px;
     font-style: normal;
     font-weight: 900;
@@ -279,12 +270,9 @@
     letter-spacing: -0.96px;
     margin-bottom: 24px;
   }
-
 }
 
-
-
-@media screen and (max-width:1420px) {
+@media screen and (max-width: 1420px) {
   .home {
     .banner {
       .bannerMain {
@@ -309,8 +297,7 @@
   }
 }
 
-
-@media screen and (max-width:798px) {
+@media screen and (max-width: 798px) {
   .home {
     .banner {
       .bannerMain {

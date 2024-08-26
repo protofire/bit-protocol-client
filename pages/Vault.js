@@ -14,7 +14,7 @@ export default function Vault() {
     account,
     troveManager,
     balance,
-    vUSDbalance,
+    bitUSDbalance,
     currentState,
     setCurrentState,
     setCurrentWaitInfo,
@@ -24,7 +24,7 @@ export default function Vault() {
     deposits,
     pre,
     next,
-    rosePrice,
+    wbtcPrice,
     wrappedCoin,
     borrowerOperations,
   } = useContext(UserContext);
@@ -98,29 +98,29 @@ export default function Vault() {
     } else if (buttonName == "Withdraw") {
       setCollAmount(withdrawMax * value);
     } else {
-      setDebtAmount(Number(vUSDbalance) * value);
+      setDebtAmount(Number(bitUSDbalance) * value);
     }
   };
 
   const [currentRatio, setCurrentRatio] = useState(0);
   const [afterRatio, setAfterRatio] = useState(0);
   useEffect(() => {
-    const ratio1 = ((deposits * rosePrice) / debt) * 100 || 0;
+    const ratio1 = ((deposits * wbtcPrice) / debt) * 100 || 0;
     setCurrentRatio(ratio1);
     if (collAmount) {
       const ratio2 =
-        (((deposits + Number(collAmount)) * rosePrice) / (debt + 10)) * 100;
+        (((deposits + Number(collAmount)) * wbtcPrice) / (debt + 10)) * 100;
       setAfterRatio(ratio2);
     }
-  }, [collAmount, debt, deposits, rosePrice]);
+  }, [collAmount, debt, deposits, wbtcPrice]);
 
   const [showContinue, setShowContinue] = useState(false);
 
   const [debtAmount, setDebtAmount] = useState("");
   const changeDebtAmount = async (e) => {
     const value = Number(e.target.value);
-    if (value > Number(vUSDbalance)) {
-      setDebtAmount(Number(vUSDbalance));
+    if (value > Number(bitUSDbalance)) {
+      setDebtAmount(Number(bitUSDbalance));
     } else {
       setDebtAmount(value == 0 ? "" : value);
     }
@@ -128,9 +128,9 @@ export default function Vault() {
 
   const [withdrawMax, setWithdrawMax] = useState(0);
   useEffect(() => {
-    const value = deposits - ((debt + 2) / rosePrice) * 1.5;
+    const value = deposits - ((debt + 2) / wbtcPrice) * 1.5;
     setWithdrawMax(value >= 0 ? value : 0);
-  }, [deposits, rosePrice, debt]);
+  }, [deposits, wbtcPrice, debt]);
 
   const Deposit = async () => {
     setShowContinue(false);
@@ -319,12 +319,12 @@ export default function Vault() {
   const [showClose, setShowClose] = useState(false);
 
   const repayClose = async () => {
-    if (Number(vUSDbalance) < Number(debt)) {
+    if (Number(bitUSDbalance) < Number(debt)) {
       tooltip.error({
         content:
           "You do not have enough bitUSD in your wallet to repay your debt. You require an additional " +
           Number(
-            (Number(debt) - Number(vUSDbalance)).toFixed(4)
+            (Number(debt) - Number(bitUSDbalance)).toFixed(4)
           ).toLocaleString() +
           " $bitUSD.",
         duration: 5000,
@@ -364,7 +364,7 @@ export default function Vault() {
   };
 
   const changeShowClose = () => {
-    if (Number(vUSDbalance) < Number(debt)) {
+    if (Number(bitUSDbalance) < Number(debt)) {
       return;
     } else {
       setShowClose(true);
@@ -406,14 +406,14 @@ export default function Vault() {
               <h3>Manage Your Vault</h3>
             </div>
           ) : null}
-          <div className={styles.rose}>
+          <div className={styles.wbtc}>
             {isFirst ? null : (
               <div className={styles.CoinType}>
                 <img
                   src="/dapp/wbtc-logo.svg"
                   width="56"
                   height="56"
-                  alt="rose"
+                  alt="wbtc"
                 />
                 $wBTC
               </div>
@@ -510,7 +510,9 @@ export default function Vault() {
                     <span>{operateType} bitUSD</span>
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
-                      {Number(Number(vUSDbalance).toFixed(4)).toLocaleString()}{" "}
+                      {Number(
+                        Number(bitUSDbalance).toFixed(4)
+                      ).toLocaleString()}{" "}
                       bitUSD
                     </span>
                   </div>
@@ -559,7 +561,7 @@ export default function Vault() {
                       style={{
                         fontSize: "12px",
                         marginTop: "10px",
-                        color: "#509D7B",
+                        color: "#00D7CA",
                       }}
                     >
                       <span>Collateral Ratio after Deposit </span>
@@ -601,13 +603,13 @@ export default function Vault() {
                     <div className={styles.walletBalance}>
                       <span
                         style={
-                          Number(vUSDbalance) < Number(debt)
+                          Number(bitUSDbalance) < Number(debt)
                             ? null
                             : { color: "#fff" }
                         }
                       >
                         {Number(
-                          Number(vUSDbalance).toFixed(4)
+                          Number(bitUSDbalance).toFixed(4)
                         ).toLocaleString()}
                       </span>{" "}
                       $bitUSD
@@ -642,7 +644,7 @@ export default function Vault() {
               ) : (
                 <div
                   className={
-                    Number(vUSDbalance) < Number(debt)
+                    Number(bitUSDbalance) < Number(debt)
                       ? "button rightAngle height disable"
                       : "button rightAngle height"
                   }
@@ -653,14 +655,14 @@ export default function Vault() {
               )}
             </div>
             {operateType == "Close" ? (
-              Number(vUSDbalance) < Number(debt) ? (
+              Number(bitUSDbalance) < Number(debt) ? (
                 <div className={styles.closeTip}>
                   <p>
                     You do not have enough bitUSD in your wallet to repay your
                     debt. You require an additional{" "}
                     <span>
                       {Number(
-                        (Number(debt) - Number(vUSDbalance)).toFixed(4)
+                        (Number(debt) - Number(bitUSDbalance)).toFixed(4)
                       ).toLocaleString()}
                     </span>{" "}
                     $bitUSD.
@@ -673,7 +675,7 @@ export default function Vault() {
                   <p>Total Value Locked</p>
                   <span>
                     $
-                    {Number((deposits * rosePrice).toFixed(4)).toLocaleString()}
+                    {Number((deposits * wbtcPrice).toFixed(4)).toLocaleString()}
                   </span>
                 </div>
                 <div className={styles.dataItem}>
@@ -743,7 +745,7 @@ export default function Vault() {
             <div className={styles.closeCoin}>
               <p>{Number(Number(debt).toFixed(4)).toLocaleString()}</p>
               <div>
-                <img src="/dapp/vUSD.svg" alt="vUSD"></img>
+                <img src="/dapp/bitUSD.svg" alt="bitUSD"></img>
                 $bitUSD
               </div>
             </div>
@@ -753,7 +755,7 @@ export default function Vault() {
             <div className={styles.closeCoin}>
               <p>{Number(Number(deposits).toFixed(4)).toLocaleString()}</p>
               <div>
-                <img src="/dapp/wbtc-logo.svg" alt="rose"></img>
+                <img src="/dapp/wbtc-logo.svg" alt="wbtc"></img>
                 $wBTC
               </div>
             </div>

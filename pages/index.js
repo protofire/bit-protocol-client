@@ -26,7 +26,7 @@ export default function Home() {
     {
       questions: "What is Bit Protocol?",
       answer:
-        "<p>Bit Protocol is a decentralized borrowing protocol that allows you to borrow against Oasis Network’s native token wBTC, which is used as collateral. Loans are taken out in bitUSD - a $1 pegged private and confidential decentralized stablecoin.</p>",
+        "<p>Bit Protocol is a decentralized borrowing protocol that allows you to borrow against zkBTC Network’s native token wBTC, which is used as collateral. Loans are taken out in bitUSD - a $1 pegged private and confidential decentralized stablecoin.</p>",
       hide: true,
     },
     {
@@ -44,7 +44,7 @@ export default function Home() {
     {
       questions: "What are the key benefits of using Bit Protocol?",
       answer:
-        "<p>Bit Protocol offers a way to borrow bitUSD privately, confidentiality and in a fully decentrazied capital-efficient borrowing manner.</p><p>- A collateral ratio of just 120%<br/>- Directly redeemable - bitUSD can be redeemed at face value for the underlying collateral, wBTC always and at any time<br/>- Censorship resistant</p><p>Bit Protocol introduces the new era of stablecoins. bitUSD is the first privacy-focused digital currency built on the innovative Oasis Sapphire confidential EVM. Merging the stability of traditional stablecoins with unparalleled transactional confidentiality, bitUSD addresses the critical market need for privacy in DeFi. </p>",
+        "<p>Bit Protocol offers a way to borrow bitUSD privately, confidentiality and in a fully decentrazied capital-efficient borrowing manner.</p><p>- A collateral ratio of just 120%<br/>- Directly redeemable - bitUSD can be redeemed at face value for the underlying collateral, wBTC always and at any time<br/>- Censorship resistant</p><p>Bit Protocol introduces the new era of stablecoins. bitUSD is the first privacy-focused digital currency built on the innovative zkBTC confidential EVM. Merging the stability of traditional stablecoins with unparalleled transactional confidentiality, bitUSD addresses the critical market need for privacy in DeFi. </p>",
       hide: true,
     },
     {
@@ -98,7 +98,7 @@ export default function Home() {
             <div className={styles.bannerTxt}>
               <h2>bitUSD Privacy Focused Omnichain Stablecoin</h2>
               <p>
-                The first privacy-focused stablecoin built on Oasis Sapphire EVM
+                The first privacy-focused stablecoin built on zkBTC
                 Decentralised, Confidential and Democratized
               </p>
 
@@ -174,13 +174,13 @@ export default function Home() {
                 <br />
                 Stablecoin <span>bitUSD</span>
                 <br />
-                Revolution on Oasis Sapphire
+                Revolution on zkBTC
               </h2>
               <div className={styles.redBorder}>
                 <p style={{ marginBottom: "30px" }}>
-                  bitUSD, built on Oasis Sapphire EVM, is the first
-                  privacy-focused stablecoin, bridging the gap between privacy
-                  and stability in DeFi.{" "}
+                  bitUSD, built on zkBTC EVM, is the first privacy-focused
+                  stablecoin, bridging the gap between privacy and stability in
+                  DeFi.{" "}
                 </p>
                 <p>
                   Set to revolutionize the $3 trillion stablecoin market, bitUSD
@@ -191,17 +191,17 @@ export default function Home() {
               </div>
             </div>
             <div className={styles.vUSD}>
-              <img
+              {/* <img
                 className={styles.img01}
                 src="/home/vusd_bg.svg"
                 alt="bitUSD"
-              />
+              /> */}
               <img
                 className={styles.img03}
-                src="/home/vusd_big.svg"
+                src="/dapp/bitUSD.svg"
                 alt="bitUSD"
               />
-              <img className={styles.img02} src="/home/vusd.svg" alt="bitUSD" />
+              {/* <img className={styles.img02} src="/home/vusd.svg" alt="bitUSD" /> */}
             </div>
           </div>
           <div className={styles.faq} id="faq">

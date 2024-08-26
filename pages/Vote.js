@@ -17,15 +17,15 @@ export default function Vote() {
     incentiveVotingQuery,
     tokenLockerQuery,
     boost,
-    vineVaultQuery,
+    bitVaultQuery,
     formatNum,
-    vinePrice,
+    bitPrice,
   } = useContext(UserContext);
   const [openDebt, setOpenDebt] = useState(false);
-  const [openvUSD, setOpenvUSD] = useState(false);
+  const [openbitUSD, setOpenbitUSD] = useState(false);
   const [openPool, setOpenPool] = useState(false);
-  const [openVineLp, setOpenVineLp] = useState(false);
-  const [openvUSDLp, setOpenvUSDLp] = useState(false);
+  const [openBitLp, setOpenBitLp] = useState(false);
+  const [openbitUSDLp, setOpenbitUSDLp] = useState(false);
 
   const onKeyDown = async (e) => {
     const invalidChars = ["-", "+", "e", "E"];
@@ -104,7 +104,7 @@ export default function Vote() {
       const votes = await incentiveVotingQuery.getAccountCurrentVotes(account);
       setVotes(votes);
     }
-    const getWeek = await vineVaultQuery.getWeek();
+    const getWeek = await bitVaultQuery.getWeek();
     setWeek(Number(getWeek._hex));
 
     const totalWeight = await tokenLockerQuery.getTotalWeight();
@@ -116,7 +116,7 @@ export default function Vote() {
 
     const getTotalWeightAt = await incentiveVotingQuery.getTotalWeightAt(week);
     setTotalPoint(Number(getTotalWeightAt._hex));
-    const currentWeeklyEmissions = await vineVaultQuery.weeklyEmissions(week);
+    const currentWeeklyEmissions = await bitVaultQuery.weeklyEmissions(week);
     setCurrentWeeklyEmissions(Number(currentWeeklyEmissions._hex));
     setTotalWeightAtData({
       ...totalWeightAtData,
@@ -127,7 +127,7 @@ export default function Vote() {
       current4: await getReceiverWeightAt(4, week),
     });
     if (week > 0) {
-      const upperWeeklyEmissions = await vineVaultQuery.weeklyEmissions(
+      const upperWeeklyEmissions = await bitVaultQuery.weeklyEmissions(
         week - 1
       );
       setUpperWeeklyEmissions(Number(upperWeeklyEmissions._hex));
@@ -356,7 +356,7 @@ export default function Vote() {
               <span>Your Boost</span>
               <div>
                 <p>{boost}x</p>
-                {/* <span className={styles.span}>Up to 0.00 $VINE</span> */}
+                {/* <span className={styles.span}>Up to 0.00 $bitGOV</span> */}
               </div>
             </div>
             <div className={styles.value}>
@@ -364,7 +364,7 @@ export default function Vote() {
               <div>
                 <p>{formatNum(accountLock)}</p>
                 <span className={styles.span}>
-                  ≈ ${formatNum(Number(accountLock) * vinePrice)}
+                  ≈ ${formatNum(Number(accountLock) * bitPrice)}
                 </span>
               </div>
             </div>
@@ -442,7 +442,7 @@ export default function Vote() {
                     onClick={() => setOpenDebt(!openDebt)}
                   >
                     <div>
-                      <img src="/dapp/vUSD.svg" alt="icon" />
+                      <img src="/dapp/bitUSD.svg" alt="icon" />
                       bitUSD Debt
                     </div>
                     <div className={styles.center}>
@@ -527,11 +527,11 @@ export default function Vote() {
                 <div className={styles.tab}>
                   <div
                     className={`${styles.tabItem} ${styles.tabItem2}`}
-                    style={openvUSD ? { background: "#111" } : null}
-                    onClick={() => setOpenvUSD(!openvUSD)}
+                    style={openbitUSD ? { background: "#111" } : null}
+                    onClick={() => setOpenbitUSD(!openbitUSD)}
                   >
                     <div>
-                      <img src="/dapp/vUSD.svg" alt="icon" />
+                      <img src="/dapp/bitUSD.svg" alt="icon" />
                       bitUSD Minting
                     </div>
                     <div className={styles.center}>
@@ -576,7 +576,9 @@ export default function Vote() {
                                         </div> */}
                     <div
                       className={styles.center}
-                      style={openvUSD ? { transform: "rotate(180deg)" } : null}
+                      style={
+                        openbitUSD ? { transform: "rotate(180deg)" } : null
+                      }
                     >
                       <img
                         src="/dapp/arr_bottom.svg"
@@ -586,7 +588,7 @@ export default function Vote() {
                     </div>
                   </div>
 
-                  {openvUSD ? (
+                  {openbitUSD ? (
                     <div className={styles.main}>
                       <div className={styles.action}>
                         <span>Action</span>
@@ -620,7 +622,7 @@ export default function Vote() {
                     onClick={() => setOpenPool(!openPool)}
                   >
                     <div>
-                      <img src="/dapp/vUSD.svg" alt="icon" />
+                      <img src="/dapp/bitUSD.svg" alt="icon" />
                       Stability Pool
                     </div>
                     <div className={styles.center}>
@@ -705,12 +707,12 @@ export default function Vote() {
                 <div className={styles.tab}>
                   <div
                     className={`${styles.tabItem} ${styles.tabItem2}`}
-                    style={openVineLp ? { background: "#111" } : null}
-                    onClick={() => setOpenVineLp(!openVineLp)}
+                    style={openBitLp ? { background: "#111" } : null}
+                    onClick={() => setOpenBitLp(!openBitLp)}
                   >
                     <div>
-                      <img src="/dapp/vineArose.svg" alt="icon" />
-                      bitGOV/ROSE LP
+                      <img src="/dapp/bitAwbtc.svg" alt="icon" />
+                      bitGOV/wBTC LP
                     </div>
                     <div className={styles.center}>
                       {(votes3 / 100).toFixed(2)}%
@@ -751,9 +753,7 @@ export default function Vote() {
                     </div>
                     <div
                       className={styles.center}
-                      style={
-                        openVineLp ? { transform: "rotate(180deg)" } : null
-                      }
+                      style={openBitLp ? { transform: "rotate(180deg)" } : null}
                     >
                       <img
                         src="/dapp/arr_bottom.svg"
@@ -763,7 +763,7 @@ export default function Vote() {
                     </div>
                   </div>
 
-                  {openVineLp ? (
+                  {openBitLp ? (
                     <div className={styles.main}>
                       <div className={styles.action}>
                         <span>Action</span>
@@ -793,8 +793,8 @@ export default function Vote() {
                 <div className={styles.tab}>
                   <div
                     className={`${styles.tabItem} ${styles.tabItem2}`}
-                    style={openvUSDLp ? { background: "#111" } : null}
-                    onClick={() => setOpenvUSDLp(!openvUSDLp)}
+                    style={openbitUSDLp ? { background: "#111" } : null}
+                    onClick={() => setOpenbitUSDLp(!openbitUSDLp)}
                   >
                     <div>
                       <img src="/dapp/usdc.svg" alt="icon" />
@@ -840,7 +840,7 @@ export default function Vote() {
                     <div
                       className={styles.center}
                       style={
-                        openvUSDLp ? { transform: "rotate(180deg)" } : null
+                        openbitUSDLp ? { transform: "rotate(180deg)" } : null
                       }
                     >
                       <img
@@ -851,7 +851,7 @@ export default function Vote() {
                     </div>
                   </div>
 
-                  {openvUSDLp ? (
+                  {openbitUSDLp ? (
                     <div className={styles.main}>
                       <div className={styles.action}>
                         <span>Action</span>
@@ -881,7 +881,7 @@ export default function Vote() {
             </div>
 
             <div className={styles.button}>
-              {/* <p className={styles.p}>Lock some $VINE to start voting</p> */}
+              {/* <p className={styles.p}>Lock some $bitGOV to start voting</p> */}
               <p className={styles.p}>
                 To participate in voting, a 26-week lock-up period is required.
               </p>

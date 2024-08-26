@@ -16,18 +16,18 @@ export default function Reward() {
     setCurrentState,
     setCurrentWaitInfo,
     stabilityPoolQuery,
-    vineLpTokenPoolQuery,
-    vineVaultMain,
+    bitLpTokenPoolQuery,
+    bitVaultMain,
     troveManager,
     stabilityPool,
-    VineLpTokenPool,
-    vinePrice,
+    BitLpTokenPool,
+    bitPrice,
     usdcPoolQuery,
     usdcPool,
     vaultEarned,
-    vineRoseEarned,
+    bitWbtcEarned,
     stabilityEarned,
-    vusdUsdcEarned,
+    bitusdUsdcEarned,
   } = useContext(UserContext);
 
   const [openVault, setOpenVault] = useState(false);
@@ -41,7 +41,7 @@ export default function Reward() {
   const [accountDeposits, setAccountDeposits] = useState(0);
   const [unStakeLpBalance2, setUnStakeLpBalance2] = useState(0);
   const queryData = async () => {
-    // const deposit1 = await vineLpTokenPoolQuery.balanceOf(account);
+    // const deposit1 = await bitLpTokenPoolQuery.balanceOf(account);
     // setUnStakeLpBalance(new BigNumber(deposit1._hex).div(1e18).toFixed());
     const deposit2 = await stabilityPoolQuery.accountDeposits(account);
     setAccountDeposits(new BigNumber(deposit2[0]._hex).div(1e18).toFixed());
@@ -65,16 +65,17 @@ export default function Reward() {
 
   const [showClaim, setShowClaim] = useState(false);
   useEffect(() => {
-    if (vaultEarned || vineRoseEarned || stabilityEarned || vusdUsdcEarned) {
+    if (vaultEarned || bitWbtcEarned || stabilityEarned || bitusdUsdcEarned) {
       setShowClaim(true);
     }
-  }, [vaultEarned, vineRoseEarned, stabilityEarned, vusdUsdcEarned]);
+  }, [vaultEarned, bitWbtcEarned, stabilityEarned, bitusdUsdcEarned]);
 
   const [totalEarned, setTotalEarned] = useState(0);
   useEffect(() => {
-    const num = vaultEarned + vineRoseEarned + stabilityEarned + vusdUsdcEarned;
+    const num =
+      vaultEarned + bitWbtcEarned + stabilityEarned + bitusdUsdcEarned;
     setTotalEarned(num);
-  }, [vaultEarned, vineRoseEarned, stabilityEarned, vusdUsdcEarned]);
+  }, [vaultEarned, bitWbtcEarned, stabilityEarned, bitusdUsdcEarned]);
 
   const ClaimAll = async () => {
     if (!showClaim) {
@@ -87,15 +88,15 @@ export default function Reward() {
     if (stabilityEarned) {
       claimArr.push(stabilityPool);
     }
-    if (vineRoseEarned) {
-      claimArr.push(VineLpTokenPool);
+    if (bitWbtcEarned) {
+      claimArr.push(BitLpTokenPool);
     }
-    if (vusdUsdcEarned) {
+    if (bitusdUsdcEarned) {
       claimArr.push(usdcPool);
     }
     try {
       // console.log(account, "0x0000000000000000000000000000000000000000", claimArr, 10)
-      const tx = await vineVaultMain.batchClaimRewards(
+      const tx = await bitVaultMain.batchClaimRewards(
         account,
         "0x0000000000000000000000000000000000000000",
         claimArr,
@@ -172,9 +173,9 @@ export default function Reward() {
                             <span>Your Deposits</span>
                             <div className={styles.imgtype}>
                                 <p>{Number(debt.toFixed(4)).toLocaleString()}</p>
-                                <img src='/dapp/vUSD.svg' alt='vUSD' />
+                                <img src='/dapp/bitUSD.svg' alt='bitUSD' />
                                 <p>
-                                    vUSD
+                                    bitUSD
                                 </p>
                             </div>
                         </div>
@@ -182,7 +183,7 @@ export default function Reward() {
                             <span>Your Boost</span>
                             <div>
                                 <p>0.00x</p>
-                                <span className={styles.span}>Up to 0.00 $VINE</span>
+                                <span className={styles.span}>Up to 0.00 $bitGOV</span>
                             </div>
                         </div>
                     </div> */}
@@ -200,7 +201,7 @@ export default function Reward() {
             <div className={styles.earned}>
               <p className="font_12_73">Earned</p>
               <div className={styles.coinValue}>
-                <img src="/dapp/vine.svg" alt="" />
+                <img src="/dapp/bit.svg" alt="" />
                 <div>
                   <p>
                     {Number(totalEarned.toFixed(4)).toLocaleString()} $bitGOV
@@ -208,7 +209,7 @@ export default function Reward() {
                   <span>
                     ≈ $
                     {Number(
-                      Number(totalEarned * Number(vinePrice)).toFixed(4)
+                      Number(totalEarned * Number(bitPrice)).toFixed(4)
                     ).toLocaleString()}
                   </span>
                 </div>
@@ -237,7 +238,7 @@ export default function Reward() {
               onClick={() => setOpenVault(!openVault)}
             >
               <div>
-                <img className={styles.logo} src="/dapp/vine.svg" alt="rose" />
+                <img className={styles.logo} src="/dapp/bit.svg" alt="wbtc" />
                 <p>Vault</p>
               </div>
               <div onClick={cancelBubble.bind(this)}>
@@ -269,8 +270,8 @@ export default function Reward() {
                   </p>
                 </div>
                 {/* <div>
-                                <span className='font_12_gray'>Locked $VINE</span>
-                                <p className='font_14'>0 $VINE</p>
+                                <span className='font_12_gray'>Locked $bitGOV</span>
+                                <p className='font_14'>0 $bitGOV</p>
                             </div> */}
               </div>
             ) : null}
@@ -281,7 +282,11 @@ export default function Reward() {
               onClick={() => setOpenPool(!openPool)}
             >
               <div>
-                <img className={styles.logo} src="/dapp/vUSD.svg" alt="rose" />
+                <img
+                  className={styles.logo}
+                  src="/dapp/bitUSD.svg"
+                  alt="wbtc"
+                />
                 <p>Stability Pool</p>
               </div>
               <div onClick={cancelBubble.bind(this)}>
@@ -317,8 +322,8 @@ export default function Reward() {
                   </p>
                 </div>
                 {/* <div>
-                                <span className='font_12_gray'>Locked $VINE</span>
-                                <p className='font_14'>0 $VINE</p>
+                                <span className='font_12_gray'>Locked $bitGOV</span>
+                                <p className='font_14'>0 $bitGOV</p>
                             </div> */}
               </div>
             ) : null}
@@ -328,13 +333,13 @@ export default function Reward() {
               <div>
                 <img
                   className={styles.logo}
-                  src="/dapp/vineArose.svg"
-                  alt="rose"
+                  src="/dapp/bitArose.svg"
+                  alt="wbtc"
                 />
                 <p>bitGOV/ROSE LP</p>
               </div>
               <div onClick={cancelBubble.bind(this)}>
-                {/* <span className={vineLpTokenNum ? 'button_border' : 'button_border disable'} onClick={() => Claim(vineLpTokenPoolMain, vineLpTokenNum)}>
+                {/* <span className={bitLpTokenNum ? 'button_border' : 'button_border disable'} onClick={() => Claim(bitLpTokenPoolMain, bitLpTokenNum)}>
                                     Claim
                                 </span> */}
                 <img
@@ -361,12 +366,12 @@ export default function Reward() {
                 <div>
                   <span className="font_12_gray">Earned $bitGOV</span>
                   <p className="font_14">
-                    {Number(vineRoseEarned.toFixed(4)).toLocaleString()} $bitGOV
+                    {Number(bitWbtcEarned.toFixed(4)).toLocaleString()} $bitGOV
                   </p>
                 </div>
                 {/* <div>
-                                <span className='font_12_gray'>Locked $VINE</span>
-                                <p className='font_14'>0 $VINE</p>
+                                <span className='font_12_gray'>Locked $bitGOV</span>
+                                <p className='font_14'>0 $bitGOV</p>
                             </div> */}
               </div>
             ) : null}
@@ -377,11 +382,11 @@ export default function Reward() {
               onClick={() => setOpenusdcLp(!openusdcLp)}
             >
               <div>
-                <img className={styles.logo} src="/dapp/usdc.svg" alt="rose" />
+                <img className={styles.logo} src="/dapp/usdc.svg" alt="wbtc" />
                 <p>bitUSD/USDC LP</p>
               </div>
               <div onClick={cancelBubble.bind(this)}>
-                {/* <span className={vineLpTokenNum ? 'button_border' : 'button_border disable'} onClick={() => Claim(vineLpTokenPoolMain, vineLpTokenNum)}>
+                {/* <span className={bitLpTokenNum ? 'button_border' : 'button_border disable'} onClick={() => Claim(bitLpTokenPoolMain, bitLpTokenNum)}>
                                     Claim
                                 </span> */}
                 <img
@@ -408,12 +413,13 @@ export default function Reward() {
                 <div>
                   <span className="font_12_gray">Earned $bitGOV</span>
                   <p className="font_14">
-                    {Number(vusdUsdcEarned.toFixed(4)).toLocaleString()} $bitGOV
+                    {Number(bitusdUsdcEarned.toFixed(4)).toLocaleString()}{" "}
+                    $bitGOV
                   </p>
                 </div>
                 {/* <div>
-                                <span className='font_12_gray'>Locked $VINE</span>
-                                <p className='font_14'>0 $VINE</p>
+                                <span className='font_12_gray'>Locked $bitGOV</span>
+                                <p className='font_14'>0 $bitGOV</p>
                             </div> */}
               </div>
             ) : null}
@@ -425,7 +431,7 @@ export default function Reward() {
           <div className="info infoNoPadding">
             <div className="infoTitle">
               <div>
-                <img className="vUSD" src="/dapp/vUSD.svg" alt="vUSD" />
+                <img className="bitUSD" src="/dapp/bitUSD.svg" alt="bitUSD" />
                 <p>Lock $bitGOV</p>
               </div>
               <div className="close">

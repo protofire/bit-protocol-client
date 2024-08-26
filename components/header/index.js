@@ -25,7 +25,7 @@ export default function Header(props) {
     infuraRPC,
     idovestingQuery,
     idovestingMain,
-    sapphireProviderSigner,
+    ethProviderSigner,
     troveManagerGetters,
     debtToken,
     signInAuth,
@@ -82,27 +82,6 @@ export default function Header(props) {
         } else if (e.code === 4001) return;
       }
     }
-
-    // if (window.ethereum) {
-    //     try {
-    //         await window.ethereum.request({
-    //             method: 'wallet_addEthereumChain',
-    //             params: [{
-    //                 chainId: '0x5afe',
-    //                 chainName: 'Oasis Sapphire',
-    //                 nativeCurrency: {
-    //                     name: 'ROSE',
-    //                     symbol: 'ROSE',
-    //                     decimals: 18
-    //                 },
-    //                 rpcUrls: ['https://sapphire.oasis.io'],
-    //             }]
-
-    //         });
-    //     } catch (addError) {
-    //         console.error(addError);
-    //     }
-    // }
   };
   useEffect(() => {
     changeNetWork();
@@ -151,7 +130,7 @@ export default function Header(props) {
   const signIn = async () => {
     const user = account;
     const time = Math.floor(new Date().getTime() / 1000);
-    const signature = await sapphireProviderSigner._signTypedData(
+    const signature = await ethProviderSigner._signTypedData(
       {
         name: "VineSignature.SignIn",
         version: "1",
@@ -182,7 +161,7 @@ export default function Header(props) {
   const signInToken = async () => {
     const user = account;
     const time = Math.floor(new Date().getTime() / 1000);
-    const signature = await sapphireProviderSigner._signTypedData(
+    const signature = await ethProviderSigner._signTypedData(
       {
         name: "VineSignature.SignIn",
         version: "1",
@@ -368,8 +347,7 @@ export default function Header(props) {
       <div className={styles.head}>
         <div className={styles.headMain} id="vine">
           <Link href="/" className={styles.logo}>
-            <img src="/logo.png" alt="logo"></img>
-            Bit Protocol
+            <img src="/bitusd-logo.svg" alt="logo" />
             {type == "dapp" ? (
               <span className="tvl">TVL:${formatNum(totalTvl)}</span>
             ) : null}
@@ -397,20 +375,20 @@ export default function Header(props) {
               >
                 <span>Earn</span>
               </Link>
-              <Link
+              {/* <Link
                 className={dappMenu == "Reward" ? `${styles.active}` : null}
                 href="/Reward"
                 rel="nofollow noopener noreferrer"
               >
                 <span>Reward</span>
-              </Link>
-              <Link
+              </Link> */}
+              {/* <Link
                 className={dappMenu == "Lock" ? `${styles.active}` : null}
                 href="/Lock"
                 rel="nofollow noopener noreferrer"
               >
                 <span>Lock</span>
-              </Link>
+              </Link> */}
               <Link
                 className={dappMenu == "Redeem" ? `${styles.active}` : null}
                 href="/Redeem"
@@ -418,13 +396,13 @@ export default function Header(props) {
               >
                 <span>Redeem</span>
               </Link>
-              <Link
+              {/* <Link
                 className={dappMenu == "Vote" ? `${styles.active}` : null}
                 href="/Vote"
                 rel="nofollow noopener noreferrer"
               >
                 <span>Vote</span>
-              </Link>
+              </Link> */}
             </div>
           ) : (
             <div className={styles.list}>
