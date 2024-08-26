@@ -190,18 +190,12 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className={styles.vUSD}>
-              {/* <img
-                className={styles.img01}
-                src="/home/vusd_bg.svg"
-                alt="bitUSD"
-              /> */}
+            <div className={styles.bitUSD}>
               <img
                 className={styles.img03}
                 src="/dapp/bitUSD.svg"
                 alt="bitUSD"
               />
-              {/* <img className={styles.img02} src="/home/vusd.svg" alt="bitUSD" /> */}
             </div>
           </div>
           <div className={styles.faq} id="faq">

@@ -32,7 +32,7 @@
           line-height: 28px;
           margin-top: 24px;
           margin-bottom: 28px;
-          // font-family: "Inter";
+          // font-family: "DMSans";
         }
 
         div {
@@ -138,7 +138,7 @@
           font-style: normal;
           font-weight: 600;
           line-height: 24px;
-          // font-family: "Inter";
+          // font-family: "DMSans";
         }
       }
     }
@@ -170,13 +170,13 @@
           color: #f2f2f2;
           line-height: 28px;
           letter-spacing: -0.4px;
-          // font-family: 'Inter';
+          // font-family: 'DMSans';
           font-size: 20px;
           font-weight: 600;
         }
       }
 
-      .vUSD {
+      .bitUSD {
         width: 400px;
         height: 400px;
         display: flex;
@@ -193,11 +193,11 @@
           position: absolute;
           z-index: 1;
           width: 350px;
-          animation: vUSDrotate 10s linear infinite;
-          -webkit-animation: vUSDrotate 10s linear infinite;
+          animation: bitUSDrotate 10s linear infinite;
+          -webkit-animation: bitUSDrotate 10s linear infinite;
         }
 
-        @keyframes vUSDrotate {
+        @keyframes bitUSDrotate {
           0% {
             transform: rotate(0);
           }
@@ -246,7 +246,7 @@
               line-height: 26px;
               // font-weight: 600;
               line-height: 24px;
-              // font-family: "Inter";
+              // font-family: "DMSans";
               // color: #B4B4B4;
             }
           }
@@ -358,7 +358,7 @@
         margin-top: 30px;
         gap: 40px;
 
-        .vUSD {
+        .bitUSD {
           width: 95%;
           margin: auto;
 

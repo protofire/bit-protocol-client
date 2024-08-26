@@ -214,7 +214,7 @@ export default function Redeem() {
       <div className="dappBg">
         <div className={`${styles.Redeem} ${"dappMain"}`}>
           <div className={styles.title}>
-            <p>Redeem bitUSD for $ROSE</p>
+            <p>Redeem bitUSD for $wBTC</p>
             <span>1 bitUSD is always redeemable for $1 of collateral.</span>
           </div>
           <div className={styles.redeemMain}>
@@ -277,11 +277,11 @@ export default function Redeem() {
                 </div>
                 <div className={styles.dataItem}>
                   <p>Redemption Fee Amount</p>
-                  <span>{formatNum(feeAmount)} ROSE</span>
+                  <span>{formatNum(feeAmount)} wBTC</span>
                 </div>
                 <div className={styles.dataItem}>
                   <p>Expected Collateral Received</p>
-                  <span>{formatNum(expectedCollateralReceived)} ROSE</span>
+                  <span>{formatNum(expectedCollateralReceived)} wBTC</span>
                 </div>
                 <div className={styles.dataItem}>
                   <p>Value of Collateral Received</p>

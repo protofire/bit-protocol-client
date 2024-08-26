@@ -1,90 +1,90 @@
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Thin.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Thin.ttf);
   font-weight: 100;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-ExtraLight.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-ExtraLight.ttf);
   font-weight: 200;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Light.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Light.ttf);
   font-weight: 300;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Regular.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Regular.ttf);
   font-weight: 400;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Medium.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Medium.ttf);
   font-weight: 500;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-SemiBold.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-SemiBold.ttf);
   font-weight: 600;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Bold.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Bold.ttf);
   font-weight: 700;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-ExtraBold.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-ExtraBold.ttf);
   font-weight: 800;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Black.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Black.ttf);
   font-weight: 900;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Regular.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Regular.ttf);
   font-weight: 400;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Medium.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Medium.ttf);
   font-weight: 500;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-SemiBold.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-SemiBold.ttf);
   font-weight: 600;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Bold.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Bold.ttf);
   font-weight: 700;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-ExtraBold.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-ExtraBold.ttf);
   font-weight: 800;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url(./font/Inter-Black.ttf);
+  font-family: "DMSans";
+  src: url(./font/DMSans-Black.ttf);
   font-weight: 900;
 }
 
@@ -92,7 +92,7 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: "Inter", sans-serif;
+  font-family: "DMSans", sans-serif;
   background: #010101;
   color: #f2f2f2;
   overflow-x: hidden;
@@ -283,7 +283,7 @@ a {
     background: #fff0;
     border: none;
     color: #fff;
-    font-family: "Inter";
+    font-family: "DMSans";
     width: 100%;
   }
 
@@ -325,7 +325,7 @@ a {
   input {
     background: #fff0;
     border: none;
-    font-family: "Inter";
+    font-family: "DMSans";
     width: 100%;
     font-size: 18px;
     font-weight: 500;
@@ -369,7 +369,7 @@ a {
   input {
     background: #fff0;
     border: none;
-    font-family: "Inter";
+    font-family: "DMSans";
     width: 100%;
     font-size: 18px;
     font-weight: 800;
@@ -793,7 +793,7 @@ input[type="radio"]:checked::after {
       justify-content: space-between;
       align-items: center;
 
-      .vUSD {
+      .bitUSD {
         width: 48px;
       }
 

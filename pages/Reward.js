@@ -333,10 +333,10 @@ export default function Reward() {
               <div>
                 <img
                   className={styles.logo}
-                  src="/dapp/bitArose.svg"
+                  src="/dapp/bitAwBTC.svg"
                   alt="wbtc"
                 />
-                <p>bitGOV/ROSE LP</p>
+                <p>bitGOV/wBTC LP</p>
               </div>
               <div onClick={cancelBubble.bind(this)}>
                 {/* <span className={bitLpTokenNum ? 'button_border' : 'button_border disable'} onClick={() => Claim(bitLpTokenPoolMain, bitLpTokenNum)}>
@@ -447,12 +447,12 @@ export default function Reward() {
                 <span>Enter amount</span>
                 <span style={{ fontSize: "12px" }}>
                   Balance {Number(Number(balance).toFixed(4)).toLocaleString()}{" "}
-                  $ROSE
+                  $wBTC
                 </span>
               </div>
               <div className="inputTxt3">
                 <input type="number" placeholder="0"></input>
-                <span>$ROSE</span>
+                <span>$wBTC</span>
               </div>
               <div className="changeBalance">
                 <span>25%</span>

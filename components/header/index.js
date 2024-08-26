@@ -127,64 +127,7 @@ export default function Header(props) {
 
   const [showSignIn, setShowSignIn] = useState(false);
 
-  const signIn = async () => {
-    const user = account;
-    const time = Math.floor(new Date().getTime() / 1000);
-    const signature = await ethProviderSigner._signTypedData(
-      {
-        name: "VineSignature.SignIn",
-        version: "1",
-        chainId: 23294,
-        verifyingContract: troveManagerGetters,
-      },
-      {
-        SignIn: [
-          { name: "user", type: "address" },
-          { name: "time", type: "uint32" },
-        ],
-      },
-      {
-        user: user,
-        time: time,
-      }
-    );
-    const rsv = ethers.utils.splitSignature(signature);
-    const auth = { user, time, rsv };
-    setShowSignIn(false);
-    localStorage.setItem("signInAuth", JSON.stringify(auth));
-    setSignInAuth(auth);
-    setShowSignInToken(true);
-  };
-
   const [showSignInToken, setShowSignInToken] = useState(false);
-
-  const signInToken = async () => {
-    const user = account;
-    const time = Math.floor(new Date().getTime() / 1000);
-    const signature = await ethProviderSigner._signTypedData(
-      {
-        name: "VineSignature.SignIn",
-        version: "1",
-        chainId: 23294,
-        verifyingContract: debtToken,
-      },
-      {
-        SignIn: [
-          { name: "user", type: "address" },
-          { name: "time", type: "uint32" },
-        ],
-      },
-      {
-        user: user,
-        time: time,
-      }
-    );
-    const rsv = ethers.utils.splitSignature(signature);
-    const auth = { user, time, rsv };
-    setShowSignInToken(false);
-    localStorage.setItem("signInAuthToken", JSON.stringify(auth));
-    setSignInAuthToken(auth);
-  };
 
   useEffect(() => {
     if (account && menu !== "Home") {
@@ -407,11 +350,7 @@ export default function Header(props) {
           ) : (
             <div className={styles.list}>
               <span onClick={() => goMenu("works")}>How it works</span>
-              <Link
-                target="_blank"
-                href="https://vine-money.gitbook.io/vine-money/"
-                rel="nofollow noopener noreferrer"
-              >
+              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
                 <span>Docs</span>
               </Link>
               <div className="menu-container">
@@ -419,28 +358,28 @@ export default function Header(props) {
                 <div className="dropdown-menu">
                   <Link
                     target="_blank"
-                    href="https://twitter.com/Vine_Money"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Twitter/X
                   </Link>
                   <Link
                     target="_blank"
-                    href="https://t.me/vinemoneyofficial"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Community
                   </Link>
                   <Link
                     target="_blank"
-                    href="https://t.me/vinemoneyann"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Announcements
                   </Link>
                   <Link
                     target="_blank"
-                    href="https://medium.com/@vine_money"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Medium
@@ -467,11 +406,7 @@ export default function Header(props) {
                   </Link>
                 </div>
               </div>
-              <Link
-                target="_blank"
-                href="/Vine_Money_Disclaimer.pdf"
-                rel="nofollow noopener noreferrer"
-              >
+              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
                 <span>Disclaimer</span>
               </Link>
             </div>
@@ -629,11 +564,7 @@ export default function Header(props) {
               How it works
             </div>
             <div className={styles.h5Item}>
-              <Link
-                target="_blank"
-                href="https://vine-money.gitbook.io/vine-money/"
-                rel="nofollow noopener noreferrer"
-              >
+              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
                 <span>Docs</span>
               </Link>
             </div>
@@ -643,7 +574,7 @@ export default function Header(props) {
                 <div>
                   <Link
                     target="_blank"
-                    href="https://twitter.com/Vine_Money"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Twitter/X
@@ -652,7 +583,7 @@ export default function Header(props) {
                 <div>
                   <Link
                     target="_blank"
-                    href="https://t.me/vinemoneyofficial"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Community
@@ -661,7 +592,7 @@ export default function Header(props) {
                 <div>
                   <Link
                     target="_blank"
-                    href="https://t.me/vinemoneyann"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Announcements
@@ -670,7 +601,7 @@ export default function Header(props) {
                 <div>
                   <Link
                     target="_blank"
-                    href="https://medium.com/@vine_money"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Medium
@@ -682,11 +613,7 @@ export default function Header(props) {
               FAQ
             </div>
             <div className={styles.h5Item}>
-              <Link
-                target="_blank"
-                href="/Vine_Money_Disclaimer.pdf"
-                rel="nofollow noopener noreferrer"
-              >
+              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
                 <span>Disclaimer</span>
               </Link>
             </div>
@@ -770,7 +697,7 @@ export default function Header(props) {
           <div className="info infoNoPadding">
             <div className="infoTitle">
               <div>
-                <img className="vUSD" src="/dapp/vUSD.svg" alt="vUSD" />
+                <img className="bitUSD" src="/dapp/bitUSD.svg" alt="bitUSD" />
                 <p>Claim $bitGOV</p>
               </div>
               <div className="close">

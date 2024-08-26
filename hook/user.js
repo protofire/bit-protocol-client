@@ -53,7 +53,7 @@ export const UserContext = createContext({
   incentiveVoting: "",
   idovesting: "",
   bitVault: "",
-  VUSDUSDCLP: "",
+  BITUSDUSDCLP: "",
   usdcPool: "",
 
   BorrowerOperationsAbi: "",
@@ -109,9 +109,9 @@ export const UserContext = createContext({
   idovestingMain: "",
   bitVaultMain: "",
   bitVaultQuery: "",
-  VUSDUSDCLPQuery: "",
+  BITUSDUSDCLPQuery: "",
   usdcPoolQuery: "",
-  VUSDUSDCLPMain: "",
+  BITUSDUSDCLPMain: "",
   usdcPoolMain: "",
 
   status: 0,
@@ -176,7 +176,7 @@ export const UserContextProvider = ({ children }) => {
   const incentiveVoting = "0x213EeedC618388AbBd9bb79F660e88607D3067a4";
   const idovesting = "0x1E659F0704b2BC354b4CF1D21A2638C9795FcaA6"; //iDOTokenVesting
   const bitVault = "0xF6d761207c13c2aD546682650a8B383E73f2A57E";
-  const VUSDUSDCLP = "0x0000000000000000000000000000000000000000";
+  const BITUSDUSDCLP = "0x0000000000000000000000000000000000000000";
   const usdcPool = "0x0000000000000000000000000000000000000000";
   const wBtc = "0xB5EA3151e1edED183CC9571916B435b6B188D508";
 
@@ -253,7 +253,7 @@ export const UserContextProvider = ({ children }) => {
   const [idovestingQuery, setIdovestingQuery] = useState(null);
   const [bitVaultQuery, setBitVaultQuery] = useState(null);
 
-  const [VUSDUSDCLPQuery, setVUSDUSDCLPQuery] = useState(null);
+  const [BITUSDUSDCLPQuery, setBITUSDUSDCLPQuery] = useState(null);
   const [usdcPoolQuery, setusdcPoolQuery] = useState(null);
   const [wBtcQuery, setWbtcQuery] = useState(null);
   // const [borrowerOperationsQuery, setBorrowerOperationsQuery] = useState(null);
@@ -302,8 +302,8 @@ export const UserContextProvider = ({ children }) => {
       );
       setBitVaultQuery(new ethers.Contract(bitVault, bitVaultAbi, ethProvider));
 
-      setVUSDUSDCLPQuery(
-        new ethers.Contract(VUSDUSDCLP, tokenAbi, ethProvider)
+      setBITUSDUSDCLPQuery(
+        new ethers.Contract(BITUSDUSDCLP, tokenAbi, ethProvider)
       );
       setusdcPoolQuery(
         new ethers.Contract(usdcPool, BitLpTokenPoolAbi, ethProvider)
@@ -336,7 +336,7 @@ export const UserContextProvider = ({ children }) => {
   const [bitVaultMain, setBitVaultMain] = useState(null);
   const [wrappedCoin, setWrappedCoin] = useState(null);
 
-  const [VUSDUSDCLPMain, setVUSDUSDCLPMain] = useState(null);
+  const [BITUSDUSDCLPMain, setBITUSDUSDCLPMain] = useState(null);
   const [usdcPoolMain, setusdcPoolMain] = useState(null);
 
   useEffect(() => {
@@ -378,8 +378,8 @@ export const UserContextProvider = ({ children }) => {
       setBitVaultMain(
         new ethers.Contract(bitVault, bitVaultAbi, ethProviderSigner)
       );
-      setVUSDUSDCLPMain(
-        new ethers.Contract(VUSDUSDCLP, tokenAbi, ethProviderSigner)
+      setBITUSDUSDCLPMain(
+        new ethers.Contract(BITUSDUSDCLP, tokenAbi, ethProviderSigner)
       );
       setusdcPoolMain(
         new ethers.Contract(usdcPool, BitLpTokenPoolAbi, ethProviderSigner)
@@ -530,7 +530,7 @@ export const UserContextProvider = ({ children }) => {
         incentiveVoting,
         idovesting,
         bitVault,
-        VUSDUSDCLP,
+        BITUSDUSDCLP,
         usdcPool,
         ethProvider,
         setEthProvider,
@@ -592,9 +592,9 @@ export const UserContextProvider = ({ children }) => {
         idovestingMain,
         mockLpMain,
         bitVaultMain,
-        VUSDUSDCLPQuery,
+        BITUSDUSDCLPQuery,
         usdcPoolQuery,
-        VUSDUSDCLPMain,
+        BITUSDUSDCLPMain,
         usdcPoolMain,
         formatNum,
         vaultEarned,
