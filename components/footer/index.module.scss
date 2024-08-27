@@ -1,61 +1,67 @@
 .footer {
-    background: #0c0b0b;
+  background: #0c0b0b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 228px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  padding: 0 112px;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+
+  .list {
+    margin-top: 32px;
     display: flex;
-    justify-content: space-between;
+    gap: 24px;
+    cursor: pointer;
+
+    span {
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .iconList {
+    display: flex;
+    gap: 16px;
+    cursor: pointer;
+
+    img {
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .pwr {
+    display: flex;
+    justify-content: flex-start;
+    align-content: space-between;
+    gap: 10px;
     align-items: center;
-    height: 228px;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 24px;
-    padding: 0 112px;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 20px;
-
-    .list {
-        margin-top: 32px;
-        display: flex;
-        gap: 24px;
-        cursor: pointer;
-
-        span {
-            &:hover {
-                opacity: 0.8;
-            }
-        }
-    }
-
-    .iconList {
-        display: flex;
-        gap: 16px;
-        cursor: pointer;
-
-        img {
-            &:hover {
-                opacity: 0.8;
-            }
-        }
-    }
+  }
 }
 
+@media screen and (max-width: 798px) {
+  .footer {
+    flex-wrap: wrap;
+    padding: 0 15px;
+    justify-content: center;
 
-
-@media screen and (max-width:798px) {
-    .footer {
-        flex-wrap: wrap;
-        padding: 0 15px;
-        justify-content: center;
-
-        .list {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .list {
+      flex-wrap: wrap;
+      justify-content: center;
     }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
 }

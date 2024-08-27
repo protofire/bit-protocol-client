@@ -6,10 +6,10 @@ import Onboard from "@web3-onboard/core";
 import { UserContextProvider } from "../hook/user";
 
 const ethereumRopsten = {
-  id: "0x19236265",
+  id: "0x21000001",
   token: "Bitcoin",
-  label: "ZkBTC Testnet",
-  rpcUrl: `https://devilmorallyelephant-rpc.eu-north-2.gateway.fm/`,
+  label: "PWR BTC+",
+  rpcUrl: `https://bitcoinplus.pwrlabs.io/`,
 };
 
 const chains = [ethereumRopsten];

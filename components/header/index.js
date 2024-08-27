@@ -51,7 +51,7 @@ export default function Header(props) {
           method: "wallet_switchEthereumChain",
           params: [
             {
-              chainId: "0x12585A9",
+              chainId: "0x1406F41",
             },
           ],
         });
@@ -63,16 +63,14 @@ export default function Header(props) {
               method: "wallet_addEthereumChain",
               params: [
                 {
-                  chainId: "0x12585A9",
-                  chainName: "ZkBTC Testnet",
+                  chainId: "0x1406F41",
+                  chainName: "PWR BTC+",
                   nativeCurrency: {
                     name: "Bitcoin",
                     symbol: "BTC",
                     decimals: 18,
                   },
-                  rpcUrls: [
-                    "https://devilmorallyelephant-rpc.eu-north-2.gateway.fm/",
-                  ],
+                  rpcUrls: ["https://bitcoinplus.pwrlabs.io/"],
                 },
               ],
             });

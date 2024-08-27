@@ -25,7 +25,7 @@ export default function Earn() {
     stabilityPoolMain,
     stabilityPoolQuery,
     bitUSDbalance,
-    wbtcPrice,
+    wBtcPrice,
     totalWbtc,
     debtTokenQuery,
     debt,
@@ -201,7 +201,7 @@ export default function Earn() {
     setbitUSDBaseApr4(bitUSDBaseApr4);
     const bitUSDBaseApr3 =
       (baseAPR3 * 86400 * 365 * bitPrice * 100) /
-      (Number(stabilityPoolBanace) + Number(totalWbtc) * wbtcPrice);
+      (Number(stabilityPoolBanace) + Number(totalWbtc) * wBtcPrice);
     setbitUSDBaseApr3(bitUSDBaseApr3);
   }, [
     bitUSDCirc,
@@ -213,7 +213,7 @@ export default function Earn() {
     lpPrice,
     stabilityPoolBanace,
     totalWbtc,
-    wbtcPrice,
+    wBtcPrice,
     baseAPR4,
     BITUSDLpBanace,
   ]);
@@ -279,7 +279,7 @@ export default function Earn() {
     } else if (typeName == "bitUSD/USDC LP") {
       num = Number(BITUSDLpBanace) * 2;
     } else {
-      num = Number(stabilityPoolBanace) + Number(totalWbtc) * wbtcPrice;
+      num = Number(stabilityPoolBanace) + Number(totalWbtc) * wBtcPrice;
     }
     setTvl(formatNum(num));
   }, [
@@ -287,7 +287,7 @@ export default function Earn() {
     mockLpBanace,
     lpPrice,
     stabilityPoolBanace,
-    wbtcPrice,
+    wBtcPrice,
     totalWbtc,
     BITUSDLpBanace,
   ]);
@@ -805,7 +805,7 @@ export default function Earn() {
                       $
                       {formatNum(
                         Number(stabilityPoolBanace) +
-                          Number(totalWbtc) * wbtcPrice
+                          Number(totalWbtc) * wBtcPrice
                       )}
                     </span>
                   </div>

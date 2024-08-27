@@ -24,6 +24,10 @@ export default function Footer(props) {
               alt="logo"
             ></img>
           </div>
+          <div className={styles.pwr}>
+            Powered by
+            <img src="/home/pwr.svg" alt="pwr" width="135" height="35" />
+          </div>
           <div className={styles.list}>
             <span onClick={() => goMenu("works")}>How it works</span>
             <Link target="_blank" href="" rel="nofollow noopener noreferrer">
