@@ -24,7 +24,7 @@ export default function Vault() {
     deposits,
     pre,
     next,
-    wbtcPrice,
+    wBtcPrice,
     wrappedCoin,
     borrowerOperations,
   } = useContext(UserContext);
@@ -105,14 +105,14 @@ export default function Vault() {
   const [currentRatio, setCurrentRatio] = useState(0);
   const [afterRatio, setAfterRatio] = useState(0);
   useEffect(() => {
-    const ratio1 = ((deposits * wbtcPrice) / debt) * 100 || 0;
+    const ratio1 = ((deposits * wBtcPrice) / debt) * 100 || 0;
     setCurrentRatio(ratio1);
     if (collAmount) {
       const ratio2 =
-        (((deposits + Number(collAmount)) * wbtcPrice) / (debt + 10)) * 100;
+        (((deposits + Number(collAmount)) * wBtcPrice) / (debt + 10)) * 100;
       setAfterRatio(ratio2);
     }
-  }, [collAmount, debt, deposits, wbtcPrice]);
+  }, [collAmount, debt, deposits, wBtcPrice]);
 
   const [showContinue, setShowContinue] = useState(false);
 
@@ -128,9 +128,9 @@ export default function Vault() {
 
   const [withdrawMax, setWithdrawMax] = useState(0);
   useEffect(() => {
-    const value = deposits - ((debt + 2) / wbtcPrice) * 1.5;
+    const value = deposits - ((debt + 2) / wBtcPrice) * 1.5;
     setWithdrawMax(value >= 0 ? value : 0);
-  }, [deposits, wbtcPrice, debt]);
+  }, [deposits, wBtcPrice, debt]);
 
   const Deposit = async () => {
     setShowContinue(false);
@@ -675,7 +675,7 @@ export default function Vault() {
                   <p>Total Value Locked</p>
                   <span>
                     $
-                    {Number((deposits * wbtcPrice).toFixed(4)).toLocaleString()}
+                    {Number((deposits * wBtcPrice).toFixed(4)).toLocaleString()}
                   </span>
                 </div>
                 <div className={styles.dataItem}>

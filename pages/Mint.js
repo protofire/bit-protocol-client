@@ -22,7 +22,7 @@ export default function Mint() {
     deposits,
     pre,
     next,
-    wbtcPrice,
+    wBtcPrice,
   } = useContext(UserContext);
 
   const onKeyDown = async (e) => {
@@ -59,14 +59,14 @@ export default function Mint() {
   useEffect(() => {
     if (collateralRatio && ratioType == "Auto") {
       const max =
-        (Number(deposits + collAmount) * wbtcPrice) / (collateralRatio / 100) -
+        (Number(deposits + collAmount) * wBtcPrice) / (collateralRatio / 100) -
         debt;
       setDebtMax(max);
     } else {
-      const max = (Number(deposits + collAmount) * wbtcPrice) / 1.55 - debt;
+      const max = (Number(deposits + collAmount) * wBtcPrice) / 1.55 - debt;
       setDebtMax(max);
     }
-  }, [collAmount, wbtcPrice, collateralRatio, ratioType]);
+  }, [collAmount, wBtcPrice, collateralRatio, ratioType]);
 
   const [debtAmount, setDebtAmount] = useState("");
   const changeDebtAmount = async (e) => {
@@ -85,14 +85,14 @@ export default function Mint() {
   const [ratio, setRatio] = useState(0);
   const [ratioNew, setRatioNew] = useState(0);
   useEffect(() => {
-    const value = ((deposits * wbtcPrice) / debt) * 100 || 0;
+    const value = ((deposits * wBtcPrice) / debt) * 100 || 0;
 
     setRatio(value);
     if (collateralRatio && ratioType == "Auto") {
       setRatioNew(collateralRatio);
     } else {
       const valueNew =
-        (((deposits + Number(collAmount)) * wbtcPrice) /
+        (((deposits + Number(collAmount)) * wBtcPrice) /
           (debt + Number(debtAmount))) *
         100;
       console.log({
@@ -100,13 +100,13 @@ export default function Mint() {
         collAmount: Number(collAmount),
         value,
         deposits,
-        wbtcPrice,
+        wBtcPrice,
         debt,
         debtAmount: Number(debtAmount),
       });
       setRatioNew(valueNew);
     }
-  }, [collAmount, wbtcPrice, collateralRatio, debtAmount, ratioType]);
+  }, [collAmount, wBtcPrice, collateralRatio, debtAmount, ratioType]);
 
   const changeRatioType = (index) => {
     setRatioType(index);
@@ -119,12 +119,12 @@ export default function Mint() {
     if (collAmount) {
       if (collateralRatio && ratioType == "Auto") {
         const max =
-          (Number(deposits + collAmount) * wbtcPrice) /
+          (Number(deposits + collAmount) * wBtcPrice) /
             (collateralRatio / 100) -
           debt;
         setDebtAmount(max);
       } else {
-        const max = (Number(deposits + collAmount) * wbtcPrice) / 1.55 - debt;
+        const max = (Number(deposits + collAmount) * wBtcPrice) / 1.55 - debt;
         setDebtAmount(max);
       }
     }
@@ -359,7 +359,7 @@ export default function Mint() {
                   <span>
                     $
                     {Number(
-                      (Number(collAmount) * wbtcPrice).toFixed(2)
+                      (Number(collAmount) * wBtcPrice).toFixed(2)
                     ).toLocaleString()}
                   </span>
                 </div>

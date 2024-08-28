@@ -453,7 +453,7 @@ export const UserContextProvider = ({ children }) => {
     setLpPrice(1);
     setBitPrice(1);
 
-    const totalTvl = await ethersProvider.getBalance(borrowerOperations);
+    const totalTvl = await wBtcQuery.balanceOf(troveManager);
     setTotalTvl((Number(totalTvl) / 1e18) * (Number(wBtcPrice) / 1e18));
   };
 

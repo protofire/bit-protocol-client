@@ -16,7 +16,7 @@ export default function Redeem() {
     bitUSDbalance,
     multiCollateralHintHelpersQuery,
     troveManager,
-    wbtcPrice,
+    wBtcPrice,
     sortedTrovesToken,
     troveManagerMain,
     troveManagerQuery,
@@ -71,15 +71,15 @@ export default function Redeem() {
     useState(0);
   useEffect(() => {
     if (amount) {
-      setFeeAmount((Number(amount) / wbtcPrice) * fee);
+      setFeeAmount((Number(amount) / wBtcPrice) * fee);
       setExpectedCollateralReceived(
-        Number(amount) / wbtcPrice - (Number(amount) / wbtcPrice) * fee
+        Number(amount) / wBtcPrice - (Number(amount) / wBtcPrice) * fee
       );
     } else {
       setFeeAmount(0);
       setExpectedCollateralReceived(0);
     }
-  }, [amount, wbtcPrice, fee]);
+  }, [amount, wBtcPrice, fee]);
 
   let timerLoading = useRef(null);
   useEffect(() => {
@@ -127,7 +127,7 @@ export default function Redeem() {
       await multiCollateralHintHelpersQuery.getRedemptionHints(
         troveManager,
         new BigNumber(amount).multipliedBy(1e18).toFixed(),
-        new BigNumber(wbtcPrice).multipliedBy(1e18).toFixed(),
+        new BigNumber(wBtcPrice).multipliedBy(1e18).toFixed(),
         0
       );
     // console.log(Number(redemptionHints.truncatedDebtAmount._hex), Number(new BigNumber(amount).multipliedBy(1e18).toFixed()))
@@ -269,7 +269,7 @@ export default function Redeem() {
               <div className={styles.data} style={{ borderTop: "none" }}>
                 <div className={styles.dataItem}>
                   <p>Collateral Price</p>
-                  <span>${formatNum(wbtcPrice)}</span>
+                  <span>${formatNum(wBtcPrice)}</span>
                 </div>
                 <div className={styles.dataItem}>
                   <p>Redemption Fee</p>
@@ -286,7 +286,7 @@ export default function Redeem() {
                 <div className={styles.dataItem}>
                   <p>Value of Collateral Received</p>
                   <span>
-                    ${formatNum(expectedCollateralReceived * wbtcPrice)}
+                    ${formatNum(expectedCollateralReceived * wBtcPrice)}
                   </span>
                 </div>
                 <div className={styles.dataItem}>
