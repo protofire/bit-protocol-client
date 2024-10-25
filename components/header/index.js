@@ -95,7 +95,11 @@ export default function Header(props) {
                   onClick={() => setOpenHealth(true)}
                 >
                   <img src="/icon/heart.svg" alt="heart"></img>
-                  {tcr >= 1.1579208923731621e61 ? "∞" : `${formatNumber(tcr)}%`}
+                  {account.status === "connected"
+                    ? tcr >= 1.1579208923731621e61
+                      ? "∞"
+                      : `${formatNumber(tcr)}%`
+                    : 0}
                 </div>
               </div>
             ) : null}
@@ -390,18 +394,28 @@ export default function Header(props) {
               <div className="data" style={{ borderTop: "none" }}>
                 <div className="dataItem">
                   <p>Total Collateral Value</p>
-                  <span>${formatNumber(totalPricedCollateral)}</span>
+                  <span>
+                    {account.status === "connected"
+                      ? `$${formatNumber(totalPricedCollateral)}`
+                      : 0}
+                  </span>
                 </div>
                 <div className="dataItem">
                   <p>Total Debt Value</p>
-                  <span>${formatNumber(totalSystemDebt)}</span>
+                  <span>
+                    {account.status === "connected"
+                      ? `$${formatNumber(totalSystemDebt)}`
+                      : 0}
+                  </span>
                 </div>
                 <div className="dataItem">
                   <p>TCR</p>
                   <span>
-                    {tcr >= 1.1579208923731621e61
-                      ? "∞"
-                      : `${formatNumber(tcr)}%`}
+                    {account.status === "connected"
+                      ? tcr >= 1.1579208923731621e61
+                        ? "∞"
+                        : `${formatNumber(tcr)}%`
+                      : 0}
                   </span>
                 </div>
               </div>

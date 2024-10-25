@@ -12,7 +12,6 @@ import BigNumber from "bignumber.js";
 import { addresses } from "../utils/addresses";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/router";
-import { collateralNames } from "../utils/collateralNames";
 
 export default function Earn() {
   const router = useRouter();
@@ -41,6 +40,8 @@ export default function Earn() {
     approveBitUsdLp,
     stakeBitUsdLP,
     withdrawBitUsdLP,
+    signatureTrove,
+    signatureToken,
     // getTokenBalance,
   } = useContext(BlockchainContext);
 
@@ -126,7 +127,7 @@ export default function Earn() {
       stabilityPool?.deposits >= 0 &&
       bitUSDCirculation &&
       collaterals &&
-      account &&
+      account.status === "connected" &&
       claimableRewards
     ) {
       setAccountDeposits(stabilityPool.accountDeposits);
@@ -619,7 +620,13 @@ export default function Earn() {
     <>
       <Header type="dapp" dappMenu="Earn"></Header>
       <div className="dappBg">
-        {!showEarnMain ? (
+        {account.status !== "connected" && (
+          <div className={`${styles.Earn} ${"dappMain2"}`}>
+            <h2 style={{ textAlign: "center" }}>Please connect your wallet</h2>
+          </div>
+        )}
+
+        {!showEarnMain && account.status === "connected" ? (
           <div className={`${styles.Earn} ${"dappMain2"}`}>
             <div className={styles.earnMain}>
               <div className={styles.earnInfo}>
@@ -806,7 +813,7 @@ export default function Earn() {
           </div>
         ) : null}
 
-        {showEarnMain ? (
+        {showEarnMain && account.status === "connected" ? (
           <div className={`${styles.Earn2} ${"dappMain"}`}>
             <div className={styles.back} onClick={() => setShowEarnMain(false)}>
               <img src="/dapp/leftArr.svg" alt="icon" />
@@ -1037,7 +1044,12 @@ export default function Earn() {
         ) : null}
       </div>
 
-      {!Object.keys(stabilityPool).length > 0 ? <Loading></Loading> : null}
+      {!Object.keys(stabilityPool).length > 0 &&
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
+        <Loading></Loading>
+      ) : null}
 
       {currentState ? <Wait></Wait> : null}
 

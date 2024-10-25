@@ -8,6 +8,7 @@ import Loading from "../components/tooltip/loading";
 import tooltip from "../components/tooltip";
 import { BlockchainContext } from "../hook/blockchain";
 import { formatNumber } from "../utils/helpers";
+import { useAccount } from "wagmi";
 
 export default function Redeem() {
   const [amount, setAmount] = useState("");
@@ -21,6 +22,8 @@ export default function Redeem() {
   const [selectCollateral, setSelectedCollateral] = useState("");
   const [canRedeem, setCanRedeem] = useState(false);
 
+  const account = useAccount();
+
   const {
     getRosePrice,
     setCurrentState,
@@ -29,6 +32,8 @@ export default function Redeem() {
     bitUSDBalance,
     collaterals,
     redeemCollateral,
+    signatureTrove,
+    signatureToken,
   } = useContext(BlockchainContext);
 
   useEffect(() => {
@@ -191,145 +196,175 @@ export default function Redeem() {
       <Header type="dapp" dappMenu="Redeem"></Header>
       <div className="dappBg">
         <div className={`${styles.Redeem} ${"dappMain"}`}>
-          <div className={styles.title}>
-            <p>Redeem bitUSD for Collateral</p>
-            <span>1 bitUSD is always redeemable for $1 of collateral.</span>
-          </div>
-          <div className={styles.redeemMain}>
-            <div className={styles.inputMain}>
-              <p
-                style={{
-                  color: "#bdbdbd",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  lineHeight: "20px",
-                  marginBottom: "5px",
-                }}
-              >
-                Select collateral to redeem for:{" "}
-              </p>
-              <label className={styles.dropdown}>
-                <div className={styles.ddButton}>
-                  <img
-                    style={{ width: 24, height: 24 }}
-                    src={`/dapp/${collaterals[selectCollateral]?.collateral.logo}`}
-                    alt="rose"
-                  />
-                  {collaterals[selectCollateral]?.collateral.name}
-                </div>
-
-                <input type="checkbox" className={styles.ddInput} id="test" />
-
-                <ul className={styles.ddMenu}>
-                  {Object.keys(collaterals).map((item, index) => {
-                    return (
-                      <li
-                        key={index}
-                        onClick={() => selectCollateralChange(item)}
-                      >
-                        <img
-                          style={{ width: 24, height: 24 }}
-                          src={`/dapp/${collaterals[item]?.collateral.logo}`}
-                          alt="rose"
-                        />
-                        {collaterals[item]?.collateral.name}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </label>
-
-              {!canRedeem && selectCollateral !== "" ? (
-                <p>{`Redemption should be available in ${getCountDown()}`}</p>
-              ) : null}
-              {canRedeem && (
-                <>
-                  <div className="balance">
-                    <p>Redeem bitUSD</p>
-                    <span>Balance {formatNumber(bitUSDBalance)} bitUSD</span>
-                  </div>
-
-                  <div className="inputTxt2">
-                    <div>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        onWheel={(e) => e.target.blur()}
-                        id="amount"
-                        onKeyDown={onKeyDown.bind(this)}
-                        onChange={changeAmount.bind(this)}
-                        value={amount}
-                      />
-                    </div>
-                    <span className="font_14 gray">bitUSD</span>
-                  </div>
-                  <div className="changeBalance" style={{ marginTop: "12px" }}>
-                    <span onClick={() => changeAmountVaule(0.25)}>25%</span>
-                    <span onClick={() => changeAmountVaule(0.5)}>50%</span>
-                    <span onClick={() => changeAmountVaule(0.75)}>75%</span>
-                    <span
-                      onClick={() => changeAmountVaule(1)}
-                      style={{ border: "none" }}
-                    >
-                      Max
-                    </span>
-                  </div>
-                </>
-              )}
+          {account.status !== "connected" ? (
+            <div className={`${styles.Earn} ${"dappMain2"}`}>
+              <h2 style={{ textAlign: "center" }}>
+                Please connect your wallet
+              </h2>
             </div>
-            {canRedeem && (
-              <div className={styles.infoMain}>
-                <div
-                  className={
-                    amount && showRedeem
-                      ? "button rightAngle height "
-                      : "button rightAngle height disable"
-                  }
-                  onClick={() => redeemWrapper()}
-                >
-                  Redeem
-                </div>
-                <div
-                  className="button rightAngle height disable"
-                  onClick={() => redeemWrapper()}
-                >
-                  Redeem
-                </div>
-                <div className={styles.data} style={{ borderTop: "none" }}>
-                  <div className={styles.dataItem}>
-                    <p>Collateral Price</p>
-                    <span>${formatNumber(rosePrice)}</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Redemption Fee</p>
-                    <span>{formatNumber(fee * 100)}%</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Redemption Fee Amount</p>
-                    <span>{formatNumber(feeAmount)} ROSE</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Expected Collateral Received</p>
-                    <span>{formatNumber(expectedCollateralReceived)} ROSE</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Value of Collateral Received</p>
-                    <span>
-                      ${formatNumber(expectedCollateralReceived * rosePrice)}
-                    </span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Actual Redemption Amount</p>
-                    <span>{formatNumber(amount)} bitUSD</span>
-                  </div>
-                </div>
+          ) : (
+            <>
+              <div className={styles.title}>
+                <p>Redeem bitUSD for Collateral</p>
+                <span>1 bitUSD is always redeemable for $1 of collateral.</span>
               </div>
-            )}
-          </div>
+              <div className={styles.redeemMain}>
+                <div className={styles.inputMain}>
+                  <p
+                    style={{
+                      color: "#bdbdbd",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      lineHeight: "20px",
+                      marginBottom: "5px",
+                    }}
+                  >
+                    Select collateral to redeem for:{" "}
+                  </p>
+                  <label className={styles.dropdown}>
+                    <div className={styles.ddButton}>
+                      <img
+                        style={{ width: 24, height: 24 }}
+                        src={`/dapp/${collaterals[selectCollateral]?.collateral.logo}`}
+                        alt="rose"
+                      />
+                      {collaterals[selectCollateral]?.collateral.name}
+                    </div>
+
+                    <input
+                      type="checkbox"
+                      className={styles.ddInput}
+                      id="test"
+                    />
+
+                    <ul className={styles.ddMenu}>
+                      {Object.keys(collaterals).map((item, index) => {
+                        return (
+                          <li
+                            key={index}
+                            onClick={() => selectCollateralChange(item)}
+                          >
+                            <img
+                              style={{ width: 24, height: 24 }}
+                              src={`/dapp/${collaterals[item]?.collateral.logo}`}
+                              alt="rose"
+                            />
+                            {collaterals[item]?.collateral.name}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </label>
+
+                  {!canRedeem && selectCollateral !== "" ? (
+                    <p>{`Redemption should be available in ${getCountDown()}`}</p>
+                  ) : null}
+                  {canRedeem && (
+                    <>
+                      <div className="balance">
+                        {/* <p>
+                          Redeem{" "}
+                          {collaterals[selectCollateral]?.collateral.name}
+                        </p> */}
+                        <span>
+                          Balance {formatNumber(bitUSDBalance)} bitUSD
+                        </span>
+                      </div>
+
+                      <div className="inputTxt2">
+                        <div>
+                          <input
+                            type="number"
+                            placeholder="0"
+                            onWheel={(e) => e.target.blur()}
+                            id="amount"
+                            onKeyDown={onKeyDown.bind(this)}
+                            onChange={changeAmount.bind(this)}
+                            value={amount}
+                          />
+                        </div>
+                        <span className="font_14 gray">bitUSD</span>
+                      </div>
+                      <div
+                        className="changeBalance"
+                        style={{ marginTop: "12px" }}
+                      >
+                        <span onClick={() => changeAmountVaule(0.25)}>25%</span>
+                        <span onClick={() => changeAmountVaule(0.5)}>50%</span>
+                        <span onClick={() => changeAmountVaule(0.75)}>75%</span>
+                        <span
+                          onClick={() => changeAmountVaule(1)}
+                          style={{ border: "none" }}
+                        >
+                          Max
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+                {canRedeem && (
+                  <div className={styles.infoMain}>
+                    <div
+                      className={
+                        amount && showRedeem
+                          ? "button rightAngle height "
+                          : "button rightAngle height disable"
+                      }
+                      onClick={() => redeemWrapper()}
+                    >
+                      Redeem
+                    </div>
+                    {/* <div
+                      className="button rightAngle height disable"
+                      onClick={() => redeemWrapper()}
+                    >
+                      Redeem
+                    </div> */}
+                    <div className={styles.data} style={{ borderTop: "none" }}>
+                      <div className={styles.dataItem}>
+                        <p>Collateral Price</p>
+                        <span>${formatNumber(rosePrice)}</span>
+                      </div>
+                      <div className={styles.dataItem}>
+                        <p>Redemption Fee</p>
+                        <span>{formatNumber(fee * 100)}%</span>
+                      </div>
+                      <div className={styles.dataItem}>
+                        <p>Redemption Fee Amount</p>
+                        <span>{formatNumber(feeAmount)} ROSE</span>
+                      </div>
+                      <div className={styles.dataItem}>
+                        <p>Expected Collateral Received</p>
+                        <span>
+                          {formatNumber(expectedCollateralReceived)} ROSE
+                        </span>
+                      </div>
+                      <div className={styles.dataItem}>
+                        <p>Value of Collateral Received</p>
+                        <span>
+                          $
+                          {formatNumber(expectedCollateralReceived * rosePrice)}
+                        </span>
+                      </div>
+                      <div className={styles.dataItem}>
+                        <p>Actual Redemption Amount</p>
+                        <span>{formatNumber(amount)} bitUSD</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
       {currentState ? <Wait></Wait> : null}
-      {Object.keys(collaterals).length === 0 ? <Loading></Loading> : null}
+      {Object.keys(collaterals).length === 0 &&
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
+        <Loading></Loading>
+      ) : null}
       <Footer></Footer>
     </>
   );

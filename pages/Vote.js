@@ -8,8 +8,11 @@ import tooltip from "../components/tooltip";
 import Loading from "../components/tooltip/loading";
 import { BlockchainContext } from "../hook/blockchain";
 import { formatNumber, fromBigNumber } from "../utils/helpers";
+import { useAccount } from "wagmi";
 
 export default function Vote() {
+  const account = useAccount();
+
   const {
     currentState,
     setCurrentState,
@@ -26,6 +29,8 @@ export default function Vote() {
     getReceiverWeightAt,
     getAccountCurrentVotes,
     registerAccountWeightAndVote,
+    signatureTrove,
+    signatureToken,
   } = useContext(BlockchainContext);
 
   const vinePrice = 1;
@@ -324,633 +329,672 @@ export default function Vote() {
       <Header type="dapp" dappMenu="Vote"></Header>
       <div className="dappBg">
         <div className={`${styles.Vote} ${"dappMain3"}`}>
-          <div className={styles.dataInfo2}>
-            <div className={styles.value}>
-              <span>Your Boost</span>
-              <div>
-                <p>{boost}x</p>
-                {/* <span className={styles.span}>Up to 0.00 $VINE</span> */}
-              </div>
+          {account.status !== "connected" ? (
+            <div className={`${styles.Earn} ${"dappMain2"}`}>
+              <h2 style={{ textAlign: "center" }}>
+                Please connect your wallet
+              </h2>
             </div>
-            <div className={styles.value}>
-              <span>Locked bitGOV</span>
-              <div>
-                <p>{formatNumber(accountLock)}</p>
-                <span className={styles.span}>
-                  ≈ ${formatNumber(Number(accountLock) * vinePrice)}
-                </span>
-              </div>
-            </div>
-            <div className={styles.value}>
-              <span>Your Vote Weight</span>
-              <div>
-                <p>{formatNumber(accountWeight)}</p>
-                <span className={styles.span}>
-                  of {formatNumber(totalWeight)}
-                </span>
-              </div>
-            </div>
-            <div className={styles.value}>
-              <span>Your share</span>
-              <div>
-                <p>{Number(accountShare.toFixed(2)).toLocaleString()}%</p>
-                <span className={styles.span}>of allocated vote weight.</span>
-              </div>
-            </div>
-          </div>
-          <div className={styles.voteMain1}>
-            <div className={styles.title}>
-              <p>Governance & Emissions voting</p>
-              <div>
-                Incentivize liquidity to an action, such as minting bitUSD or
-                lock bitGOV with a specific collateral. Learn more
-              </div>
-            </div>
-            <div className={`${styles.dataInfo2} ${styles.voteData}`}>
-              <div className={styles.value}>
-                <span>Current emissions week:</span>
-                <div>
-                  <p>{week}</p>
-                </div>
-              </div>
-              <div className={styles.value}>
-                <span>Epoch ending:</span>
-                <div>
-                  <p>{countdown()}</p>
-                  <span className={styles.span}>{startDate()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className={styles.voteMain2}>
-            <div className={styles.topMain}>
-              <div className={styles.left}>
-                <div className="button_Mini active">Emissions</div>
-                {/* <div className='button_Mini'>Proposals</div> */}
-              </div>
-              <div className={styles.right}>
-                <p>
-                  Allocated<span>{Allocated}%</span>
-                </p>
-                <p>
-                  Remaining<span>{Remaining}%</span>
-                </p>
-              </div>
-            </div>
-            <div className={styles.h5Tab}>
-              <div className={styles.tabMain}>
-                <div className={styles.tabItem}>
-                  <div>Pool</div>
-                  <div className={styles.center}>My Votes</div>
-                  <div className={styles.center}>Votes</div>
-                  <div className={styles.center}>
-                    Estimated bitGOV Emissions
+          ) : (
+            <>
+              <div className={styles.dataInfo2}>
+                <div className={styles.value}>
+                  <span>Your Boost</span>
+                  <div>
+                    <p>{boost}x</p>
+                    {/* <span className={styles.span}>Up to 0.00 $VINE</span> */}
                   </div>
-                  {/* <div className={styles.center}>Vote Ratio</div> */}
-                  <div></div>
                 </div>
-
-                <div className={styles.tab}>
-                  <div
-                    className={`${styles.tabItem} ${styles.tabItem2}`}
-                    style={openDebt ? { background: "#111" } : null}
-                    onClick={() => setOpenDebt(!openDebt)}
-                  >
+                <div className={styles.value}>
+                  <span>Locked bitGOV</span>
+                  <div>
+                    <p>{formatNumber(accountLock)}</p>
+                    <span className={styles.span}>
+                      ≈ ${formatNumber(Number(accountLock) * vinePrice)}
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.value}>
+                  <span>Your Vote Weight</span>
+                  <div>
+                    <p>{formatNumber(accountWeight)}</p>
+                    <span className={styles.span}>
+                      of {formatNumber(totalWeight)}
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.value}>
+                  <span>Your share</span>
+                  <div>
+                    <p>{Number(accountShare.toFixed(2)).toLocaleString()}%</p>
+                    <span className={styles.span}>
+                      of allocated vote weight.
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className={styles.voteMain1}>
+                <div className={styles.title}>
+                  <p>Governance & Emissions voting</p>
+                  <div>
+                    Incentivize liquidity to an action, such as minting bitUSD
+                    or lock bitGOV with a specific collateral. Learn more
+                  </div>
+                </div>
+                <div className={`${styles.dataInfo2} ${styles.voteData}`}>
+                  <div className={styles.value}>
+                    <span>Current emissions week:</span>
                     <div>
-                      <img src="/dapp/bitUSD.svg" alt="icon" />
-                      bitUSD Debt
+                      <p>{week}</p>
                     </div>
-                    <div className={styles.center}>
-                      {(votes1 / 100).toFixed(2)}%
+                  </div>
+                  <div className={styles.value}>
+                    <span>Epoch ending:</span>
+                    <div>
+                      <p>{countdown()}</p>
+                      <span className={styles.span}>{startDate()}</span>
                     </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : Number(
-                            (totalWeightAtData.upper1 / totalPointUpper) * 100
-                          ).toFixed(2)}
-                      %
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          Number(
-                            (totalWeightAtData.current1 / totalPoint) * 100
-                          )
-                        )
-                          ? Number(
-                              (totalWeightAtData.current1 / totalPoint) * 100
-                            ).toFixed(2)
-                          : 0}
-                        %
-                      </span>
+                  </div>
+                </div>
+              </div>
+              <div className={styles.voteMain2}>
+                <div className={styles.topMain}>
+                  <div className={styles.left}>
+                    <div className="button_Mini active">Emissions</div>
+                    {/* <div className='button_Mini'>Proposals</div> */}
+                  </div>
+                  <div className={styles.right}>
+                    <p>
+                      Allocated<span>{Allocated}%</span>
+                    </p>
+                    <p>
+                      Remaining<span>{Remaining}%</span>
+                    </p>
+                  </div>
+                </div>
+                <div className={styles.h5Tab}>
+                  <div className={styles.tabMain}>
+                    <div className={styles.tabItem}>
+                      <div>Pool</div>
+                      <div className={styles.center}>My Votes</div>
+                      <div className={styles.center}>Votes</div>
+                      <div className={styles.center}>
+                        Estimated bitGOV Emissions
+                      </div>
+                      {/* <div className={styles.center}>Vote Ratio</div> */}
+                      <div></div>
                     </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : (upperWeeklyEmissions * totalWeightAtData.current1) /
-                          totalPointUpper}
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          (currentWeeklyEmissions *
-                            totalWeightAtData.current1) /
-                            totalPoint
-                        )
-                          ? formatNumber(
+
+                    <div className={styles.tab}>
+                      <div
+                        className={`${styles.tabItem} ${styles.tabItem2}`}
+                        style={openDebt ? { background: "#111" } : null}
+                        onClick={() => setOpenDebt(!openDebt)}
+                      >
+                        <div>
+                          <img src="/dapp/bitUSD.svg" alt="icon" />
+                          bitUSD Debt
+                        </div>
+                        <div className={styles.center}>
+                          {(votes1 / 100).toFixed(2)}%
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : Number(
+                                (totalWeightAtData.upper1 / totalPointUpper) *
+                                  100
+                              ).toFixed(2)}
+                          %
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
+                              Number(
+                                (totalWeightAtData.current1 / totalPoint) * 100
+                              )
+                            )
+                              ? Number(
+                                  (totalWeightAtData.current1 / totalPoint) *
+                                    100
+                                ).toFixed(2)
+                              : 0}
+                            %
+                          </span>
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : (upperWeeklyEmissions *
+                                totalWeightAtData.current1) /
+                              totalPointUpper}
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
                               (currentWeeklyEmissions *
                                 totalWeightAtData.current1) /
                                 totalPoint
                             )
-                          : 0}
-                      </span>
-                    </div>
-                    {/* <div className={styles.center}>
+                              ? formatNumber(
+                                  (currentWeeklyEmissions *
+                                    totalWeightAtData.current1) /
+                                    totalPoint
+                                )
+                              : 0}
+                          </span>
+                        </div>
+                        {/* <div className={styles.center}>
                                             <img src='/dapp/round.svg' alt='icon' style={{ "width": "30px" }} />
                                         </div> */}
-                    <div
-                      className={styles.center}
-                      style={openDebt ? { transform: "rotate(180deg)" } : null}
-                    >
-                      <img
-                        src="/dapp/arr_bottom.svg"
-                        alt="icon"
-                        style={{ width: "20px" }}
-                      />
-                    </div>
-                  </div>
-
-                  {openDebt ? (
-                    <div className={styles.main}>
-                      <div className={styles.action}>
-                        <span>Action</span>
-                        <p>Debt</p>
+                        <div
+                          className={styles.center}
+                          style={
+                            openDebt ? { transform: "rotate(180deg)" } : null
+                          }
+                        >
+                          <img
+                            src="/dapp/arr_bottom.svg"
+                            alt="icon"
+                            style={{ width: "20px" }}
+                          />
+                        </div>
                       </div>
-                      <div className={styles.enter}>
-                        <span>Enter a percentage</span>
-                        <div className={styles.input}>
-                          <div className="inputTxt">
-                            <input
-                              type="number"
-                              placeholder="0"
-                              onWheel={(e) => e.target.blur()}
-                              id="amount1"
-                              onKeyDown={onKeyDown.bind(this)}
-                              onChange={changeAmount1.bind(this)}
-                              value={amount1}
-                            ></input>
+
+                      {openDebt ? (
+                        <div className={styles.main}>
+                          <div className={styles.action}>
+                            <span>Action</span>
+                            <p>Debt</p>
+                          </div>
+                          <div className={styles.enter}>
+                            <span>Enter a percentage</span>
+                            <div className={styles.input}>
+                              <div className="inputTxt">
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  onWheel={(e) => e.target.blur()}
+                                  id="amount1"
+                                  onKeyDown={onKeyDown.bind(this)}
+                                  onChange={changeAmount1.bind(this)}
+                                  value={amount1}
+                                ></input>
+                              </div>
+                            </div>
+                            {/* <span>My previous vote: 0.0%</span> */}
                           </div>
                         </div>
-                        {/* <span>My previous vote: 0.0%</span> */}
-                      </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
 
-                <div className={styles.tab}>
-                  <div
-                    className={`${styles.tabItem} ${styles.tabItem2}`}
-                    style={openvUSD ? { background: "#111" } : null}
-                    onClick={() => setOpenvUSD(!openvUSD)}
-                  >
-                    <div>
-                      <img src="/dapp/bitUSD.svg" alt="icon" />
-                      bitUSD Minting
-                    </div>
-                    <div className={styles.center}>
-                      {(votes2 / 100).toFixed(2)}%
-                    </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : Number(
-                            (totalWeightAtData.upper2 / totalPointUpper) * 100
-                          ).toFixed(2)}
-                      %
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          Number(
-                            (totalWeightAtData.current2 / totalPoint) * 100
-                          )
-                        )
-                          ? Number(
-                              (totalWeightAtData.current2 / totalPoint) * 100
-                            ).toFixed(2)
-                          : 0}
-                        %
-                      </span>
-                    </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : (upperWeeklyEmissions * totalWeightAtData.current2) /
-                          totalPointUpper}
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          (currentWeeklyEmissions *
-                            totalWeightAtData.current2) /
-                            totalPoint
-                        )
-                          ? formatNumber(
+                    <div className={styles.tab}>
+                      <div
+                        className={`${styles.tabItem} ${styles.tabItem2}`}
+                        style={openvUSD ? { background: "#111" } : null}
+                        onClick={() => setOpenvUSD(!openvUSD)}
+                      >
+                        <div>
+                          <img src="/dapp/bitUSD.svg" alt="icon" />
+                          bitUSD Minting
+                        </div>
+                        <div className={styles.center}>
+                          {(votes2 / 100).toFixed(2)}%
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : Number(
+                                (totalWeightAtData.upper2 / totalPointUpper) *
+                                  100
+                              ).toFixed(2)}
+                          %
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
+                              Number(
+                                (totalWeightAtData.current2 / totalPoint) * 100
+                              )
+                            )
+                              ? Number(
+                                  (totalWeightAtData.current2 / totalPoint) *
+                                    100
+                                ).toFixed(2)
+                              : 0}
+                            %
+                          </span>
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : (upperWeeklyEmissions *
+                                totalWeightAtData.current2) /
+                              totalPointUpper}
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
                               (currentWeeklyEmissions *
                                 totalWeightAtData.current2) /
                                 totalPoint
                             )
-                          : 0}
-                      </span>
-                    </div>
-                    {/* <div className={styles.center}>
+                              ? formatNumber(
+                                  (currentWeeklyEmissions *
+                                    totalWeightAtData.current2) /
+                                    totalPoint
+                                )
+                              : 0}
+                          </span>
+                        </div>
+                        {/* <div className={styles.center}>
                                             <img src='/dapp/round.svg' alt='icon' style={{ "width": "30px" }} />
                                         </div> */}
-                    <div
-                      className={styles.center}
-                      style={openvUSD ? { transform: "rotate(180deg)" } : null}
-                    >
-                      <img
-                        src="/dapp/arr_bottom.svg"
-                        alt="icon"
-                        style={{ width: "20px" }}
-                      />
-                    </div>
-                  </div>
-
-                  {openvUSD ? (
-                    <div className={styles.main}>
-                      <div className={styles.action}>
-                        <span>Action</span>
-                        <p>Mint</p>
+                        <div
+                          className={styles.center}
+                          style={
+                            openvUSD ? { transform: "rotate(180deg)" } : null
+                          }
+                        >
+                          <img
+                            src="/dapp/arr_bottom.svg"
+                            alt="icon"
+                            style={{ width: "20px" }}
+                          />
+                        </div>
                       </div>
-                      <div className={styles.enter}>
-                        <span>Enter a percentage</span>
-                        <div className={styles.input}>
-                          <div className="inputTxt">
-                            <input
-                              type="number"
-                              placeholder="0"
-                              onWheel={(e) => e.target.blur()}
-                              id="amount2"
-                              onKeyDown={onKeyDown.bind(this)}
-                              onChange={changeAmount2.bind(this)}
-                              value={amount2}
-                            ></input>
+
+                      {openvUSD ? (
+                        <div className={styles.main}>
+                          <div className={styles.action}>
+                            <span>Action</span>
+                            <p>Mint</p>
+                          </div>
+                          <div className={styles.enter}>
+                            <span>Enter a percentage</span>
+                            <div className={styles.input}>
+                              <div className="inputTxt">
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  onWheel={(e) => e.target.blur()}
+                                  id="amount2"
+                                  onKeyDown={onKeyDown.bind(this)}
+                                  onChange={changeAmount2.bind(this)}
+                                  value={amount2}
+                                ></input>
+                              </div>
+                            </div>
+                            {/* <span>My previous vote: 0.0%</span> */}
                           </div>
                         </div>
-                        {/* <span>My previous vote: 0.0%</span> */}
-                      </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
 
-                <div className={styles.tab}>
-                  <div
-                    className={`${styles.tabItem} ${styles.tabItem2}`}
-                    style={openPool ? { background: "#111" } : null}
-                    onClick={() => setOpenPool(!openPool)}
-                  >
-                    <div>
-                      <img src="/dapp/bitUSD.svg" alt="icon" />
-                      Stability Pool
-                    </div>
-                    <div className={styles.center}>
-                      {(votes0 / 100).toFixed(2)}%
-                    </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : Number(
-                            (totalWeightAtData.upper0 / totalPointUpper) * 100
-                          ).toFixed(2)}
-                      %
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          Number(
-                            (totalWeightAtData.current0 / totalPoint) * 100
-                          )
-                        )
-                          ? Number(
-                              (totalWeightAtData.current0 / totalPoint) * 100
-                            ).toFixed(2)
-                          : 0}
-                        %
-                      </span>
-                    </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : (upperWeeklyEmissions * totalWeightAtData.current0) /
-                          totalPointUpper}
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          (currentWeeklyEmissions *
-                            totalWeightAtData.current0) /
-                            totalPoint
-                        )
-                          ? formatNumber(
+                    <div className={styles.tab}>
+                      <div
+                        className={`${styles.tabItem} ${styles.tabItem2}`}
+                        style={openPool ? { background: "#111" } : null}
+                        onClick={() => setOpenPool(!openPool)}
+                      >
+                        <div>
+                          <img src="/dapp/bitUSD.svg" alt="icon" />
+                          Stability Pool
+                        </div>
+                        <div className={styles.center}>
+                          {(votes0 / 100).toFixed(2)}%
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : Number(
+                                (totalWeightAtData.upper0 / totalPointUpper) *
+                                  100
+                              ).toFixed(2)}
+                          %
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
+                              Number(
+                                (totalWeightAtData.current0 / totalPoint) * 100
+                              )
+                            )
+                              ? Number(
+                                  (totalWeightAtData.current0 / totalPoint) *
+                                    100
+                                ).toFixed(2)
+                              : 0}
+                            %
+                          </span>
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : (upperWeeklyEmissions *
+                                totalWeightAtData.current0) /
+                              totalPointUpper}
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
                               (currentWeeklyEmissions *
                                 totalWeightAtData.current0) /
                                 totalPoint
                             )
-                          : 0}
-                      </span>
-                    </div>
-                    {/* <div className={styles.center}>
+                              ? formatNumber(
+                                  (currentWeeklyEmissions *
+                                    totalWeightAtData.current0) /
+                                    totalPoint
+                                )
+                              : 0}
+                          </span>
+                        </div>
+                        {/* <div className={styles.center}>
                                             <img src='/dapp/round.svg' alt='icon' style={{ "width": "30px" }} />
                                         </div> */}
-                    <div
-                      className={styles.center}
-                      style={openPool ? { transform: "rotate(180deg)" } : null}
-                    >
-                      <img
-                        src="/dapp/arr_bottom.svg"
-                        alt="icon"
-                        style={{ width: "20px" }}
-                      />
-                    </div>
-                  </div>
-
-                  {openPool ? (
-                    <div className={styles.main}>
-                      <div className={styles.action}>
-                        <span>Action</span>
-                        <p>Deposit</p>
+                        <div
+                          className={styles.center}
+                          style={
+                            openPool ? { transform: "rotate(180deg)" } : null
+                          }
+                        >
+                          <img
+                            src="/dapp/arr_bottom.svg"
+                            alt="icon"
+                            style={{ width: "20px" }}
+                          />
+                        </div>
                       </div>
-                      <div className={styles.enter}>
-                        <span>Enter a percentage</span>
-                        <div className={styles.input}>
-                          <div className="inputTxt">
-                            <input
-                              type="number"
-                              placeholder="0"
-                              onWheel={(e) => e.target.blur()}
-                              id="amount0"
-                              onKeyDown={onKeyDown.bind(this)}
-                              onChange={changeAmount0.bind(this)}
-                              value={amount0}
-                            ></input>
+
+                      {openPool ? (
+                        <div className={styles.main}>
+                          <div className={styles.action}>
+                            <span>Action</span>
+                            <p>Deposit</p>
+                          </div>
+                          <div className={styles.enter}>
+                            <span>Enter a percentage</span>
+                            <div className={styles.input}>
+                              <div className="inputTxt">
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  onWheel={(e) => e.target.blur()}
+                                  id="amount0"
+                                  onKeyDown={onKeyDown.bind(this)}
+                                  onChange={changeAmount0.bind(this)}
+                                  value={amount0}
+                                ></input>
+                              </div>
+                            </div>
+                            {/* <span>My previous vote: 0.0%</span> */}
                           </div>
                         </div>
-                        {/* <span>My previous vote: 0.0%</span> */}
-                      </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
 
-                <div className={styles.tab}>
-                  <div
-                    className={`${styles.tabItem} ${styles.tabItem2}`}
-                    style={openVineLp ? { background: "#111" } : null}
-                    onClick={() => setOpenVineLp(!openVineLp)}
-                  >
-                    <div>
-                      <img src="/dapp/vineArose.svg" alt="icon" />
-                      bitGOV/ROSE LP
-                    </div>
-                    <div className={styles.center}>
-                      {(votes3 / 100).toFixed(2)}%
-                    </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : Number(
-                            (totalWeightAtData.upper3 / totalPointUpper) * 100
-                          ).toFixed(2)}
-                      %
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          Number(
-                            (totalWeightAtData.current3 / totalPoint) * 100
-                          )
-                        )
-                          ? Number(
-                              (totalWeightAtData.current3 / totalPoint) * 100
-                            ).toFixed(2)
-                          : 0}
-                        %
-                      </span>
-                    </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : (upperWeeklyEmissions * totalWeightAtData.current3) /
-                          totalPointUpper}
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          (currentWeeklyEmissions *
-                            totalWeightAtData.current3) /
-                            totalPoint
-                        )
-                          ? formatNumber(
+                    <div className={styles.tab}>
+                      <div
+                        className={`${styles.tabItem} ${styles.tabItem2}`}
+                        style={openVineLp ? { background: "#111" } : null}
+                        onClick={() => setOpenVineLp(!openVineLp)}
+                      >
+                        <div>
+                          <img src="/dapp/vineArose.svg" alt="icon" />
+                          bitGOV/ROSE LP
+                        </div>
+                        <div className={styles.center}>
+                          {(votes3 / 100).toFixed(2)}%
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : Number(
+                                (totalWeightAtData.upper3 / totalPointUpper) *
+                                  100
+                              ).toFixed(2)}
+                          %
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
+                              Number(
+                                (totalWeightAtData.current3 / totalPoint) * 100
+                              )
+                            )
+                              ? Number(
+                                  (totalWeightAtData.current3 / totalPoint) *
+                                    100
+                                ).toFixed(2)
+                              : 0}
+                            %
+                          </span>
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : (upperWeeklyEmissions *
+                                totalWeightAtData.current3) /
+                              totalPointUpper}
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
                               (currentWeeklyEmissions *
                                 totalWeightAtData.current3) /
                                 totalPoint
                             )
-                          : 0}
-                      </span>
-                    </div>
-                    <div
-                      className={styles.center}
-                      style={
-                        openVineLp ? { transform: "rotate(180deg)" } : null
-                      }
-                    >
-                      <img
-                        src="/dapp/arr_bottom.svg"
-                        alt="icon"
-                        style={{ width: "20px" }}
-                      />
-                    </div>
-                  </div>
-
-                  {openVineLp ? (
-                    <div className={styles.main}>
-                      <div className={styles.action}>
-                        <span>Action</span>
-                        <p>Default</p>
+                              ? formatNumber(
+                                  (currentWeeklyEmissions *
+                                    totalWeightAtData.current3) /
+                                    totalPoint
+                                )
+                              : 0}
+                          </span>
+                        </div>
+                        <div
+                          className={styles.center}
+                          style={
+                            openVineLp ? { transform: "rotate(180deg)" } : null
+                          }
+                        >
+                          <img
+                            src="/dapp/arr_bottom.svg"
+                            alt="icon"
+                            style={{ width: "20px" }}
+                          />
+                        </div>
                       </div>
-                      <div className={styles.enter}>
-                        <span>Enter a percentage</span>
-                        <div className={styles.input}>
-                          <div className="inputTxt">
-                            <input
-                              type="number"
-                              placeholder="0"
-                              onWheel={(e) => e.target.blur()}
-                              id="amount3"
-                              onKeyDown={onKeyDown.bind(this)}
-                              onChange={changeAmount3.bind(this)}
-                              value={amount3}
-                            ></input>
+
+                      {openVineLp ? (
+                        <div className={styles.main}>
+                          <div className={styles.action}>
+                            <span>Action</span>
+                            <p>Default</p>
+                          </div>
+                          <div className={styles.enter}>
+                            <span>Enter a percentage</span>
+                            <div className={styles.input}>
+                              <div className="inputTxt">
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  onWheel={(e) => e.target.blur()}
+                                  id="amount3"
+                                  onKeyDown={onKeyDown.bind(this)}
+                                  onChange={changeAmount3.bind(this)}
+                                  value={amount3}
+                                ></input>
+                              </div>
+                            </div>
+                            {/* <span>My previous vote: 0.0%</span> */}
                           </div>
                         </div>
-                        {/* <span>My previous vote: 0.0%</span> */}
-                      </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
 
-                <div className={styles.tab}>
-                  <div
-                    className={`${styles.tabItem} ${styles.tabItem2}`}
-                    style={openvUSDLp ? { background: "#111" } : null}
-                    onClick={() => setOpenvUSDLp(!openvUSDLp)}
-                  >
-                    <div>
-                      <img src="/dapp/usdc.svg" alt="icon" />
-                      bitUSD/USDC LP
-                    </div>
-                    <div className={styles.center}>
-                      {(votes4 / 100).toFixed(2)}%
-                    </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : Number(
-                            (totalWeightAtData.upper4 / totalPointUpper) * 100
-                          ).toFixed(2)}
-                      %
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          Number(
-                            (totalWeightAtData.current4 / totalPoint) * 100
-                          )
-                        )
-                          ? Number(
-                              (totalWeightAtData.current4 / totalPoint) * 100
-                            ).toFixed(2)
-                          : 0}
-                        %
-                      </span>
-                    </div>
-                    <div className={styles.center}>
-                      {totalPointUpper <= 0
-                        ? 0
-                        : (upperWeeklyEmissions * totalWeightAtData.current4) /
-                          totalPointUpper}
-                      <img
-                        src="/dapp/right.svg"
-                        alt="icon"
-                        style={{ width: "10px" }}
-                      />
-                      <span>
-                        {isFinite(
-                          (currentWeeklyEmissions *
-                            totalWeightAtData.current4) /
-                            totalPoint
-                        )
-                          ? formatNumber(
+                    <div className={styles.tab}>
+                      <div
+                        className={`${styles.tabItem} ${styles.tabItem2}`}
+                        style={openvUSDLp ? { background: "#111" } : null}
+                        onClick={() => setOpenvUSDLp(!openvUSDLp)}
+                      >
+                        <div>
+                          <img src="/dapp/usdc.svg" alt="icon" />
+                          bitUSD/USDC LP
+                        </div>
+                        <div className={styles.center}>
+                          {(votes4 / 100).toFixed(2)}%
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : Number(
+                                (totalWeightAtData.upper4 / totalPointUpper) *
+                                  100
+                              ).toFixed(2)}
+                          %
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
+                              Number(
+                                (totalWeightAtData.current4 / totalPoint) * 100
+                              )
+                            )
+                              ? Number(
+                                  (totalWeightAtData.current4 / totalPoint) *
+                                    100
+                                ).toFixed(2)
+                              : 0}
+                            %
+                          </span>
+                        </div>
+                        <div className={styles.center}>
+                          {totalPointUpper <= 0
+                            ? 0
+                            : (upperWeeklyEmissions *
+                                totalWeightAtData.current4) /
+                              totalPointUpper}
+                          <img
+                            src="/dapp/right.svg"
+                            alt="icon"
+                            style={{ width: "10px" }}
+                          />
+                          <span>
+                            {isFinite(
                               (currentWeeklyEmissions *
                                 totalWeightAtData.current4) /
                                 totalPoint
                             )
-                          : 0}
-                      </span>
-                    </div>
-                    <div
-                      className={styles.center}
-                      style={
-                        openvUSDLp ? { transform: "rotate(180deg)" } : null
-                      }
-                    >
-                      <img
-                        src="/dapp/arr_bottom.svg"
-                        alt="icon"
-                        style={{ width: "20px" }}
-                      />
-                    </div>
-                  </div>
-
-                  {openvUSDLp ? (
-                    <div className={styles.main}>
-                      <div className={styles.action}>
-                        <span>Action</span>
-                        <p>Default</p>
+                              ? formatNumber(
+                                  (currentWeeklyEmissions *
+                                    totalWeightAtData.current4) /
+                                    totalPoint
+                                )
+                              : 0}
+                          </span>
+                        </div>
+                        <div
+                          className={styles.center}
+                          style={
+                            openvUSDLp ? { transform: "rotate(180deg)" } : null
+                          }
+                        >
+                          <img
+                            src="/dapp/arr_bottom.svg"
+                            alt="icon"
+                            style={{ width: "20px" }}
+                          />
+                        </div>
                       </div>
-                      <div className={styles.enter}>
-                        <span>Enter a percentage</span>
-                        <div className={styles.input}>
-                          <div className="inputTxt">
-                            <input
-                              type="number"
-                              placeholder="0"
-                              onWheel={(e) => e.target.blur()}
-                              id="amount4"
-                              onKeyDown={onKeyDown.bind(this)}
-                              onChange={changeAmount4.bind(this)}
-                              value={amount4}
-                            ></input>
+
+                      {openvUSDLp ? (
+                        <div className={styles.main}>
+                          <div className={styles.action}>
+                            <span>Action</span>
+                            <p>Default</p>
+                          </div>
+                          <div className={styles.enter}>
+                            <span>Enter a percentage</span>
+                            <div className={styles.input}>
+                              <div className="inputTxt">
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  onWheel={(e) => e.target.blur()}
+                                  id="amount4"
+                                  onKeyDown={onKeyDown.bind(this)}
+                                  onChange={changeAmount4.bind(this)}
+                                  value={amount4}
+                                ></input>
+                              </div>
+                            </div>
+                            {/* <span>My previous vote: 0.0%</span> */}
                           </div>
                         </div>
-                        {/* <span>My previous vote: 0.0%</span> */}
-                      </div>
+                      ) : null}
                     </div>
-                  ) : null}
+                  </div>
+                </div>
+
+                <div className={styles.button}>
+                  {/* <p className={styles.p}>Lock some $VINE to start voting</p> */}
+                  <p className={styles.p}>
+                    To participate in voting, a 26-week lock-up period is
+                    required.
+                  </p>
+                  <div
+                    className={
+                      showVote
+                        ? "button rightAngle height "
+                        : "button rightAngle height disable"
+                    }
+                    onClick={() => vote()}
+                  >
+                    VOTE
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className={styles.button}>
-              {/* <p className={styles.p}>Lock some $VINE to start voting</p> */}
-              <p className={styles.p}>
-                To participate in voting, a 26-week lock-up period is required.
-              </p>
-              <div
-                className={
-                  showVote
-                    ? "button rightAngle height "
-                    : "button rightAngle height disable"
-                }
-                onClick={() => vote()}
-              >
-                VOTE
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
       {currentState ? <Wait></Wait> : null}
-      {isLoading ? <Loading></Loading> : null}
+      {isLoading &&
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
+        <Loading></Loading>
+      ) : null}
       <Footer></Footer>
     </>
   );

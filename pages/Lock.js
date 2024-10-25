@@ -3,16 +3,18 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import { BlockchainContext } from "../hook/blockchain";
 import { useEffect, useState, useContext, useRef } from "react";
-import BigNumber from "bignumber.js";
 import Wait from "../components/tooltip/wait";
 import Loading from "../components/tooltip/loading";
 import tooltip from "../components/tooltip";
-import Slider, { marks } from "rc-slider";
+import Slider from "rc-slider";
 import { formatNumber } from "../utils/helpers";
+import { useAccount } from "wagmi";
 
 import "rc-slider/assets/index.css";
 
 export default function Lock() {
+  const account = useAccount();
+
   const {
     bitGovBalance,
     userAccountWeight,
@@ -29,6 +31,8 @@ export default function Lock() {
     freeze,
     unfreeze,
     withdrawWithPenalty,
+    signatureTrove,
+    signatureToken,
   } = useContext(BlockchainContext);
 
   const vinePrice = 1;
@@ -69,17 +73,20 @@ export default function Lock() {
   const [loading, setLoading] = useState(true);
 
   const queryData = async () => {
-    setBalance(bitGovBalance);
-    setAccountWeight(userAccountWeight);
-    setAccountLock(accountLockAmount);
-    setAccountUnLock(accountUnlockAmount);
-    const locks = await getAccountActiveLocks();
-    setIsLocks(locks.frozenAmount > 0);
-    setTotalWeight(lockTotalWeight);
-    // if (vineTokenQuery) {
-    //     const balanceOf = await vineTokenQuery.balanceOf(tokenLocker);
-    //     setTotalLock((new BigNumber(balanceOf._hex).div(1e18)).toFixed());
-    // }
+    if (account.status === "connected") {
+      setBalance(bitGovBalance);
+      setAccountWeight(userAccountWeight);
+      setAccountLock(accountLockAmount);
+      setAccountUnLock(accountUnlockAmount);
+      const locks = await getAccountActiveLocks();
+      setIsLocks(locks.frozenAmount > 0);
+      setTotalWeight(lockTotalWeight);
+      setLoading(false);
+      // if (vineTokenQuery) {
+      //     const balanceOf = await vineTokenQuery.balanceOf(tokenLocker);
+      //     setTotalLock((new BigNumber(balanceOf._hex).div(1e18)).toFixed());
+      // }
+    }
   };
 
   let timerLoading = useRef(null);
@@ -95,6 +102,7 @@ export default function Lock() {
     accountUnlockAmount,
     accountLockAmount,
     lockTotalWeight,
+    account.status,
   ]);
 
   const changeAmount = async (e) => {
@@ -127,7 +135,7 @@ export default function Lock() {
     if (accountWeight && totalWeight) {
       setAccountShare((Number(accountWeight) / Number(totalWeight)) * 100);
     }
-    setLoading(false);
+    // setLoading(false);
   }, [totalWeight, accountWeight]);
 
   const changeClaimAmount = async (e) => {
@@ -281,219 +289,237 @@ export default function Lock() {
       <Header type="dapp" dappMenu="Lock"></Header>
       <div className="dappBg">
         <div className={`${styles.Lock} ${"dappMain3"}`}>
-          <div className={styles.lockTop}>
-            <div className={styles.dataInfo2}>
-              <div className={styles.value}>
-                <span>Boost</span>
-                <div>
-                  <p>{boost}x</p>
-                </div>
-                {/* <span className={styles.span}>Up to 0.00 $VINE</span> */}
-              </div>
-              <div className={styles.value}>
-                <span>Locked $bitGOV</span>
-                <div style={{ display: "flex" }}>
-                  <img
-                    style={{ width: "26px" }}
-                    src="/dapp/bitUSD.svg"
-                    alt="bitUSD"
-                  />
-                  <p>{formatNumber(accountLock + accountUnLock)}</p>
-                </div>
-                <span className={styles.span}>
-                  ≈ ${formatNumber((accountLock + accountUnLock) * vinePrice)}
-                </span>
-                {accountLock + accountUnLock > 0 ? (
-                  <div
-                    className="button_border"
-                    style={{
-                      padding: "5px",
-                      marginTop: "5px",
-                      lineHeight: "18px",
-                    }}
-                    onClick={() => changeShowUnlock()}
-                  >
-                    Claim
+          {account.status !== "connected" ? (
+            <div className={`${styles.Earn} ${"dappMain2"}`}>
+              <h2 style={{ textAlign: "center" }}>
+                Please connect your wallet
+              </h2>
+            </div>
+          ) : (
+            <>
+              <div className={styles.lockTop}>
+                <div className={styles.dataInfo2}>
+                  <div className={styles.value}>
+                    <span>Boost</span>
+                    <div>
+                      <p>{boost}x</p>
+                    </div>
+                    {/* <span className={styles.span}>Up to 0.00 $VINE</span> */}
                   </div>
-                ) : null}
-              </div>
-            </div>
-            <div className={styles.dataInfo2}>
-              <div className={styles.value}>
-                <span>Your Lock Weight</span>
-                <div>
-                  <p>{formatNumber(accountWeight)}</p>
-                </div>
-                <span className={styles.span}>
-                  of {formatNumber(totalWeight)}
-                </span>
-              </div>
-              <div className={styles.value}>
-                <span>Your Share</span>
-                <div>
-                  <p>{Number(accountShare.toFixed(2)).toLocaleString()}%</p>
-                </div>
-                <span className={styles.span}>of allocated vote weight</span>
-              </div>
-            </div>
-          </div>
-          <div className={styles.lockMain}>
-            <div className={styles.left}>
-              <div className={styles.title}>
-                <p>Lock $bitGOV</p>
-                <span>
-                  Lock for up to 52 weeks. Locked $bitGOV gives lock weight and
-                  allows boosted claiming.
-                </span>
-              </div>
-              <div className={styles.enterAmount}>
-                <div className={styles.miniTitle}>
-                  <span>Enter amount</span>
-                  <span style={{ fontSize: "12px" }}>
-                    Balance{" "}
-                    {Number(Number(balance).toFixed(2)).toLocaleString()}$bitGOV
-                  </span>
-                </div>
-                <div className="inputTxt3">
-                  <input
-                    type="number"
-                    placeholder="0"
-                    onWheel={(e) => e.target.blur()}
-                    id="amount"
-                    onKeyDown={onKeyDown.bind(this)}
-                    onChange={changeAmount.bind(this)}
-                    value={amount}
-                  ></input>
-                  <span>bitGOV</span>
-                </div>
-                <div className="changeBalance">
-                  <span onClick={() => changeVaule(0.25)}>25%</span>
-                  <span onClick={() => changeVaule(0.5)}>50%</span>
-                  <span onClick={() => changeVaule(0.75)}>75%</span>
-                  <span
-                    onClick={() => changeVaule(1)}
-                    style={{ border: "none" }}
-                  >
-                    Max
-                  </span>
-                </div>
-                <div className={styles.progressBar}>
-                  <Slider
-                    min={2}
-                    max={52}
-                    marks={marks}
-                    onChange={log}
-                    defaultValue={26}
-                    dotStyle={{ borderColor: "#38a3a5", background: "#38a3a5" }}
-                    activeDotStyle={{ borderColor: "#38a3a5" }}
-                    handleStyle={{
-                      borderColor: "#38a3a5",
-                      backgroundColor: "#38a3a5",
-                      opacity: "1",
-                    }}
-                    trackStyle={{ backgroundColor: "#38a3a5" }}
-                  />
-                  <div className={styles.value}>{currentValue}</div>
-                </div>
-              </div>
-              <div className={styles.button}>
-                <div
-                  className={
-                    !amount
-                      ? "button rightAngle height disable"
-                      : "button rightAngle height"
-                  }
-                  onClick={() => lock()}
-                >
-                  LOCK
-                </div>
-              </div>
-              <div className={styles.data}>
-                <div className={styles.dataItem}>
-                  <p>Lock weight</p>
-                  <div>
-                    {formatNumber(accountWeight)}
-                    {Number(amount) ? (
-                      <>
-                        <img src="/dapp/right.svg" alt="icon" />
-                        <span>
-                          {formatNumber(
-                            Number(accountWeight) +
-                              Number(amount) * currentValue
-                          )}
-                        </span>
-                      </>
+                  <div className={styles.value}>
+                    <span>Locked $bitGOV</span>
+                    <div style={{ display: "flex" }}>
+                      <img
+                        style={{ width: "26px" }}
+                        src="/dapp/bitUSD.svg"
+                        alt="bitUSD"
+                      />
+                      <p>{formatNumber(accountLock + accountUnLock)}</p>
+                    </div>
+                    <span className={styles.span}>
+                      ≈ $
+                      {formatNumber((accountLock + accountUnLock) * vinePrice)}
+                    </span>
+                    {accountLock + accountUnLock > 0 ? (
+                      <div
+                        className="button_border"
+                        style={{
+                          padding: "5px",
+                          marginTop: "5px",
+                          lineHeight: "18px",
+                        }}
+                        onClick={() => changeShowUnlock()}
+                      >
+                        Claim
+                      </div>
                     ) : null}
                   </div>
                 </div>
-                <div className={styles.dataItem}>
-                  <p>Total locked $bitGOV</p>
-                  <div>
-                    {formatNumber(accountLock + accountUnLock)}
-                    {Number(amount) ? (
-                      <>
-                        <img src="/dapp/right.svg" alt="icon" />
-                        <span>
-                          {formatNumber(
-                            Number(accountLock + accountUnLock) + Number(amount)
-                          )}
-                        </span>
-                      </>
-                    ) : null}
+                <div className={styles.dataInfo2}>
+                  <div className={styles.value}>
+                    <span>Your Lock Weight</span>
+                    <div>
+                      <p>{formatNumber(accountWeight)}</p>
+                    </div>
+                    <span className={styles.span}>
+                      of {formatNumber(totalWeight)}
+                    </span>
                   </div>
-                </div>
-                <div className={styles.dataItem}>
-                  <p>Unlock date</p>
-                  <div>
-                    <span>{lockDate}</span>
+                  <div className={styles.value}>
+                    <span>Your Share</span>
+                    <div>
+                      <p>{Number(accountShare.toFixed(2)).toLocaleString()}%</p>
+                    </div>
+                    <span className={styles.span}>
+                      of allocated vote weight
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className={styles.right}>
-              <div className={styles.main}>
-                <p>Your Locks</p>
-                <div>
-                  {!isLocks ? (
-                    <span
+              <div className={styles.lockMain}>
+                <div className={styles.left}>
+                  <div className={styles.title}>
+                    <p>Lock $bitGOV</p>
+                    <span>
+                      Lock for up to 52 weeks. Locked $bitGOV gives lock weight
+                      and allows boosted claiming.
+                    </span>
+                  </div>
+                  <div className={styles.enterAmount}>
+                    <div className={styles.miniTitle}>
+                      <span>Enter amount</span>
+                      <span style={{ fontSize: "12px" }}>
+                        Balance{" "}
+                        {Number(Number(balance).toFixed(2)).toLocaleString()}
+                        $bitGOV
+                      </span>
+                    </div>
+                    <div className="inputTxt3">
+                      <input
+                        type="number"
+                        placeholder="0"
+                        onWheel={(e) => e.target.blur()}
+                        id="amount"
+                        onKeyDown={onKeyDown.bind(this)}
+                        onChange={changeAmount.bind(this)}
+                        value={amount}
+                      ></input>
+                      <span>bitGOV</span>
+                    </div>
+                    <div className="changeBalance">
+                      <span onClick={() => changeVaule(0.25)}>25%</span>
+                      <span onClick={() => changeVaule(0.5)}>50%</span>
+                      <span onClick={() => changeVaule(0.75)}>75%</span>
+                      <span
+                        onClick={() => changeVaule(1)}
+                        style={{ border: "none" }}
+                      >
+                        Max
+                      </span>
+                    </div>
+                    <div className={styles.progressBar}>
+                      <Slider
+                        min={2}
+                        max={52}
+                        marks={marks}
+                        onChange={log}
+                        defaultValue={26}
+                        dotStyle={{
+                          borderColor: "#38a3a5",
+                          background: "#38a3a5",
+                        }}
+                        activeDotStyle={{ borderColor: "#38a3a5" }}
+                        handleStyle={{
+                          borderColor: "#38a3a5",
+                          backgroundColor: "#38a3a5",
+                          opacity: "1",
+                        }}
+                        trackStyle={{ backgroundColor: "#38a3a5" }}
+                      />
+                      <div className={styles.value}>{currentValue}</div>
+                    </div>
+                  </div>
+                  <div className={styles.button}>
+                    <div
                       className={
-                        Number(accountLock) > 0
-                          ? "button_border"
-                          : "button_border disable"
+                        !amount
+                          ? "button rightAngle height disable"
+                          : "button rightAngle height"
                       }
-                      onClick={() => enableAutoLock()}
+                      onClick={() => lock()}
                     >
-                      Enable auto lock
-                    </span>
-                  ) : (
-                    <span
-                      className="button_border"
-                      onClick={() => disableAutoLock()}
-                    >
-                      Disable auto lock
-                    </span>
-                  )}
+                      LOCK
+                    </div>
+                  </div>
+                  <div className={styles.data}>
+                    <div className={styles.dataItem}>
+                      <p>Lock weight</p>
+                      <div>
+                        {formatNumber(accountWeight)}
+                        {Number(amount) ? (
+                          <>
+                            <img src="/dapp/right.svg" alt="icon" />
+                            <span>
+                              {formatNumber(
+                                Number(accountWeight) +
+                                  Number(amount) * currentValue
+                              )}
+                            </span>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <p>Total locked $bitGOV</p>
+                      <div>
+                        {formatNumber(accountLock + accountUnLock)}
+                        {Number(amount) ? (
+                          <>
+                            <img src="/dapp/right.svg" alt="icon" />
+                            <span>
+                              {formatNumber(
+                                Number(accountLock + accountUnLock) +
+                                  Number(amount)
+                              )}
+                            </span>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <p>Unlock date</p>
+                      <div>
+                        <span>{lockDate}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.right}>
+                  <div className={styles.main}>
+                    <p>Your Locks</p>
+                    <div>
+                      {!isLocks ? (
+                        <span
+                          className={
+                            Number(accountLock) > 0
+                              ? "button_border"
+                              : "button_border disable"
+                          }
+                          onClick={() => enableAutoLock()}
+                        >
+                          Enable auto lock
+                        </span>
+                      ) : (
+                        <span
+                          className="button_border"
+                          onClick={() => disableAutoLock()}
+                        >
+                          Disable auto lock
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {!isLocks ? (
+                    Number(accountLock) > 0 ? (
+                      <div className={styles.span}>
+                        This allows you to combine all your existing locks in to
+                        one lock that is locked in perpetuity for 52 weeks. This
+                        ensures your vote-weight does not decrease week on week
+                        and saves you spending gas on relocking.
+                      </div>
+                    ) : (
+                      <div className={styles.span}>
+                        No active locks, lock some $bitGOV to gain Lock Weight
+                      </div>
+                    )
+                  ) : null}
                 </div>
               </div>
-              {!isLocks ? (
-                Number(accountLock) > 0 ? (
-                  <div className={styles.span}>
-                    This allows you to combine all your existing locks in to one
-                    lock that is locked in perpetuity for 52 weeks. This ensures
-                    your vote-weight does not decrease week on week and saves
-                    you spending gas on relocking.
-                  </div>
-                ) : (
-                  <div className={styles.span}>
-                    No active locks, lock some $bitGOV to gain Lock Weight
-                  </div>
-                )
-              ) : null}
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
-      {showUnlock ? (
+      {showUnlock && account.status === "connected" ? (
         <div className="infoTip">
           <div className="info infoNoPadding">
             <div className="infoTitle">
@@ -580,7 +606,12 @@ export default function Lock() {
                 </div>
             </div> : null} */}
 
-      {loading ? <Loading></Loading> : null}
+      {loading &&
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
+        <Loading></Loading>
+      ) : null}
       {currentState ? <Wait></Wait> : null}
       <Footer></Footer>
     </>
