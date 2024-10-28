@@ -125,7 +125,7 @@ export default function Mint() {
 
   useEffect(() => {
     const value = ((deposits * price) / debt) * 100;
-    setRatio(value);
+    setRatio(value || 0);
     if (collateralRatio && ratioType == "Auto") {
       setRatioNew(collateralRatio);
     } else {
@@ -491,7 +491,7 @@ export default function Mint() {
                   <p>Liquidation Price</p>
                   <span>
                     {collateral?.collateral?.name} = $
-                    {Number((debt * 1.5) / deposits)
+                    {Number(((debt || 0) * 1.5) / deposits)
                       .toFixed(4)
                       .toLocaleString()}
                   </span>
@@ -529,7 +529,7 @@ export default function Mint() {
         </div>
       </div>
       {currentState ? <Wait></Wait> : null}
-      {collateral.mcr === 0 ? <Loading></Loading> : null}
+      {collateral?.mcr === 0 ? <Loading></Loading> : null}
       <Footer></Footer>
     </>
   );

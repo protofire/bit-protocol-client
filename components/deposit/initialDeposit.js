@@ -69,7 +69,7 @@ export default function InitialDeposit({ address }) {
 
   useEffect(() => {
     const value = ((deposits * price) / debt) * 100;
-    setRatio(value);
+    setRatio(value || 0);
     if (collateralRatio && ratioType == "Auto") {
       setRatioNew(collateralRatio);
     } else {
@@ -470,7 +470,7 @@ export default function InitialDeposit({ address }) {
                   <p>Liquidation Price</p>
                   <span>
                     {collateral?.collateral?.name} = $
-                    {Number((debt * 1.5) / deposits)
+                    {Number(((debt || 0) * 1.5) / deposits)
                       .toFixed(4)
                       .toLocaleString()}
                   </span>
