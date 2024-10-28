@@ -153,7 +153,8 @@ export default function InitialDeposit({ address }) {
   };
 
   const changeCollVaule = (value) => {
-    setCollAmount((balance - 1 > 0 ? balance - 1 : 0) * value);
+    const balanceValue = isPayable ? balance : collateralBalance;
+    setCollAmount((balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value);
   };
 
   const changeCollateralRatio = async (e) => {

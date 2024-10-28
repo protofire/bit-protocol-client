@@ -219,10 +219,11 @@ export default function Earn() {
         setMaxBalance(bitUSDBalance);
       } else if (changeType == "Withdraw") {
         setMaxBalance(Number(accountDeposits));
+      } else {
+        setMaxBalance(
+          depositorCollateralGain.reduce((acc, value) => acc + Number(value), 0)
+        );
       }
-      // else {
-      //   setMaxBalance(Number(depositorCollateralGain));
-      // }
     }
   }, [
     typeName,

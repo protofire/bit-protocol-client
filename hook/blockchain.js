@@ -950,7 +950,6 @@ export const BlockchainContextProvider = ({ children }) => {
       rewardRate: fromBigNumber(rewardRate),
       accountDeposits: fromBigNumber(accountDeposits[0]),
       earned: fromBigNumber(earned[0]), // COMMENTED OUT UNLESS WE HAVE REWARDS
-      earned: 0,
       depositorCollateralGain: depositorCollateralGain,
     });
   };

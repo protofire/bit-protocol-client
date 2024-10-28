@@ -182,7 +182,8 @@ export default function ManageDeposit({ address }) {
 
   const changeCollVaule = (value) => {
     if (buttonName == "Deposit") {
-      setCollAmount((balance - 1 > 0 ? balance - 1 : 0) * value);
+      const balanceValue = isPayable ? balance : collateralBalance;
+      setCollAmount((balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value);
     } else if (buttonName == "Withdraw") {
       setCollAmount(withdrawMax * value);
     } else {

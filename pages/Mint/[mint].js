@@ -160,7 +160,6 @@ export default function Mint() {
 
   const changeCollAmount = async (e) => {
     const value = Number(e.target.value);
-    console.log(collateralBalance);
     const userBalance = isPayable ? balance : collateralBalance;
     const maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
     if (value < maxBalance) {
@@ -171,7 +170,8 @@ export default function Mint() {
   };
 
   const changeCollVaule = (value) => {
-    setCollAmount((balance - 1 > 0 ? balance - 1 : 0) * value);
+    const balanceValue = isPayable ? balance : collateralBalance;
+    setCollAmount((balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value);
   };
 
   const changeCollateralRatio = async (e) => {
