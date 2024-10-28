@@ -344,9 +344,7 @@ export default function ManageDeposit({ address }) {
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Repay ${Number(debtAmount.toFixed(4)).toLocaleString()} $${
-          collateral?.collateral?.name
-        }`,
+        info: `Repay ${Number(debtAmount.toFixed(4)).toLocaleString()} $bitUSD`,
       });
       setCurrentState(true);
       const result = await tx.wait();
