@@ -6,18 +6,39 @@ import { BlockchainContext } from "../../hook/blockchain";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { formatNumber } from "../../utils/helpers";
-// import Wait from "../tooltip/wait";
-// import tooltip from "../tooltip";
+import { CHAIN_ID } from '../../hook/wagmi'
 
 export default function Header(props) {
   const { menu, type, dappMenu } = props;
-
   const router = useRouter();
-
   const account = useAccount();
-  const { connectors, connect } = useConnect();
+
+  const { connectors, connect, error: connectError } = useConnect({
+    onError(error) {
+      console.error('Connect error:', error);
+    },
+    onSuccess(data) {
+      setOpenConnect(false);
+    }
+  });
+  useEffect(() => {
+    const checkConnectors = async () => {
+      for (const connector of connectors) {
+        try {
+          const isReady = await connector.getProvider()
+            .then(() => true)
+            .catch(() => false);
+          console.log(`Connector ${connector.name} ready status:`, isReady);
+        } catch (error) {
+          console.log(`Connector ${connector.name} check failed:`, error);
+        }
+      }
+    };
+
+    checkConnectors();
+  }, [connectors]);
   const { disconnect } = useDisconnect();
-  const { chains, switchChain, status, error } = useSwitchChain();
+  const { chains, switchChain } = useSwitchChain();
   const [openHealth, setOpenHealth] = useState(false);
 
   const {
@@ -67,6 +88,225 @@ export default function Header(props) {
       router.push("/#" + id);
     }
   };
+
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [hasAttemptedSwitch, setHasAttemptedSwitch] = useState(false);
+
+  const handleChainAddition = async (provider) => {
+    try {
+      // Check if chain is already added
+      try {
+        const chain = await provider.request({
+          method: 'eth_chainId',
+          params: [],
+        });
+
+        if (chain === `0x${CHAIN_ID.SAPPHIRE_TESTNET.toString(16)}`) {
+          return true;
+        }
+      } catch (error) {
+        console.error('Error checking chain:', error);
+      }
+
+      // Add the network
+      await provider.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: `0x${CHAIN_ID.SAPPHIRE_TESTNET.toString(16)}`,
+          chainName: 'Oasis Sapphire Testnet',
+          nativeCurrency: {
+            name: 'TEST',
+            symbol: 'TEST',
+            decimals: 18
+          },
+          rpcUrls: ['https://testnet.sapphire.oasis.dev'],
+          blockExplorerUrls: ['https://testnet.explorer.sapphire.oasis.dev']
+        }]
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error adding chain:', error);
+      if (error.code === 4001) {
+        throw new Error('User rejected adding the network');
+      }
+      throw error;
+    }
+  };
+
+  const handleConnect = async (connector) => {
+    if (isConnecting) return;
+
+    try {
+      setIsConnecting(true);
+
+      if (connector.name === "Coinbase Wallet") {
+        try {
+          // Get the provider
+          const provider = await connector.getProvider();
+
+          if (!provider) {
+            throw new Error('Unable to get Coinbase Wallet provider');
+          }
+
+          // Try to add the chain first, but don't fail if it errors
+          try {
+            await handleChainAddition(provider);
+          } catch (error) {
+            // Log but don't throw for chain addition errors
+            console.warn('Chain addition warning:', error.message);
+            // Only throw if it's a user rejection
+            if (error.code === 4001) {
+              throw error;
+            }
+          }
+
+          // Request accounts first
+          const accounts = await provider.request({ method: 'eth_requestAccounts' });
+
+          if (!accounts || accounts.length === 0) {
+            throw new Error('No accounts received');
+          }
+
+          // Then attempt the wagmi connection
+          await connect({
+            connector,
+            chainId: CHAIN_ID.SAPPHIRE_TESTNET
+          });
+
+          // Wait a bit for the connection to be established
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Try switching to the correct chain
+          try {
+            await provider.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: `0x${CHAIN_ID.SAPPHIRE_TESTNET.toString(16)}` }],
+            });
+          } catch (switchError) {
+            // Ignore switch errors - the chain might already be added
+            console.warn('Chain switch warning:', switchError.message);
+          }
+
+          setOpenConnect(false);
+
+        } catch (error) {
+          console.error('Coinbase connection error:', error);
+
+          // Only throw for actual connection errors
+          if (error.code === 4001) {
+            throw new Error('Connection rejected by user');
+          } else if (error.message?.includes('provider is undefined') ||
+            error.message?.includes('Unable to get Coinbase Wallet provider')) {
+            throw new Error('Please install the Coinbase Wallet extension or open in Coinbase Wallet browser');
+          } else if (!error.message?.includes('chain')) {
+            // Don't throw for chain-related errors
+            throw error;
+          }
+
+          if (error.message?.includes('chain')) {
+            setOpenConnect(false);
+          }
+        }
+      } else {
+        // Handle other wallets
+        await connect({
+          connector,
+          chainId: CHAIN_ID.SAPPHIRE_TESTNET
+        });
+        setOpenConnect(false);
+      }
+
+    } catch (error) {
+      console.error('Connection error:', error);
+      let errorMessage = 'Failed to connect wallet. ';
+
+      if (error.code === 4001) {
+        errorMessage += 'User rejected the connection.';
+      } else if (error.message?.includes('provider')) {
+        errorMessage += 'Please install the Coinbase Wallet extension or open in Coinbase Wallet browser.';
+      } else {
+        errorMessage += error.message || 'Please try again.';
+      }
+
+      // Only show alert for non-chain-related errors
+      if (!error.message?.includes('chain')) {
+        alert(errorMessage);
+      }
+
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (account.status === "connected" && !hasAttemptedSwitch) {
+      const switchChainIfNeeded = async () => {
+        if (account.chainId !== CHAIN_ID.SAPPHIRE_TESTNET) {
+          try {
+            setHasAttemptedSwitch(true);
+            await switchChain({ chainId: CHAIN_ID.SAPPHIRE_TESTNET });
+          } catch (error) {
+            console.error('Chain switch error:', error);
+            // Don't throw, just log the error
+          }
+        }
+      };
+
+      switchChainIfNeeded();
+    }
+  }, [account.status, account.chainId, hasAttemptedSwitch]);
+
+  // Reset switch attempt flag on disconnect
+  useEffect(() => {
+    if (account.status === "disconnected") {
+      setHasAttemptedSwitch(false);
+    }
+  }, [account.status]);
+
+  useEffect(() => {
+    if (account.isConnected) {
+      setOpenConnect(false);
+    }
+  }, [account.isConnected]);
+
+  const handleDisconnect = async () => {
+    try {
+      // Clear local storage
+      localStorage.removeItem(`signInAuth-${account.chainId}`);
+      localStorage.removeItem(`signInToken-${account.chainId}`);
+
+      // Reset all relevant states
+      setShowSignIn(false);
+      setShowSignInToken(false);
+      setOpenConnect(false);
+      setOpenNetworks(false);
+      setHasAttemptedSwitch(false);
+
+      // Perform the disconnect
+      await disconnect();
+
+      // Force a page reload after a short delay to ensure clean state
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    } catch (error) {
+      console.error('Disconnect error:', error);
+      alert('Error disconnecting. Please try again.');
+    }
+  };
+
+  useEffect(() => {
+    if (account.status === "disconnected") {
+      setHasAttemptedSwitch(false);
+      setShowSignIn(false);
+      setShowSignInToken(false);
+
+      // Clear auth storage
+      localStorage.removeItem(`signInAuth-${account.chainId}`);
+      localStorage.removeItem(`signInToken-${account.chainId}`);
+    }
+  }, [account.status, account.chainId]);
 
   return (
     <>
@@ -258,7 +498,7 @@ export default function Header(props) {
                         <div
                           className="button h5None"
                           style={{ minWidth: "auto" }}
-                          onClick={() => disconnect()}
+                            onClick={handleDisconnect}
                         >
                           Disconnect
                         </div>
@@ -267,10 +507,13 @@ export default function Header(props) {
                   ) : (
                     <div
                       className="button"
-                      style={{ minWidth: "auto" }}
-                      onClick={() => setOpenConnect(true)}
+                          style={{
+                            minWidth: "auto",
+                            opacity: isConnecting ? 0.7 : 1
+                          }}
+                          onClick={() => !isConnecting && setOpenConnect(true)}
                     >
-                      Connect Wallet
+                          {isConnecting ? "Connecting..." : "Connect Wallet"}
                     </div>
                   )}
                 </div>
@@ -298,39 +541,51 @@ export default function Header(props) {
                 onClick={() => setOpenConnect(false)}
                 src="/icon/close.svg"
                 alt="close"
-              ></img>
+              />
             </div>
             {connectors.map((connector) => (
               <div
                 className="divBtn"
                 key={connector.uid}
                 onClick={() => {
-                  connect({ connector });
-                  setOpenConnect(false);
+                  if (!isConnecting) {
+                    handleConnect(connector);
+                  }
                 }}
                 id={"connect-" + connector.id}
+                style={{
+                  opacity: isConnecting ? 0.5 : 1,
+                  cursor: isConnecting ? 'not-allowed' : 'pointer'
+                }}
               >
                 {connector.name === "Injected (Sapphire)"
                   ? "Browser wallet (Sapphire)"
                   : connector.name === "Injected"
-                  ? "Browser wallet"
-                  : connector.name}
+                    ? "Browser wallet"
+                    : connector.name}
+                {isConnecting && connector.name === "Coinbase Wallet" && " (Connecting...)"}
 
                 {connector.name === "Coinbase Wallet" ? (
                   <img
                     className={styles.close}
                     src="/icon/coinbase.svg"
                     alt="close"
-                  ></img>
+                  />
                 ) : (
                   <img
                     className={styles.close}
                     src="/icon/browserWallet.svg"
                     alt="close"
-                  ></img>
+                    />
                 )}
               </div>
             ))}
+
+            {connectError && (
+              <div style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
+                {connectError.message}
+              </div>
+            )}
           </div>
         </div>
       ) : null}
@@ -448,7 +703,16 @@ export default function Header(props) {
               Please sign in your wallet's pop-up to allow Bit Protocol to
               access your bitUSD balance.
             </div>
-            <div className="button" onClick={() => signDebtToken()}>
+            <div
+              className="button"
+              onClick={async () => {
+                try {
+                  await signDebtToken();
+                } catch (error) {
+                  console.error('Failed to sign:', error);
+                }
+              }}
+            >
               Sign in
             </div>
           </div>
