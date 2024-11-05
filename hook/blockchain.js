@@ -1405,7 +1405,6 @@ export const BlockchainContextProvider = ({ children }) => {
       }
 
       const rsv = ethers.utils.splitSignature(signature);
-
       const auth = { user, time, rsv };
 
       localStorage.setItem(
