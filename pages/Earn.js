@@ -102,23 +102,44 @@ export default function Earn() {
     setShowEarnMain(true);
   };
 
-  const onKeyDown = async (e) => {
-    const invalidChars = ["-", "+", "e", "E"];
-    if (invalidChars.indexOf(e.key) !== -1) {
+  const onKeyDown = (e) => {
+    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+
+    // Allow: backspace, delete, tab, escape, enter, decimal point
+    if ([
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Escape',
+      'Enter',
+      '.',
+      ','
+    ].includes(e.key)) {
+      return;
+    }
+
+    // Prevent if not a number
+    if (isNaN(Number(e.key))) {
       e.preventDefault();
     }
   };
 
   const changeAmount = async (e) => {
-    const value = Number(e.target.value);
-    if (value < maxBalance) {
-      setAmount(value == 0 ? "" : value);
-    } else {
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    // Allow empty string or values within range (including zero)
+    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
+      setAmount(value === '' ? '' : numValue);
+    } else if (numValue > maxBalance) {
       setAmount(maxBalance);
     }
   };
 
-  const changeAmountVaule = (value) => {
+  const changeAmountValue = (value) => {
     setAmount(maxBalance * value);
   };
 
@@ -576,7 +597,8 @@ export default function Earn() {
 
   const Operate = () => {
     if (typeName == "bitGOV/ROSE LP") {
-      if (!amount) {
+      // Allow zero amounts for approval and staking operations
+      if (amount === '' || amount === undefined) {
         return;
       }
       if (buttonName == "Approve") {
@@ -587,7 +609,7 @@ export default function Earn() {
         unStakeLpBitGov();
       }
     } else if (typeName == "bitUSD/USDC LP") {
-      if (!amount) {
+      if (amount === '' || amount === undefined) {
         return;
       }
       if (buttonName == "Approve") {
@@ -599,12 +621,12 @@ export default function Earn() {
       }
     } else {
       if (buttonName == "Deposit") {
-        if (!amount) {
+        if (amount === '' || amount === undefined) {
           return;
         }
         deposit();
       } else if (buttonName == "Withdraw") {
-        if (!amount) {
+        if (amount === '' || amount === undefined) {
           return;
         }
         withdraw();
@@ -694,7 +716,7 @@ export default function Earn() {
                       $
                       {formatNumber(
                         Number(stabilityPoolBalance) +
-                          Number(stabilityPool.balance) * rosePrice
+                        Number(stabilityPool.balance) * rosePrice
                       )}
                     </span>
                   </div>
@@ -833,8 +855,8 @@ export default function Earn() {
                       {typeName == "bitGOV/ROSE LP"
                         ? formatNumber(vUSDBaseApr2 * boost)
                         : typeName == "bitUSD/USDC LP"
-                        ? formatNumber(vUSDBaseApr4 * boost)
-                        : formatNumber(vUSDBaseApr3 * boost)}{" "}
+                          ? formatNumber(vUSDBaseApr4 * boost)
+                          : formatNumber(vUSDBaseApr3 * boost)}{" "}
                       ({boost}x)
                     </p>
                   </div>
@@ -852,8 +874,8 @@ export default function Earn() {
                       {typeName == "bitGOV/ROSE LP"
                         ? "Stake bitGOV/ROSE LP to earn bitGOV rewards."
                         : typeName == "bitUSD/USDC LP"
-                        ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
-                        : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
+                          ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
+                          : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
                       {typeName == "Stability Pool" ? (
                         <Link
                           target="_blank"
@@ -887,7 +909,7 @@ export default function Earn() {
                       </>
                     ) : null}
                     {typeName == "bitGOV/ROSE LP" ||
-                    typeName == "bitUSD/USDC LP" ? (
+                      typeName == "bitUSD/USDC LP" ? (
                       <>
                         <span
                           className={
@@ -980,19 +1002,21 @@ export default function Earn() {
                             placeholder="0"
                             onWheel={(e) => e.target.blur()}
                             id="amount"
-                            onKeyDown={onKeyDown.bind(this)}
-                            onChange={changeAmount.bind(this)}
-                            value={amount}
+                            min="0"  // Prevent negative values
+                            step="any"  // Allow decimal values
+                            onKeyDown={onKeyDown}
+                            onChange={changeAmount}
+                            value={amount === 0 ? "0" : amount || ""}
                           />
                           <span className="font_12_gray">
                             ≈$
                             {typeName == "bitGOV/ROSE LP"
                               ? formatNumber(Number(amount) * lpPrice)
                               : typeName == "bitUSD/USDC LP"
-                              ? formatNumber(
+                                ? formatNumber(
                                   Number(amount) * (tvl / USDCtotalSupply)
                                 )
-                              : formatNumber(Number(amount))}
+                                : formatNumber(Number(amount))}
                           </span>
                         </div>
                         <span className="font_14 gray">{coin}</span>
@@ -1001,11 +1025,11 @@ export default function Earn() {
                         className="changeBalance"
                         style={{ marginTop: "12px" }}
                       >
-                        <span onClick={() => changeAmountVaule(0.25)}>25%</span>
-                        <span onClick={() => changeAmountVaule(0.5)}>50%</span>
-                        <span onClick={() => changeAmountVaule(0.75)}>75%</span>
+                        <span onClick={() => changeAmountValue(0.25)}>25%</span>
+                        <span onClick={() => changeAmountValue(0.5)}>50%</span>
+                        <span onClick={() => changeAmountValue(0.75)}>75%</span>
                         <span
-                          onClick={() => changeAmountVaule(1)}
+                          onClick={() => changeAmountValue(1)}
                           style={{ border: "none" }}
                         >
                           Max
@@ -1046,9 +1070,9 @@ export default function Earn() {
       </div>
 
       {!Object.keys(stabilityPool).length > 0 &&
-      account.status === "connected" &&
-      signatureToken?.user &&
-      signatureTrove?.user ? (
+        account.status === "connected" &&
+        signatureToken?.user &&
+        signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
 

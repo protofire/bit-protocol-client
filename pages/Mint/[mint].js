@@ -76,8 +76,8 @@ export default function Mint() {
       setIsPayable(collaterals[router.query.mint]?.collateral.payable);
       const tokenBalance = !collaterals[router.query.mint]?.collateral.payable
         ? await getTokenBalance(
-            collaterals[router.query.mint]?.collateral.address
-          )
+          collaterals[router.query.mint]?.collateral.address
+        )
         : 0;
       setCollateralBalance(tokenBalance);
     }
@@ -151,32 +151,91 @@ export default function Mint() {
     }
   }, [collAmount, ratioType, collateralRatio]);
 
-  const onKeyDown = async (e) => {
-    const invalidChars = ["-", "+", "e", "E"];
-    if (invalidChars.indexOf(e.key) !== -1) {
+  const onKeyDown = (e) => {
+    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+
+    // Allow: backspace, delete, tab, escape, enter, decimal point
+    if ([
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Escape',
+      'Enter',
+      '.',
+      ','
+    ].includes(e.key)) {
+      return;
+    }
+
+    // Prevent if not a number
+    if (isNaN(Number(e.key))) {
       e.preventDefault();
     }
   };
 
   const changeCollAmount = async (e) => {
-    const value = Number(e.target.value);
+    const value = e.target.value;
+    const numValue = Number(value);
     const userBalance = isPayable ? balance : collateralBalance;
     const maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
-    if (value < maxBalance) {
-      setCollAmount(value == 0 ? "" : value);
-    } else {
+
+    // Allow empty string or values within range (including zero)
+    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
+      setCollAmount(value === '' ? '' : numValue);
+
+      // Update debt amount based on new collateral amount
+      if (value === '' || numValue === 0) {
+        setDebtAmount('');
+        setDebtMax(0);
+      } else if (collateralRatio && ratioType === "Auto") {
+        const max = (Number(deposits + numValue) * price) / (collateralRatio / 100) - debt;
+        setDebtAmount(max);
+        setDebtMax(max);
+      } else {
+        const max = (Number(deposits + numValue) * price) / 1.55 - debt;
+        setDebtAmount(max);
+        setDebtMax(max);
+      }
+    } else if (numValue > maxBalance) {
       setCollAmount(maxBalance);
     }
   };
 
-  const changeCollVaule = (value) => {
+  const changeCollValue = (value) => {
     const balanceValue = isPayable ? balance : collateralBalance;
-    setCollAmount((balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value);
+    const newAmount = (balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value;
+    setCollAmount(newAmount);
+
+    // Update debt amount based on new collateral amount
+    if (collateralRatio && ratioType === "Auto") {
+      const max = (Number(deposits + newAmount) * price) / (collateralRatio / 100) - debt;
+      setDebtAmount(max);
+      setDebtMax(max);
+    } else {
+      const max = (Number(deposits + newAmount) * price) / 1.55 - debt;
+      setDebtAmount(max);
+      setDebtMax(max);
+    }
   };
 
   const changeCollateralRatio = async (e) => {
-    const value = Number(e.target.value);
-    setCollateralRatio(value == 0 ? "" : value);
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    // Allow empty string or non-negative values
+    if (value === '' || numValue >= 0) {
+      setCollateralRatio(value === '' ? '' : numValue);
+
+      // Update debt max and amount based on new ratio
+      if (collAmount && numValue > 0) {
+        const max = (Number(deposits + Number(collAmount)) * price) / (numValue / 100) - debt;
+        setDebtMax(max);
+        setDebtAmount(max);
+      }
+    }
   };
 
   useEffect(() => {
@@ -192,16 +251,20 @@ export default function Mint() {
   }, [collAmount, price, collateralRatio, ratioType]);
 
   const changeDebtAmount = async (e) => {
-    const value = Number(e.target.value);
-    if (value > debtMax) {
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    // Allow empty string or values within range (including zero)
+    if (value === '' || (numValue >= 0 && numValue <= debtMax)) {
+      setDebtAmount(value === '' ? '' : numValue);
+    } else if (numValue > debtMax) {
       setDebtAmount(debtMax);
-    } else {
-      setDebtAmount(value == 0 ? "" : value);
     }
   };
 
-  const changeDebtVaule = (value) => {
-    setDebtAmount(debtMax * value);
+  const changeDebtValue = (value) => {
+    const newAmount = debtMax * value;
+    setDebtAmount(newAmount);
   };
 
   const changeRatioType = (index) => {
@@ -212,9 +275,11 @@ export default function Mint() {
   };
 
   const approveCollateral = async () => {
-    if (!collAmount || !debtAmount) {
+    if ((collAmount === '' || collAmount === undefined) ||
+      (debtAmount === '' || debtAmount === undefined)) {
       return;
     }
+
     if (Number(debtAmount) < 1) {
       tooltip.error({
         content: "A Minimum Debt of 1 bitUSD is Required!",
@@ -222,6 +287,7 @@ export default function Mint() {
       });
       return;
     }
+
     try {
       const tx = await approve(
         collateralAddr,
@@ -229,9 +295,8 @@ export default function Mint() {
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${
-          collateral?.collateral?.name
-        }`,
+        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
+          }`,
       });
       setApproved({
         hash: tx,
@@ -341,18 +406,20 @@ export default function Mint() {
                   placeholder="0"
                   onWheel={(e) => e.target.blur()}
                   id="collAmount"
-                  onKeyDown={onKeyDown.bind(this)}
-                  onChange={changeCollAmount.bind(this)}
-                  value={collAmount}
-                ></input>
+                  min="0"
+                  step="any"
+                  onKeyDown={onKeyDown}
+                  onChange={changeCollAmount}
+                  value={collAmount === 0 ? "0" : collAmount || ""}
+                />
                 <span>${collateral?.collateral?.name}</span>
               </div>
               <div className="changeBalance">
-                <span onClick={() => changeCollVaule(0.25)}>25%</span>
-                <span onClick={() => changeCollVaule(0.5)}>50%</span>
-                <span onClick={() => changeCollVaule(0.75)}>75%</span>
+                <span onClick={() => changeCollValue(0.25)}>25%</span>
+                <span onClick={() => changeCollValue(0.5)}>50%</span>
+                <span onClick={() => changeCollValue(0.75)}>75%</span>
                 <span
-                  onClick={() => changeCollVaule(1)}
+                  onClick={() => changeCollValue(1)}
                   style={{ border: "none" }}
                 >
                   Max
@@ -391,10 +458,12 @@ export default function Mint() {
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
                       id="collateralRatio"
-                      onKeyDown={onKeyDown.bind(this)}
-                      onChange={changeCollateralRatio.bind(this)}
-                      value={collateralRatio}
-                    ></input>
+                      min="0"
+                      step="any"
+                      onKeyDown={onKeyDown}
+                      onChange={changeCollateralRatio}
+                      value={collateralRatio === 0 ? "0" : collateralRatio || ""}
+                    />
                     <span>%</span>
                   </div>
                 ) : null}
@@ -414,18 +483,20 @@ export default function Mint() {
                   placeholder="0"
                   onWheel={(e) => e.target.blur()}
                   id="debtAmount"
-                  onKeyDown={onKeyDown.bind(this)}
-                  onChange={changeDebtAmount.bind(this)}
-                  value={debtAmount}
-                ></input>
+                  min="0"
+                  step="any"
+                  onKeyDown={onKeyDown}
+                  onChange={changeDebtAmount}
+                  value={debtAmount === 0 ? "0" : debtAmount || ""}
+                />
                 <span>$bitUSD</span>
               </div>
               <div className="changeBalance">
-                <span onClick={() => changeDebtVaule(0.25)}>25%</span>
-                <span onClick={() => changeDebtVaule(0.5)}>50%</span>
-                <span onClick={() => changeDebtVaule(0.75)}>75%</span>
+                <span onClick={() => changeDebtValue(0.25)}>25%</span>
+                <span onClick={() => changeDebtValue(0.5)}>50%</span>
+                <span onClick={() => changeDebtValue(0.75)}>75%</span>
                 <span
-                  onClick={() => changeDebtVaule(1)}
+                  onClick={() => changeDebtValue(1)}
                   style={{ border: "none" }}
                 >
                   Max

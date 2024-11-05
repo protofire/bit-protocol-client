@@ -130,9 +130,27 @@ export default function ManageDeposit({ address }) {
 
   const price = collateralPrices[address];
 
-  const onKeyDown = async (e) => {
-    const invalidChars = ["-", "+", "e", "E"];
-    if (invalidChars.indexOf(e.key) !== -1) {
+  const onKeyDown = (e) => {
+    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+
+    // Allow: backspace, delete, tab, escape, enter, decimal point
+    if ([
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Escape',
+      'Enter',
+      '.',
+      ','
+    ].includes(e.key)) {
+      return;
+    }
+
+    // Prevent if not a number
+    if (isNaN(Number(e.key))) {
       e.preventDefault();
     }
   };
@@ -161,29 +179,36 @@ export default function ManageDeposit({ address }) {
   };
 
   const changeCollAmount = async (e) => {
-    const value = Number(e.target.value);
+    const value = e.target.value;
+    const numValue = Number(value);
     const balanceValue = isPayable ? balance : collateralBalance;
     const maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
-    if (value < maxBalance) {
-      setCollAmount(value == 0 ? "" : value);
-    } else {
+
+    // Allow empty string or values within range (including zero)
+    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
+      setCollAmount(value === '' ? '' : numValue);
+    } else if (numValue > maxBalance) {
       setCollAmount(maxBalance);
     }
   };
 
   const changeWithdrawAmount = async (e) => {
-    const value = Number(e.target.value);
-    if (value < withdrawMax) {
-      setCollAmount(value == 0 ? "" : value);
-    } else {
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    // Allow empty string or values within range (including zero)
+    if (value === '' || (numValue >= 0 && numValue <= withdrawMax)) {
+      setCollAmount(value === '' ? '' : numValue);
+    } else if (numValue > withdrawMax) {
       setCollAmount(withdrawMax);
     }
   };
 
-  const changeCollVaule = (value) => {
+  const changeCollValue = (value) => {
     if (buttonName == "Deposit") {
       const balanceValue = isPayable ? balance : collateralBalance;
-      setCollAmount((balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value);
+      const maxBalance = (balanceValue - 1 > 0 ? balanceValue - 1 : 0);
+      setCollAmount(maxBalance * value);
     } else if (buttonName == "Withdraw") {
       setCollAmount(withdrawMax * value);
     } else {
@@ -203,11 +228,14 @@ export default function ManageDeposit({ address }) {
   }, [collAmount, debt, deposits, price]);
 
   const changeDebtAmount = async (e) => {
-    const value = Number(e.target.value);
-    if (value > Number(bitUSDBalance)) {
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    // Allow empty string or values within range (including zero)
+    if (value === '' || (numValue >= 0 && numValue <= Number(bitUSDBalance))) {
+      setDebtAmount(value === '' ? '' : numValue);
+    } else if (numValue > Number(bitUSDBalance)) {
       setDebtAmount(Number(bitUSDBalance));
-    } else {
-      setDebtAmount(value == 0 ? "" : value);
     }
   };
 
@@ -228,9 +256,8 @@ export default function ManageDeposit({ address }) {
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${
-          collateral?.collateral?.name
-        }`,
+        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
+          }`,
       });
       setApproved({
         hash: tx,
@@ -263,9 +290,8 @@ export default function ManageDeposit({ address }) {
         );
         setCurrentWaitInfo({
           type: "loading",
-          info: `Deposit ${Number(collAmount.toFixed(4)).toLocaleString()} $${
-            collateral?.collateral?.name
-          }`,
+          info: `Deposit ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
+            }`,
         });
         setCurrentState(true);
         const result = await tx.wait();
@@ -305,9 +331,8 @@ export default function ManageDeposit({ address }) {
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Withdraw ${Number(collAmount.toFixed(4)).toLocaleString()} $${
-          collateral?.collateral?.name
-        }`,
+        info: `Withdraw ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
+          }`,
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -524,10 +549,12 @@ export default function ManageDeposit({ address }) {
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
                       id="collAmount"
-                      onKeyDown={onKeyDown.bind(this)}
-                      onChange={changeCollAmount.bind(this)}
-                      value={collAmount}
-                    ></input>
+                      min="0"
+                      step="any"
+                      onKeyDown={onKeyDown}
+                      onChange={changeCollAmount}
+                      value={collAmount === 0 ? "0" : collAmount || ""}
+                    />
                     <span>${collateral?.collateral?.name}</span>
                   </div>
                 </>
@@ -547,10 +574,12 @@ export default function ManageDeposit({ address }) {
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
                       id="collAmount"
-                      onKeyDown={onKeyDown.bind(this)}
-                      onChange={changeWithdrawAmount.bind(this)}
-                      value={collAmount}
-                    ></input>
+                        min="0"
+                        step="any"
+                        onKeyDown={onKeyDown}
+                        onChange={changeWithdrawAmount}
+                        value={collAmount === 0 ? "0" : collAmount || ""}
+                      />
                     <span>${collateral?.collateral?.name}</span>
                   </div>
                 </>
@@ -572,21 +601,23 @@ export default function ManageDeposit({ address }) {
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
                       id="debtAmount"
-                      onKeyDown={onKeyDown.bind(this)}
-                      onChange={changeDebtAmount.bind(this)}
-                      value={debtAmount}
-                    ></input>
+                          min="0"
+                          step="any"
+                          onKeyDown={onKeyDown}
+                          onChange={changeDebtAmount}
+                          value={debtAmount === 0 ? "0" : debtAmount || ""}
+                        />
                     <span>$bitUSD</span>
                   </div>
                 </>
               ) : null}
               {operateType == "Close" ? null : (
                 <div className="changeBalance">
-                  <span onClick={() => changeCollVaule(0.25)}>25%</span>
-                  <span onClick={() => changeCollVaule(0.5)}>50%</span>
-                  <span onClick={() => changeCollVaule(0.75)}>75%</span>
+                  <span onClick={() => changeCollValue(0.25)}>25%</span>
+                  <span onClick={() => changeCollValue(0.5)}>50%</span>
+                  <span onClick={() => changeCollValue(0.75)}>75%</span>
                   <span
-                    onClick={() => changeCollVaule(1)}
+                    onClick={() => changeCollValue(1)}
                     style={{ border: "none" }}
                   >
                     Max
@@ -617,11 +648,11 @@ export default function ManageDeposit({ address }) {
                     <span>
                       {operateType2 == "Deposit"
                         ? Number(
-                            Number(afterDepositRatio).toFixed(4)
-                          ).toLocaleString()
+                          Number(afterDepositRatio).toFixed(4)
+                        ).toLocaleString()
                         : Number(
-                            Number(afterWithdrawRatio).toFixed(4)
-                          ).toLocaleString()}
+                          Number(afterWithdrawRatio).toFixed(4)
+                        ).toLocaleString()}
                       %
                     </span>
                   </div>

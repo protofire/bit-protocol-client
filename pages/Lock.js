@@ -37,9 +37,27 @@ export default function Lock() {
 
   const vinePrice = 1;
 
-  const onKeyDown = async (e) => {
-    const invalidChars = ["-", "+", "e", "E"];
-    if (invalidChars.indexOf(e.key) !== -1) {
+  const onKeyDown = (e) => {
+    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+
+    // Allow: backspace, delete, tab, escape, enter, decimal point
+    if ([
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Escape',
+      'Enter',
+      '.',
+      ','
+    ].includes(e.key)) {
+      return;
+    }
+
+    // Prevent if not a number
+    if (isNaN(Number(e.key))) {
       e.preventDefault();
     }
   };
@@ -106,15 +124,18 @@ export default function Lock() {
   ]);
 
   const changeAmount = async (e) => {
-    const value = Number(e.target.value);
-    if (value < Number(balance)) {
-      setAmount(value == 0 ? "" : value);
-    } else {
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    // Allow empty string or values within range (including zero)
+    if (value === '' || (numValue >= 0 && numValue <= Number(balance))) {
+      setAmount(value === '' ? '' : numValue);
+    } else if (numValue > Number(balance)) {
       setAmount(Math.floor(balance));
     }
   };
 
-  const changeVaule = (value) => {
+  const changeValue = (value) => {
     setAmount(Math.floor(Number(balance) * value));
   };
 
@@ -139,15 +160,22 @@ export default function Lock() {
   }, [totalWeight, accountWeight]);
 
   const changeClaimAmount = async (e) => {
-    const value = Number(e.target.value);
-    const withdrawWithPenaltyAmounts = await getWithdrawWithPenaltyAmounts(
-      value
-    );
-    setAmountWithdrawn(withdrawWithPenaltyAmounts.amountWithdrawn);
-    setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
-    if (value < Number(accountLock)) {
-      setClaimAmount(value == 0 ? "" : value);
-    } else {
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    // Get penalty amounts even for zero values
+    if (value === '' || numValue >= 0) {
+      const withdrawWithPenaltyAmounts = await getWithdrawWithPenaltyAmounts(
+        numValue || 0
+      );
+      setAmountWithdrawn(withdrawWithPenaltyAmounts.amountWithdrawn);
+      setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
+    }
+
+    // Allow empty string or values within range (including zero)
+    if (value === '' || (numValue >= 0 && numValue <= Number(accountLock))) {
+      setClaimAmount(value === '' ? '' : numValue);
+    } else if (numValue > Number(accountLock)) {
       setClaimAmount(Math.floor(accountLock));
     }
   };
@@ -158,9 +186,10 @@ export default function Lock() {
   };
 
   const lock = async () => {
-    if (!amount) {
+    if (amount === '' || amount === undefined) {
       return;
     }
+
     try {
       const tx = await lockToken(amount, currentValue);
       setCurrentWaitInfo({
@@ -250,10 +279,11 @@ export default function Lock() {
   };
 
   const earlyUnlock = async () => {
-    if (!claimAmount) {
+    if (claimAmount === '' || claimAmount === undefined) {
       tooltip.error({ content: "Enter Amount", duration: 5000 });
       return;
     }
+
     try {
       const tx = await withdrawWithPenalty(Math.floor(claimAmount));
       setCurrentWaitInfo({
@@ -380,18 +410,20 @@ export default function Lock() {
                         placeholder="0"
                         onWheel={(e) => e.target.blur()}
                         id="amount"
-                        onKeyDown={onKeyDown.bind(this)}
-                        onChange={changeAmount.bind(this)}
-                        value={amount}
-                      ></input>
+                          min="0"
+                          step="any"
+                          onKeyDown={onKeyDown}
+                          onChange={changeAmount}
+                          value={amount === 0 ? "0" : amount || ""}
+                        />
                       <span>bitGOV</span>
                     </div>
                     <div className="changeBalance">
-                      <span onClick={() => changeVaule(0.25)}>25%</span>
-                      <span onClick={() => changeVaule(0.5)}>50%</span>
-                      <span onClick={() => changeVaule(0.75)}>75%</span>
+                        <span onClick={() => changeValue(0.25)}>25%</span>
+                        <span onClick={() => changeValue(0.5)}>50%</span>
+                        <span onClick={() => changeValue(0.75)}>75%</span>
                       <span
-                        onClick={() => changeVaule(1)}
+                          onClick={() => changeValue(1)}
                         style={{ border: "none" }}
                       >
                         Max
@@ -442,7 +474,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountWeight) +
-                                  Number(amount) * currentValue
+                                Number(amount) * currentValue
                               )}
                             </span>
                           </>
@@ -459,7 +491,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountLock + accountUnLock) +
-                                  Number(amount)
+                                Number(amount)
                               )}
                             </span>
                           </>
@@ -550,10 +582,12 @@ export default function Lock() {
                   placeholder="0"
                   onWheel={(e) => e.target.blur()}
                   id="claimAmount"
-                  onKeyDown={onKeyDown.bind(this)}
-                  onChange={changeClaimAmount.bind(this)}
-                  value={claimAmount}
-                ></input>
+                  min="0"
+                  step="any"
+                  onKeyDown={onKeyDown}
+                  onChange={changeClaimAmount}
+                  value={claimAmount === 0 ? "0" : claimAmount || ""}
+                />
                 <span>$bitGOV</span>
               </div>
               {claimAmount > accountUnLock ? (
@@ -607,9 +641,9 @@ export default function Lock() {
             </div> : null} */}
 
       {loading &&
-      account.status === "connected" &&
-      signatureToken?.user &&
-      signatureTrove?.user ? (
+        account.status === "connected" &&
+        signatureToken?.user &&
+        signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
       {currentState ? <Wait></Wait> : null}
