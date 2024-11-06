@@ -9,6 +9,7 @@ import tooltip from "../components/tooltip";
 import Slider from "rc-slider";
 import { formatNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
+import useDebounce from "../hook/useDebounce";
 
 import "rc-slider/assets/index.css";
 
@@ -71,6 +72,8 @@ export default function Lock() {
   const [showUnlock, setShowUnlock] = useState(false);
   const [claimAmount, setClaimAmount] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const debouncedValue = useDebounce(claimAmount, 3000);
 
   const queryData = async () => {
     if (account.status === "connected") {
@@ -138,13 +141,25 @@ export default function Lock() {
     // setLoading(false);
   }, [totalWeight, accountWeight]);
 
-  const changeClaimAmount = async (e) => {
-    const value = Number(e.target.value);
+  useEffect(() => {
+    if (debouncedValue) {
+      fetchWithdrawPenaltyAmounts(debouncedValue);
+    }
+  }, [debouncedValue]);
+
+  const fetchWithdrawPenaltyAmounts = async (value) => {
     const withdrawWithPenaltyAmounts = await getWithdrawWithPenaltyAmounts(
       value
     );
     setAmountWithdrawn(withdrawWithPenaltyAmounts.amountWithdrawn);
     setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
+  };
+
+  const changeClaimAmount = async (e) => {
+    const value = Number(e.target.value);
+    setAmountWithdrawn(0);
+    setPenaltyAmountPaid(0);
+
     if (value < Number(accountLock)) {
       setClaimAmount(value == 0 ? "" : value);
     } else {
@@ -571,7 +586,11 @@ export default function Lock() {
                 </p>
               ) : null}
               <div
-                className="button rightAngle"
+                className={
+                  Number(debouncedValue) > 0
+                    ? "button rightAngle"
+                    : "button rightAngle disable"
+                }
                 style={{ marginTop: "20px" }}
                 onClick={() => earlyUnlock()}
               >
