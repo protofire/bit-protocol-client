@@ -67,52 +67,52 @@ export const BlockchainContext = createContext({
   systemWeek: 0,
 
   // FUNCTIONS
-  signTrove: async () => {},
-  setSignatureTrove: async () => {},
-  checkAuth: async () => {},
-  checkAuthToken: async () => {},
-  getData: async () => {},
-  getTrove: async () => {},
-  openTrove: async () => {},
-  signDebtToken: async () => {},
-  getRosePrice: async () => {},
-  getWithdrawWithPenaltyAmounts: async () => {},
-  setCurrentState: async () => {},
-  setCurrentWaitInfo: async () => {},
-  approve: async () => {},
-  addColl: async () => {},
-  getTokenBalance: async () => {},
-  withdrawColl: async () => {},
-  repayDebt: async () => {},
-  closeTrove: async () => {},
-  provideToSP: async () => {},
-  withdrawFromSP: async () => {},
-  claimCollateralGains: async () => {},
-  adjustTrove: async () => {},
-  batchClaimRewards: async () => {},
-  lockToken: async () => {},
-  freeze: async () => {},
-  unfreeze: async () => {},
-  withdrawWithPenalty: async () => {},
-  getAccountActiveLocks: async () => {},
-  getAccountBalances: async () => {},
-  getAccountCurrentVotes: async () => {},
-  getTotalWeightAt: async () => {},
-  weeklyEmissions: async () => {},
-  getReceiverWeightAt: async () => {},
-  registerAccountWeightAndVote: async () => {},
-  bitGovLpData: async () => {},
-  bitUsdLpData: async () => {},
-  approveBitGovLp: async () => {},
-  stakeBitGovLP: async () => {},
-  withdrawBitGovLP: async () => {},
-  approveBitUsdLp: async () => {},
-  withdrawBitUsdLP: async () => {},
-  stakeBitUsdLP: async () => {},
-  redeemCollateral: async () => {},
-  getRedemptionHints: async () => {},
-  getData: async () => {},
-  setLock: () => {},
+  signTrove: async () => { },
+  setSignatureTrove: async () => { },
+  checkAuth: async () => { },
+  checkAuthToken: async () => { },
+  getData: async () => { },
+  getTrove: async () => { },
+  openTrove: async () => { },
+  signDebtToken: async () => { },
+  getRosePrice: async () => { },
+  getWithdrawWithPenaltyAmounts: async () => { },
+  setCurrentState: async () => { },
+  setCurrentWaitInfo: async () => { },
+  approve: async () => { },
+  addColl: async () => { },
+  getTokenBalance: async () => { },
+  withdrawColl: async () => { },
+  repayDebt: async () => { },
+  closeTrove: async () => { },
+  provideToSP: async () => { },
+  withdrawFromSP: async () => { },
+  claimCollateralGains: async () => { },
+  adjustTrove: async () => { },
+  batchClaimRewards: async () => { },
+  lockToken: async () => { },
+  freeze: async () => { },
+  unfreeze: async () => { },
+  withdrawWithPenalty: async () => { },
+  getAccountActiveLocks: async () => { },
+  getAccountBalances: async () => { },
+  getAccountCurrentVotes: async () => { },
+  getTotalWeightAt: async () => { },
+  weeklyEmissions: async () => { },
+  getReceiverWeightAt: async () => { },
+  registerAccountWeightAndVote: async () => { },
+  bitGovLpData: async () => { },
+  bitUsdLpData: async () => { },
+  approveBitGovLp: async () => { },
+  stakeBitGovLP: async () => { },
+  withdrawBitGovLP: async () => { },
+  approveBitUsdLp: async () => { },
+  withdrawBitUsdLP: async () => { },
+  stakeBitUsdLP: async () => { },
+  redeemCollateral: async () => { },
+  getRedemptionHints: async () => { },
+  getData: async () => { },
+  setLock: () => { },
 });
 
 export const BlockchainContextProvider = ({ children }) => {
@@ -1368,36 +1368,88 @@ export const BlockchainContextProvider = ({ children }) => {
     try {
       const user = account.address;
       const time = Math.floor(new Date().getTime() / 1000);
-      const signature = await signTypedDataAsync({
-        types: {
-          SignIn: [
-            { name: "user", type: "address" },
-            { name: "time", type: "uint32" },
-          ],
-        },
-        primaryType: "SignIn",
-        message: {
-          time,
-          user,
-        },
-        domain: {
-          // name: "VineSignature.SignIn",
-          name: "BitSignature.SignIn",
-          version: "1",
-          chainId: account.chainId,
-          verifyingContract: addresses.debtToken[account.chainId],
-        },
-      });
+
+      const domain = {
+        name: "BitSignature.SignIn",
+        version: "1",
+        chainId: account.chainId,
+        verifyingContract: addresses.debtToken[account.chainId]
+      };
+
+      const types = {
+        SignIn: [
+          { name: "user", type: "address" },
+          { name: "time", type: "uint32" },
+        ]
+      };
+
+      const message = {
+        time,
+        user,
+      };
+
+      let signature;
+
+      try {
+        // First attempt - Standard EIP-712
+        signature = await signTypedDataAsync({
+          domain,
+          types,
+          primaryType: "SignIn",
+          message,
+        });
+      } catch (err) {
+        // Second attempt - Try Coinbase Wallet specific format
+        const typedData = {
+          domain,
+          types,
+          primaryType: "SignIn",
+          message,
+        };
+
+        // Try using eth_signTypedData_v4 directly if available
+        if (walletClient?.request) {
+          try {
+            signature = await walletClient.request({
+              method: 'eth_signTypedData_v4',
+              params: [user, JSON.stringify(typedData)],
+            });
+          } catch (innerErr) {
+            console.error('Direct eth_signTypedData_v4 failed:', innerErr);
+            throw innerErr;
+          }
+        } else {
+          throw new Error('Wallet client request method not available');
+        }
+      }
+
+      if (!signature) {
+        throw new Error('No signature received from wallet');
+      }
 
       const rsv = ethers.utils.splitSignature(signature);
       const auth = { user, time, rsv };
+
       localStorage.setItem(
         `signInToken-${account.chainId}`,
         JSON.stringify(auth)
       );
+
       setSignatureToken(auth);
+
+      return true;
     } catch (error) {
-      console.log(error);
+      // Enhanced error reporting
+      let errorMessage = 'Failed to sign message. ';
+      if (error.code === 'ACTION_REJECTED') {
+        errorMessage += 'You rejected the signature request.';
+      } else if (error.code === -32603) {
+        errorMessage += 'There was an issue with the network connection. Please verify your network settings.';
+      } else if (error.message) {
+        errorMessage += error.message;
+      }
+
+      throw new Error(errorMessage);
     }
   };
 
