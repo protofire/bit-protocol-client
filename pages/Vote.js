@@ -228,18 +228,22 @@ export default function Vote() {
 
   // Input handlers
   const handleAmountChange = (index) => (e) => {
-    const value = Number(e.target.value);
-    setVoteState(prev => ({
-      ...prev,
-      amounts: {
-        ...prev.amounts,
-        [`amount${index}`]: value === 0 ? "" : value
-      }
-    }));
+    const value = e.target.value;
+    // Allow empty string or valid numbers including zero
+    if (value === '' || (!isNaN(value) && Number(value) >= 0)) {
+      setVoteState(prev => ({
+        ...prev,
+        amounts: {
+          ...prev.amounts,
+          [`amount${index}`]: value
+        }
+      }));
+    }
   };
 
   const handleVote = async () => {
-    const totalVotes = Object.values(voteState.amounts).reduce((sum, amount) => sum + Number(amount || 0), 0);
+    const totalVotes = Object.values(voteState.amounts).reduce((sum, amount) =>
+      sum + (amount === '' ? 0 : Number(amount)), 0);
 
     if (totalVotes > 10000) {
       tooltip.error({
@@ -252,9 +256,12 @@ export default function Vote() {
     if (!showVote) return;
 
     try {
+      // Include all votes, including zeros
       const voteData = Object.entries(voteState.amounts)
-        .filter(([_, amount]) => Number(amount) > 0)
-        .map(([key, amount]) => [Number(key.slice(-1)), Number(amount) * 100]);
+        .map(([key, amount]) => [
+          Number(key.slice(-1)),
+          (amount === '' ? 0 : Number(amount)) * 100
+        ]);
 
       const tx = await registerAccountWeightAndVote(voteData);
 
@@ -291,8 +298,10 @@ export default function Vote() {
   }, [queryData]);
 
   useEffect(() => {
-    const totalAmount = Object.values(voteState.amounts).reduce((sum, amount) => sum + Number(amount || 0), 0);
-    setShowVote(voteState.isLocks && totalAmount > 0 && totalAmount <= 10000);
+    const totalAmount = Object.values(voteState.amounts).reduce((sum, amount) =>
+      sum + (amount === '' ? 0 : Number(amount)), 0);
+    // Only check if the user has locks and total amount is within range (including zero)
+    setShowVote(voteState.isLocks && totalAmount <= 10000);
   }, [voteState.amounts, voteState.isLocks]);
 
   return (
@@ -520,6 +529,8 @@ export default function Vote() {
                                       placeholder="0"
                                       onWheel={(e) => e.target.blur()}
                                       id={`amount${index}`}
+                                        min="0"
+                                        step="any"
                                       onKeyDown={onKeyDown}
                                       onChange={handleAmountChange(index)}
                                       value={voteState.amounts[`amount${index}`]}
@@ -558,10 +569,10 @@ export default function Vote() {
       </div>
       {currentState ? <Wait /> : null}
       {isLoading &&
-      account.status === "connected" &&
-      signatureToken?.user &&
-      signatureTrove?.user ? (
-          <Loading />
+        account.status === "connected" &&
+        signatureToken?.user &&
+        signatureTrove?.user ? (
+        <Loading />
       ) : null}
       <Footer />
     </>

@@ -45,19 +45,8 @@ export default function Redeem() {
     }
   }, [startTime]);
 
-  useEffect(() => {
-    if (amount) {
-      setFeeAmount((Number(amount) / rosePrice) * fee);
-      setExpectedCollateralReceived(
-        Number(amount) / rosePrice - (Number(amount) / rosePrice) * fee
-      );
-    } else {
-      setFeeAmount(0);
-      setExpectedCollateralReceived(0);
-    }
-  }, [amount, rosePrice, fee]);
-
   let timerLoading = useRef(null);
+
   useEffect(() => {
     queryData();
     timerLoading.current = setInterval(() => {
@@ -66,24 +55,77 @@ export default function Redeem() {
     return () => clearInterval(timerLoading.current);
   }, [collaterals]);
 
-  const onKeyDown = async (e) => {
-    const invalidChars = ["-", "+", "e", "E"];
-    if (invalidChars.indexOf(e.key) !== -1) {
+  const onKeyDown = (e) => {
+    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+
+    // Allow: backspace, delete, tab, escape, enter, decimal point
+    if ([
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Escape',
+      'Enter',
+      '.',
+      ','
+    ].includes(e.key)) {
+      return;
+    }
+
+    // Prevent if not a number
+    if (isNaN(Number(e.key))) {
       e.preventDefault();
     }
   };
 
   const changeAmount = async (e) => {
-    const value = Number(e.target.value);
-    if (value < Number(bitUSDBalance)) {
-      setAmount(value == 0 ? "" : value);
-    } else {
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    // Allow empty string or values within range (including zero)
+    if (value === '' || (numValue >= 0 && numValue <= Number(bitUSDBalance))) {
+      setAmount(value === '' ? '' : numValue);
+
+      // Calculate fee and expected collateral even for zero values
+      if (value === '' || numValue === 0) {
+        setFeeAmount(0);
+        setExpectedCollateralReceived(0);
+      } else {
+        const feeAmountCalc = (numValue / rosePrice) * fee;
+        setFeeAmount(feeAmountCalc);
+        setExpectedCollateralReceived(
+          (numValue / rosePrice) - feeAmountCalc
+        );
+      }
+    } else if (numValue > Number(bitUSDBalance)) {
       setAmount(Number(bitUSDBalance));
+
+      // Calculate fee and expected collateral for max amount
+      const feeAmountCalc = (Number(bitUSDBalance) / rosePrice) * fee;
+      setFeeAmount(feeAmountCalc);
+      setExpectedCollateralReceived(
+        (Number(bitUSDBalance) / rosePrice) - feeAmountCalc
+      );
     }
   };
 
-  const changeAmountVaule = (value) => {
-    setAmount(Number(bitUSDBalance) * value);
+  const changeAmountValue = (value) => {
+    const newAmount = Number(bitUSDBalance) * value;
+    setAmount(newAmount);
+
+    // Calculate fee and expected collateral for percentage amount
+    if (newAmount === 0) {
+      setFeeAmount(0);
+      setExpectedCollateralReceived(0);
+    } else {
+      const feeAmountCalc = (newAmount / rosePrice) * fee;
+      setFeeAmount(feeAmountCalc);
+      setExpectedCollateralReceived(
+        (newAmount / rosePrice) - feeAmountCalc
+      );
+    }
   };
 
   const selectCollateralChange = (item) => {
@@ -185,9 +227,12 @@ export default function Redeem() {
       });
       return;
     }
-    if (!amount) {
+
+    // Allow redemption if amount is set (including zero)
+    if (amount === '' || amount === undefined) {
       return;
     }
+
     redeem();
   };
 
@@ -278,9 +323,11 @@ export default function Redeem() {
                             placeholder="0"
                             onWheel={(e) => e.target.blur()}
                             id="amount"
-                            onKeyDown={onKeyDown.bind(this)}
-                            onChange={changeAmount.bind(this)}
-                            value={amount}
+                              min="0"
+                              step="any"
+                              onKeyDown={onKeyDown}
+                              onChange={changeAmount}
+                              value={amount === 0 ? "0" : amount || ""}
                           />
                         </div>
                         <span className="font_14 gray">bitUSD</span>
@@ -289,11 +336,11 @@ export default function Redeem() {
                         className="changeBalance"
                         style={{ marginTop: "12px" }}
                       >
-                        <span onClick={() => changeAmountVaule(0.25)}>25%</span>
-                        <span onClick={() => changeAmountVaule(0.5)}>50%</span>
-                        <span onClick={() => changeAmountVaule(0.75)}>75%</span>
+                          <span onClick={() => changeAmountValue(0.25)}>25%</span>
+                          <span onClick={() => changeAmountValue(0.5)}>50%</span>
+                          <span onClick={() => changeAmountValue(0.75)}>75%</span>
                         <span
-                          onClick={() => changeAmountVaule(1)}
+                            onClick={() => changeAmountValue(1)}
                           style={{ border: "none" }}
                         >
                           Max
@@ -360,9 +407,9 @@ export default function Redeem() {
       </div>
       {currentState ? <Wait></Wait> : null}
       {Object.keys(collaterals).length === 0 &&
-      account.status === "connected" &&
-      signatureToken?.user &&
-      signatureTrove?.user ? (
+        account.status === "connected" &&
+        signatureToken?.user &&
+        signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
       <Footer></Footer>
