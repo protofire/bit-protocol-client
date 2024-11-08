@@ -160,7 +160,9 @@ export const BlockchainContextProvider = ({ children }) => {
   const [systemWeek, setWeek] = useState(0);
   // GET DATA LOCK TO AVOID TOO MANY CALLS
   const [lock, setLock] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  // HELPER FUNCTIONS
   const clientToSigner = (client, query) => {
     const { account, chain, transport } = client;
     const network = {
@@ -187,8 +189,8 @@ export const BlockchainContextProvider = ({ children }) => {
   const signerQuery = useEthersSigner(true);
 
   // USE EFFECTS
-
   useEffect(() => {
+    console.log("account has changed");
     if (account.address) {
       getData();
       const intervalId = setInterval(() => {
@@ -234,18 +236,25 @@ export const BlockchainContextProvider = ({ children }) => {
         truncatedDebtAmount,
       } = await getRedemptionHints(troveAddress, amount);
 
-      const status = truncatedDebtAmount === amount ? 1 : 0;
+      const maxIterations = truncatedDebtAmount === amount ? 1 : 0;
 
-      const prev = await getPrev(firstRedemptionHint);
-      const next = await getNext(firstRedemptionHint);
+      const prev = await getPrev(
+        collaterals[troveAddress].sortedTroves,
+        firstRedemptionHint
+      );
+      const next = await getNext(
+        collaterals[troveAddress].sortedTroves,
+        firstRedemptionHint
+      );
 
       const tx = await troveManager.redeemCollateral(
         amount,
         firstRedemptionHint,
         prev,
         next,
+        // new BigNumber(partialRedemptionHintNICR).multipliedBy(1e18).toFixed(),
         partialRedemptionHintNICR,
-        status,
+        maxIterations,
         new BigNumber(1e18).toFixed()
       );
 
@@ -325,8 +334,10 @@ export const BlockchainContextProvider = ({ children }) => {
       account.address,
       "0x0000000000000000000000000000000000000000",
       [
-        addresses.troveManager[account.chainId],
+        // addresses.troveManager[account.chainId],
         addresses.stabilityPool[account.chainId],
+        addresses.bitGovDeposit[account.chainId],
+        addresses.bitUsdDeposit[account.chainId],
       ],
       10
     );
@@ -610,9 +621,13 @@ export const BlockchainContextProvider = ({ children }) => {
 
       const count = Object.keys(collaterals).length;
 
-      const tx = await stabilityPool.claimCollateralGains(account.address, [
-        ...Array(count).keys(),
-      ]);
+      const tx = await stabilityPool.claimCollateralGains(
+        account.address,
+        [...Array(count).keys()],
+        {
+          gasLimit: 1000000,
+        }
+      );
       return tx;
     } catch (error) {
       throw error;
@@ -699,8 +714,8 @@ export const BlockchainContextProvider = ({ children }) => {
 
       return {
         firstRedemptionHint: hints[0],
-        partialRedemptionHintNICR: fromBigNumber(hints[1]),
-        truncatedDebtAmount: fromBigNumber(hints[2]),
+        partialRedemptionHintNICR: new BigNumber(hints[1]._hex).toFixed(),
+        truncatedDebtAmount: new BigNumber(hints[2]._hex).toFixed(),
       };
     } catch (error) {
       console.log("error", error);
@@ -937,12 +952,19 @@ export const BlockchainContextProvider = ({ children }) => {
         addresses.stabilityPool[account.chainId],
       ],
     });
-    const depositorCollateralGain = await publicClient.readContract({
-      abi: StabilityPoolABI,
-      address: addresses.stabilityPool[account.chainId],
-      functionName: "getDepositorCollateralGain",
-      args: [account.address],
-    });
+
+    const collateralGainsByDepositor = [];
+    for await (const index of [
+      ...Array(Object.keys(collaterals).length).keys(),
+    ]) {
+      const value = await publicClient.readContract({
+        abi: StabilityPoolABI,
+        address: addresses.stabilityPool[account.chainId],
+        functionName: "collateralGainsByDepositor",
+        args: [account.address, index],
+      });
+      collateralGainsByDepositor.push(value);
+    }
 
     setStabilityPool({
       deposits: fromBigNumber(deposits),
@@ -950,7 +972,7 @@ export const BlockchainContextProvider = ({ children }) => {
       rewardRate: fromBigNumber(rewardRate),
       accountDeposits: fromBigNumber(accountDeposits[0]),
       earned: fromBigNumber(earned[0]), // COMMENTED OUT UNLESS WE HAVE REWARDS
-      depositorCollateralGain: depositorCollateralGain,
+      depositorCollateralGain: collateralGainsByDepositor,
     });
   };
 
@@ -1039,6 +1061,7 @@ export const BlockchainContextProvider = ({ children }) => {
       functionName: "getWithdrawWithPenaltyAmounts",
       args: [account.address, value],
     });
+
     return {
       amountWithdrawn: fromBigNumber(amounts[0]),
       penaltyAmountPaid: fromBigNumber(amounts[1]),

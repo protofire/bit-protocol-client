@@ -7,7 +7,7 @@ import Wait from "../components/tooltip/wait";
 import Loading from "../components/tooltip/loading";
 import tooltip from "../components/tooltip";
 import Link from "next/link";
-import { formatNumber } from "../utils/helpers";
+import { formatNumber, fromBigNumber } from "../utils/helpers";
 import BigNumber from "bignumber.js";
 import { addresses } from "../utils/addresses";
 import { useAccount } from "wagmi";
@@ -569,7 +569,7 @@ export default function Earn() {
       const tx = await claimCollateralGains();
       setCurrentWaitInfo({
         type: "loading",
-        info: "Claim " + Number(amount.toFixed(4)).toLocaleString() + " bitUSD",
+        info: "Claiming",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -971,7 +971,7 @@ export default function Earn() {
                               }
                             </p>
                             <span>
-                              {Number(item).toLocaleString()} $
+                              {fromBigNumber(item).toLocaleString()} $
                               {
                                 collaterals[Object.keys(collaterals)[index]]
                                   ?.collateral?.name

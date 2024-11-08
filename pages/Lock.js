@@ -9,6 +9,7 @@ import tooltip from "../components/tooltip";
 import Slider from "rc-slider";
 import { formatNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
+import useDebounce from "../hook/useDebounce";
 
 import "rc-slider/assets/index.css";
 
@@ -39,20 +40,16 @@ export default function Lock() {
 
   const onKeyDown = (e) => {
     // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
+    if (["-", "+", "e", "E"].includes(e.key)) {
       e.preventDefault();
     }
 
     // Allow: backspace, delete, tab, escape, enter, decimal point
-    if ([
-      'Backspace',
-      'Delete',
-      'Tab',
-      'Escape',
-      'Enter',
-      '.',
-      ','
-    ].includes(e.key)) {
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", ","].includes(
+        e.key
+      )
+    ) {
       return;
     }
 
@@ -89,6 +86,8 @@ export default function Lock() {
   const [showUnlock, setShowUnlock] = useState(false);
   const [claimAmount, setClaimAmount] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const debouncedValue = useDebounce(claimAmount, 3000);
 
   const queryData = async () => {
     if (account.status === "connected") {
@@ -128,8 +127,8 @@ export default function Lock() {
     const numValue = Number(value);
 
     // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= Number(balance))) {
-      setAmount(value === '' ? '' : numValue);
+    if (value === "" || (numValue >= 0 && numValue <= Number(balance))) {
+      setAmount(value === "" ? "" : numValue);
     } else if (numValue > Number(balance)) {
       setAmount(Math.floor(balance));
     }
@@ -159,23 +158,28 @@ export default function Lock() {
     // setLoading(false);
   }, [totalWeight, accountWeight]);
 
-  const changeClaimAmount = async (e) => {
-    const value = e.target.value;
-    const numValue = Number(value);
-
-    // Get penalty amounts even for zero values
-    if (value === '' || numValue >= 0) {
-      const withdrawWithPenaltyAmounts = await getWithdrawWithPenaltyAmounts(
-        numValue || 0
-      );
-      setAmountWithdrawn(withdrawWithPenaltyAmounts.amountWithdrawn);
-      setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
+  useEffect(() => {
+    if (debouncedValue) {
+      fetchWithdrawPenaltyAmounts(debouncedValue);
     }
+  }, [debouncedValue]);
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= Number(accountLock))) {
-      setClaimAmount(value === '' ? '' : numValue);
-    } else if (numValue > Number(accountLock)) {
+  const fetchWithdrawPenaltyAmounts = async (value) => {
+    const withdrawWithPenaltyAmounts = await getWithdrawWithPenaltyAmounts(
+      value
+    );
+    setAmountWithdrawn(withdrawWithPenaltyAmounts.amountWithdrawn);
+    setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
+  };
+
+  const changeClaimAmount = async (e) => {
+    const value = Number(e.target.value);
+    setAmountWithdrawn(0);
+    setPenaltyAmountPaid(0);
+
+    if (value < Number(accountLock)) {
+      setClaimAmount(value == 0 ? "" : value);
+    } else {
       setClaimAmount(Math.floor(accountLock));
     }
   };
@@ -186,7 +190,7 @@ export default function Lock() {
   };
 
   const lock = async () => {
-    if (amount === '' || amount === undefined) {
+    if (amount === "" || amount === undefined) {
       return;
     }
 
@@ -279,7 +283,7 @@ export default function Lock() {
   };
 
   const earlyUnlock = async () => {
-    if (claimAmount === '' || claimAmount === undefined) {
+    if (claimAmount === "" || claimAmount === undefined) {
       tooltip.error({ content: "Enter Amount", duration: 5000 });
       return;
     }
@@ -410,20 +414,20 @@ export default function Lock() {
                         placeholder="0"
                         onWheel={(e) => e.target.blur()}
                         id="amount"
-                          min="0"
-                          step="any"
-                          onKeyDown={onKeyDown}
-                          onChange={changeAmount}
-                          value={amount === 0 ? "0" : amount || ""}
-                        />
+                        min="0"
+                        step="any"
+                        onKeyDown={onKeyDown}
+                        onChange={changeAmount}
+                        value={amount === 0 ? "0" : amount || ""}
+                      />
                       <span>bitGOV</span>
                     </div>
                     <div className="changeBalance">
-                        <span onClick={() => changeValue(0.25)}>25%</span>
-                        <span onClick={() => changeValue(0.5)}>50%</span>
-                        <span onClick={() => changeValue(0.75)}>75%</span>
+                      <span onClick={() => changeValue(0.25)}>25%</span>
+                      <span onClick={() => changeValue(0.5)}>50%</span>
+                      <span onClick={() => changeValue(0.75)}>75%</span>
                       <span
-                          onClick={() => changeValue(1)}
+                        onClick={() => changeValue(1)}
                         style={{ border: "none" }}
                       >
                         Max
@@ -474,7 +478,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountWeight) +
-                                Number(amount) * currentValue
+                                  Number(amount) * currentValue
                               )}
                             </span>
                           </>
@@ -491,7 +495,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountLock + accountUnLock) +
-                                Number(amount)
+                                  Number(amount)
                               )}
                             </span>
                           </>
@@ -605,7 +609,11 @@ export default function Lock() {
                 </p>
               ) : null}
               <div
-                className="button rightAngle"
+                className={
+                  Number(debouncedValue) > 0
+                    ? "button rightAngle"
+                    : "button rightAngle disable"
+                }
                 style={{ marginTop: "20px" }}
                 onClick={() => earlyUnlock()}
               >
@@ -641,9 +649,9 @@ export default function Lock() {
             </div> : null} */}
 
       {loading &&
-        account.status === "connected" &&
-        signatureToken?.user &&
-        signatureTrove?.user ? (
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
       {currentState ? <Wait></Wait> : null}

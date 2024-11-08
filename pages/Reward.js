@@ -19,6 +19,8 @@ export default function Reward() {
     currentState,
     signatureTrove,
     signatureToken,
+    bitGovLpData,
+    bitUsdLpData,
   } = useContext(BlockchainContext);
 
   const account = useAccount();
@@ -35,6 +37,8 @@ export default function Reward() {
   const [totalEarned, setTotalEarned] = useState(0);
   const [vaultEarned, setVaultEarned] = useState(0);
   const [stabilityEarned, setStabilityEarned] = useState(0);
+  const [bitGovLpEarned, setBitGovLpEarned] = useState(0);
+  const [bitUsdLpEarned, setBitUsdLpEarned] = useState(0);
 
   const vinePrice = 1;
 
@@ -44,13 +48,15 @@ export default function Reward() {
       Object.keys(claimableRewards).length > 0 &&
       account.status === "connected"
     ) {
-      // const deposit1 = await vineLpTokenPoolQuery.balanceOf(account);
-      // const deposit3 = await usdcPoolQuery.balanceOf(account);
-      setUnStakeLpBalance(0);
+      const bitGovLp = await bitGovLpData();
+      const bitUsdLp = await bitUsdLpData();
+      setUnStakeLpBalance(bitGovLp.balance);
       setAccountDeposits(stabilityPool.accountDeposits);
-      setUnStakeLpBalance2(0);
+      setUnStakeLpBalance2(bitUsdLp.balance);
       setStabilityEarned(stabilityPool.earned);
       setVaultEarned(claimableRewards.vaultRewards);
+      setBitGovLpEarned(claimableRewards.bitGov);
+      setBitUsdLpEarned(claimableRewards.bitUsd);
     }
   };
 
@@ -270,108 +276,125 @@ export default function Reward() {
                   </div>
                 ) : null}
               </div>
-            </>
-          )}
-
-          {/*<div className={styles.tab}>
-            <div className={styles.tabItem} onClick={() => setOpenLp(!openLp)}>
-              <div>
-                <img
-                  className={styles.logo}
-                  src="/dapp/vineArose.svg"
-                  alt="rose"
-                />
-                <p>bitGOV/ROSE LP</p>
-              </div>
-              <div onClick={cancelBubble.bind(this)}>
-              // COMMENTED
-                 <span className={vineLpTokenNum ? 'button_border' : 'button_border disable'} onClick={() => Claim(vineLpTokenPoolMain, vineLpTokenNum)}>
-                                    Claim
-                                </span>
-                <img
+              <div className={styles.tab}>
+                <div
+                  className={styles.tabItem}
                   onClick={() => setOpenLp(!openLp)}
-                  className={styles.open}
-                  style={openLp ? { transform: "rotate(180deg)" } : null}
-                  src="/dapp/arr_bottom.svg"
-                  alt="arr"
-                />
-              </div>
-            </div>
-            {openLp ? (
-              <div className={styles.tabMain}>
-                <div>
-                  <span className="font_12_gray">Position</span>
-                  <p className="font_14">
-                    {Number(
-                      Number(unStakeLpBalance).toFixed(4)
-                    ).toLocaleString()}{" "}
-                    LP
-                  </p>
-                  <span className="font_12_gray">Deposited</span>
+                >
+                  <div>
+                    <img
+                      className={styles.logo}
+                      src="/dapp/vineArose.svg"
+                      alt="rose"
+                    />
+                    <p>bitGOV/ROSE LP</p>
+                  </div>
+                  <div onClick={cancelBubble.bind(this)}>
+                    {/* // COMMENTED
+                    <span
+                      className={
+                        vineLpTokenNum
+                          ? "button_border"
+                          : "button_border disable"
+                      }
+                      onClick={() => Claim(vineLpTokenPoolMain, vineLpTokenNum)}
+                    >
+                      Claim
+                    </span> */}
+                    <img
+                      onClick={() => setOpenLp(!openLp)}
+                      className={styles.open}
+                      style={openLp ? { transform: "rotate(180deg)" } : null}
+                      src="/dapp/arr_bottom.svg"
+                      alt="arr"
+                    />
+                  </div>
                 </div>
+                {openLp ? (
+                  <div className={styles.tabMain}>
+                    <div>
+                      <span className="font_12_gray">Position</span>
+                      <p className="font_14">
+                        {Number(
+                          Number(unStakeLpBalance).toFixed(4)
+                        ).toLocaleString()}{" "}
+                        LP
+                      </p>
+                      <span className="font_12_gray">Deposited</span>
+                    </div>
+                    <div>
+                      <span className="font_12_gray">Earned $bitGOV</span>
+                      <p className="font_14">
+                        {Number(bitGovLpEarned.toFixed(4)).toLocaleString()}{" "}
+                        $bitGOV
+                      </p>
+                    </div>
+                    {/* // COMMENTED
                 <div>
-                  <span className="font_12_gray">Earned $bitGOV</span>
-                  <p className="font_14">
-                    {Number(vineRoseEarned.toFixed(4)).toLocaleString()} $bitGOV
-                  </p>
-                </div>
-                // COMMENTED
-                <div>
-                                <span className='font_12_gray'>Locked $VINE</span>
-                                <p className='font_14'>0 $VINE</p>
-                            </div> 
+                  <span className="font_12_gray">Locked $VINE</span>
+                  <p className="font_14">0 $VINE</p>
+                </div> */}
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-          </div>*/}
-          {/* <div className={styles.tab}>
-            <div
-              className={styles.tabItem}
-              onClick={() => setOpenusdcLp(!openusdcLp)}
-            >
-              <div>
-                <img className={styles.logo} src="/dapp/usdc.svg" alt="rose" />
-                <p>bitUSD/USDC LP</p>
-              </div>
-              <div onClick={cancelBubble.bind(this)}>
-              // COMMENTED
+              <div className={styles.tab}>
+                <div
+                  className={styles.tabItem}
+                  onClick={() => setOpenusdcLp(!openusdcLp)}
+                >
+                  <div>
+                    <img
+                      className={styles.logo}
+                      src="/dapp/usdc.svg"
+                      alt="rose"
+                    />
+                    <p>bitUSD/USDC LP</p>
+                  </div>
+                  <div onClick={cancelBubble.bind(this)}>
+                    {/* // COMMENTED
                 <span className={vineLpTokenNum ? 'button_border' : 'button_border disable'} onClick={() => Claim(vineLpTokenPoolMain, vineLpTokenNum)}>
                                     Claim
-                                </span>
-                <img
-                  onClick={() => setOpenusdcLp(!openusdcLp)}
-                  className={styles.open}
-                  style={openusdcLp ? { transform: "rotate(180deg)" } : null}
-                  src="/dapp/arr_bottom.svg"
-                  alt="arr"
-                />
-              </div>
-            </div>
-            {/* {openusdcLp ? (
-              <div className={styles.tabMain}>
-                <div>
-                  <span className="font_12_gray">Position</span>
-                  <p className="font_14">
-                    {Number(
-                      Number(unStakeLpBalance2).toFixed(4)
-                    ).toLocaleString()}{" "}
-                    LP
-                  </p>
-                  <span className="font_12_gray">Deposited</span>
+                                </span> */}
+                    <img
+                      onClick={() => setOpenusdcLp(!openusdcLp)}
+                      className={styles.open}
+                      style={
+                        openusdcLp ? { transform: "rotate(180deg)" } : null
+                      }
+                      src="/dapp/arr_bottom.svg"
+                      alt="arr"
+                    />
+                  </div>
                 </div>
+                {openusdcLp ? (
+                  <div className={styles.tabMain}>
+                    <div>
+                      <span className="font_12_gray">Position</span>
+                      <p className="font_14">
+                        {Number(
+                          Number(unStakeLpBalance2).toFixed(4)
+                        ).toLocaleString()}{" "}
+                        LP
+                      </p>
+                      <span className="font_12_gray">Deposited</span>
+                    </div>
+                    <div>
+                      <span className="font_12_gray">Earned $bitGOV</span>
+                      <p className="font_14">
+                        {Number(bitUsdLpEarned.toFixed(4)).toLocaleString()}{" "}
+                        $bitGOV
+                      </p>
+                    </div>
+                    {/* // COMMENTED
                 <div>
-                  <span className="font_12_gray">Earned $bitGOV</span>
-                  <p className="font_14">
-                    {Number(vusdUsdcEarned.toFixed(4)).toLocaleString()} $bitGOV
-                  </p>
-                </div>
-                // COMMENTED
-                div>
                                 <span className='font_12_gray'>Locked $VINE</span>
                                 <p className='font_14'>0 $VINE</p>
-                            </div>
+                            </div> */}
+                  </div>
+                ) : null}
               </div>
-            ) : null} 
-          </div>*/}
+            </>
+          )}
         </div>
       </div>
       {/* {showInfoTip && account.status === "connected" ? (
