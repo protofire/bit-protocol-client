@@ -127,20 +127,26 @@ export default function Earn() {
     }
   };
 
+  const enforceThreeDecimals = (value) => {
+    if (value === '' || !value.includes('.')) return value;
+    const parts = value.split('.');
+    return parts[0] + '.' + parts[1].slice(0, 3);
+  };
+
   const changeAmount = async (e) => {
-    const value = e.target.value;
+    const value = enforceThreeDecimals(e.target.value);
     const numValue = Number(value);
 
     // Allow empty string or values within range (including zero)
     if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
-      setAmount(value === '' ? '' : numValue);
+      setAmount(value);
     } else if (numValue > maxBalance) {
-      setAmount(maxBalance);
+      setAmount(maxBalance.toFixed(3));
     }
   };
 
   const changeAmountValue = (value) => {
-    setAmount(maxBalance * value);
+    setAmount((maxBalance * value).toFixed(3));
   };
 
   const queryData = async () => {
@@ -1002,11 +1008,11 @@ export default function Earn() {
                             placeholder="0"
                             onWheel={(e) => e.target.blur()}
                             id="amount"
-                            min="0"  // Prevent negative values
-                            step="any"  // Allow decimal values
+                            min="0"
+                            step="any"
                             onKeyDown={onKeyDown}
                             onChange={changeAmount}
-                            value={amount === 0 ? "0" : amount || ""}
+                            value={amount === '' ? '' : amount}
                           />
                           <span className="font_12_gray">
                             ≈$

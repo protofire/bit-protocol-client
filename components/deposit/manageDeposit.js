@@ -180,27 +180,54 @@ export default function ManageDeposit({ address }) {
 
   const changeCollAmount = async (e) => {
     const value = e.target.value;
+
+    if (value === '') {
+      setCollAmount('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
     const numValue = Number(value);
     const balanceValue = isPayable ? balance : collateralBalance;
     const maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
-      setCollAmount(value === '' ? '' : numValue);
+    if (numValue >= 0 && numValue <= maxBalance) {
+      setCollAmount(value);
     } else if (numValue > maxBalance) {
-      setCollAmount(maxBalance);
+      setCollAmount(maxBalance.toFixed(3));
     }
   };
 
   const changeWithdrawAmount = async (e) => {
     const value = e.target.value;
-    const numValue = Number(value);
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= withdrawMax)) {
-      setCollAmount(value === '' ? '' : numValue);
+    if (value === '') {
+      setCollAmount('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
+    const numValue = Number(value);
+    if (numValue >= 0 && numValue <= withdrawMax) {
+      setCollAmount(value);
     } else if (numValue > withdrawMax) {
-      setCollAmount(withdrawMax);
+      setCollAmount(withdrawMax.toFixed(3));
     }
   };
 
@@ -229,13 +256,26 @@ export default function ManageDeposit({ address }) {
 
   const changeDebtAmount = async (e) => {
     const value = e.target.value;
-    const numValue = Number(value);
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= Number(bitUSDBalance))) {
-      setDebtAmount(value === '' ? '' : numValue);
+    if (value === '') {
+      setDebtAmount('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
+    const numValue = Number(value);
+    if (numValue >= 0 && numValue <= Number(bitUSDBalance)) {
+      setDebtAmount(value);
     } else if (numValue > Number(bitUSDBalance)) {
-      setDebtAmount(Number(bitUSDBalance));
+      setDebtAmount(Number(bitUSDBalance).toFixed(3));
     }
   };
 
@@ -536,21 +576,17 @@ export default function ManageDeposit({ address }) {
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
                       {Number(
-                        Number(isPayable ? balance : collateralBalance).toFixed(
-                          4
-                        )
+                        Number(isPayable ? balance : collateralBalance).toFixed(3)
                       ).toLocaleString()}{" "}
                       ${collateral?.collateral?.name}
                     </span>
                   </div>
                   <div className="inputTxt3">
                     <input
-                      type="number"
+                      type="text"
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
                       id="collAmount"
-                      min="0"
-                      step="any"
                       onKeyDown={onKeyDown}
                       onChange={changeCollAmount}
                       value={collAmount === 0 ? "0" : collAmount || ""}
@@ -564,18 +600,16 @@ export default function ManageDeposit({ address }) {
                     <span>Enter amount</span>
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
-                      {Number(Number(withdrawMax).toFixed(4)).toLocaleString()}{" "}
+                        {Number(Number(withdrawMax).toFixed(3)).toLocaleString()}{" "}
                       ${collateral?.collateral?.name}
                     </span>
                   </div>
                   <div className="inputTxt3">
                     <input
-                      type="number"
+                        type="text"
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
-                      id="collAmount"
-                        min="0"
-                        step="any"
+                        id="collAmount"
                         onKeyDown={onKeyDown}
                         onChange={changeWithdrawAmount}
                         value={collAmount === 0 ? "0" : collAmount || ""}
@@ -589,20 +623,16 @@ export default function ManageDeposit({ address }) {
                     <span>{operateType} bitUSD</span>
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
-                      {Number(
-                        Number(bitUSDBalance).toFixed(4)
-                      ).toLocaleString()}{" "}
+                          {Number(Number(bitUSDBalance).toFixed(3)).toLocaleString()}{" "}
                       bitUSD
                     </span>
                   </div>
                   <div className="inputTxt3">
                     <input
-                      type="number"
+                          type="text"
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
-                      id="debtAmount"
-                          min="0"
-                          step="any"
+                          id="debtAmount"
                           onKeyDown={onKeyDown}
                           onChange={changeDebtAmount}
                           value={debtAmount === 0 ? "0" : debtAmount || ""}
@@ -661,41 +691,24 @@ export default function ManageDeposit({ address }) {
 
               {operateType == "Close" ? (
                 <>
-                  <div
-                    className={`${styles.miniTitle} ${styles.borderGreen}`}
-                    style={{ fontSize: "12px", marginTop: "10px" }}
-                  >
+                  <div className={`${styles.miniTitle} ${styles.borderGreen}`} style={{ fontSize: "12px", marginTop: "10px" }}>
                     <span>Total Collateral</span>
                     <span>
-                      {Number(Number(deposits).toFixed(4)).toLocaleString()} $
+                      {Number(Number(deposits).toFixed(3)).toLocaleString()} $
                       {collateral?.collateral?.name}
                     </span>
                   </div>
-                  <div
-                    className={`${styles.miniTitle} ${styles.borderGray}`}
-                    style={{ fontSize: "12px", marginTop: "10px" }}
-                  >
+                  <div className={`${styles.miniTitle} ${styles.borderGray}`} style={{ fontSize: "12px", marginTop: "10px" }}>
                     <span>Your Total Debt</span>
                     <span>
-                      {Number(Number(debt).toFixed(4)).toLocaleString()} $bitUSD
+                      {Number(Number(debt).toFixed(3)).toLocaleString()} $bitUSD
                     </span>
                   </div>
-                  <div
-                    className={`${styles.miniTitle}`}
-                    style={{ fontSize: "12px", marginTop: "10px" }}
-                  >
+                  <div className={`${styles.miniTitle}`} style={{ fontSize: "12px", marginTop: "10px" }}>
                     <span>Wallet Balance</span>
                     <div className={styles.walletBalance}>
-                      <span
-                        style={
-                          Number(bitUSDBalance) < Number(debt)
-                            ? null
-                            : { color: "#fff" }
-                        }
-                      >
-                        {Number(
-                          Number(bitUSDBalance).toFixed(4)
-                        ).toLocaleString()}
+                      <span style={Number(bitUSDBalance) < Number(debt) ? null : { color: "#fff" }}>
+                        {Number(Number(bitUSDBalance).toFixed(3)).toLocaleString()}
                       </span>{" "}
                       $bitUSD
                     </div>
@@ -758,13 +771,11 @@ export default function ManageDeposit({ address }) {
               <div className={styles.data}>
                 <div className={styles.dataItem}>
                   <p>Total Value Locked</p>
-                  <span>
-                    ${Number((deposits * price).toFixed(4)).toLocaleString()}
-                  </span>
+                    <span>${Number((deposits * price).toFixed(3)).toLocaleString()}</span>
                 </div>
                 <div className={styles.dataItem}>
                   <p>Minted bitUSD</p>
-                  <span>${Number(debt.toFixed(4)).toLocaleString()}</span>
+                    <span>${Number(debt.toFixed(3)).toLocaleString()}</span>
                 </div>
                 <div className={styles.dataItem}>
                   <p>Mint Fee</p>
@@ -800,27 +811,16 @@ export default function ManageDeposit({ address }) {
               You will need to repay any outstanding bitUSD debt:
             </p>
             <div className={styles.closeCoin}>
-              <p>{Number(Number(debt).toFixed(4)).toLocaleString()}</p>
+              <p>{Number(Number(debt).toFixed(3)).toLocaleString()}</p>
               <div>
-                <img
-                  style={{ width: 24, height: 24 }}
-                  src="/dapp/bitUSD.svg"
-                  alt="vUSD"
-                ></img>
+                <img style={{ width: 24, height: 24 }} src="/dapp/bitUSD.svg" alt="vUSD"></img>
                 $bitUSD
               </div>
             </div>
-            <p className={styles.closeDesc}>
-              You will receive your collateral of:
-            </p>
             <div className={styles.closeCoin}>
-              <p>{Number(Number(deposits).toFixed(4)).toLocaleString()}</p>
+              <p>{Number(Number(deposits).toFixed(3)).toLocaleString()}</p>
               <div>
-                <img
-                  style={{ width: 24, height: 24 }}
-                  src={`/dapp/${collateral?.collateral?.logo}`}
-                  alt="rose"
-                ></img>
+                <img style={{ width: 24, height: 24 }} src={`/dapp/${collateral?.collateral?.logo}`} alt="rose"></img>
                 ${collateral?.collateral?.name}
               </div>
             </div>

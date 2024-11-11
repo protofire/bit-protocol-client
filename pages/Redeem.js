@@ -82,14 +82,30 @@ export default function Redeem() {
 
   const changeAmount = async (e) => {
     const value = e.target.value;
+
+    // Only convert to number for comparison, keep string value for state
     const numValue = Number(value);
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= Number(bitUSDBalance))) {
-      setAmount(value === '' ? '' : numValue);
+    // Handle empty string case
+    if (value === '') {
+      setAmount('');
+      setFeeAmount(0);
+      setExpectedCollateralReceived(0);
+      return;
+    }
 
-      // Calculate fee and expected collateral even for zero values
-      if (value === '' || numValue === 0) {
+    // Enforce 3 decimal places if there's a decimal point
+    let formattedValue = value;
+    if (value.includes('.')) {
+      const parts = value.split('.');
+      formattedValue = parts[0] + '.' + parts[1].slice(0, 3);
+    }
+
+    // Check if the value is within valid range
+    if (numValue >= 0 && numValue <= Number(bitUSDBalance)) {
+      setAmount(formattedValue);
+
+      if (numValue === 0) {
         setFeeAmount(0);
         setExpectedCollateralReceived(0);
       } else {
@@ -100,9 +116,7 @@ export default function Redeem() {
         );
       }
     } else if (numValue > Number(bitUSDBalance)) {
-      setAmount(Number(bitUSDBalance));
-
-      // Calculate fee and expected collateral for max amount
+      setAmount(bitUSDBalance.toString());
       const feeAmountCalc = (Number(bitUSDBalance) / rosePrice) * fee;
       setFeeAmount(feeAmountCalc);
       setExpectedCollateralReceived(
@@ -112,18 +126,18 @@ export default function Redeem() {
   };
 
   const changeAmountValue = (value) => {
-    const newAmount = Number(bitUSDBalance) * value;
+    const newAmount = (Number(bitUSDBalance) * value).toFixed(3);
     setAmount(newAmount);
 
-    // Calculate fee and expected collateral for percentage amount
-    if (newAmount === 0) {
+    if (newAmount === '0' || newAmount === '0.000') {
       setFeeAmount(0);
       setExpectedCollateralReceived(0);
     } else {
-      const feeAmountCalc = (newAmount / rosePrice) * fee;
+      const numAmount = Number(newAmount);
+      const feeAmountCalc = (numAmount / rosePrice) * fee;
       setFeeAmount(feeAmountCalc);
       setExpectedCollateralReceived(
-        (newAmount / rosePrice) - feeAmountCalc
+        (numAmount / rosePrice) - feeAmountCalc
       );
     }
   };

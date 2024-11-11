@@ -152,12 +152,10 @@ export default function Mint() {
   }, [collAmount, ratioType, collateralRatio]);
 
   const onKeyDown = (e) => {
-    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
     if (['-', '+', 'e', 'E'].includes(e.key)) {
       e.preventDefault();
     }
 
-    // Allow: backspace, delete, tab, escape, enter, decimal point
     if ([
       'Backspace',
       'Delete',
@@ -170,7 +168,6 @@ export default function Mint() {
       return;
     }
 
-    // Prevent if not a number
     if (isNaN(Number(e.key))) {
       e.preventDefault();
     }
@@ -178,29 +175,42 @@ export default function Mint() {
 
   const changeCollAmount = async (e) => {
     const value = e.target.value;
+
+    if (value === '') {
+      setCollAmount('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
     const numValue = Number(value);
     const userBalance = isPayable ? balance : collateralBalance;
     const maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
-      setCollAmount(value === '' ? '' : numValue);
+    if (numValue >= 0 && numValue <= maxBalance) {
+      setCollAmount(value);
 
-      // Update debt amount based on new collateral amount
       if (value === '' || numValue === 0) {
         setDebtAmount('');
         setDebtMax(0);
       } else if (collateralRatio && ratioType === "Auto") {
         const max = (Number(deposits + numValue) * price) / (collateralRatio / 100) - debt;
-        setDebtAmount(max);
+        setDebtAmount(max.toFixed(3));
         setDebtMax(max);
       } else {
         const max = (Number(deposits + numValue) * price) / 1.55 - debt;
-        setDebtAmount(max);
+        setDebtAmount(max.toFixed(3));
         setDebtMax(max);
       }
     } else if (numValue > maxBalance) {
-      setCollAmount(maxBalance);
+      setCollAmount(maxBalance.toFixed(3));
     }
   };
 
@@ -209,7 +219,6 @@ export default function Mint() {
     const newAmount = (balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value;
     setCollAmount(newAmount);
 
-    // Update debt amount based on new collateral amount
     if (collateralRatio && ratioType === "Auto") {
       const max = (Number(deposits + newAmount) * price) / (collateralRatio / 100) - debt;
       setDebtAmount(max);
@@ -223,17 +232,29 @@ export default function Mint() {
 
   const changeCollateralRatio = async (e) => {
     const value = e.target.value;
+
+    if (value === '') {
+      setCollateralRatio('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
     const numValue = Number(value);
+    if (numValue >= 0) {
+      setCollateralRatio(value);
 
-    // Allow empty string or non-negative values
-    if (value === '' || numValue >= 0) {
-      setCollateralRatio(value === '' ? '' : numValue);
-
-      // Update debt max and amount based on new ratio
       if (collAmount && numValue > 0) {
         const max = (Number(deposits + Number(collAmount)) * price) / (numValue / 100) - debt;
         setDebtMax(max);
-        setDebtAmount(max);
+        setDebtAmount(max.toFixed(3));
       }
     }
   };
@@ -252,13 +273,26 @@ export default function Mint() {
 
   const changeDebtAmount = async (e) => {
     const value = e.target.value;
-    const numValue = Number(value);
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= debtMax)) {
-      setDebtAmount(value === '' ? '' : numValue);
+    if (value === '') {
+      setDebtAmount('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
+    const numValue = Number(value);
+    if (numValue >= 0 && numValue <= debtMax) {
+      setDebtAmount(value);
     } else if (numValue > debtMax) {
-      setDebtAmount(debtMax);
+      setDebtAmount(debtMax.toFixed(3));
     }
   };
 
@@ -402,12 +436,10 @@ export default function Mint() {
 
               <div className="inputTxt3">
                 <input
-                  type="number"
+                  type="text"
                   placeholder="0"
                   onWheel={(e) => e.target.blur()}
                   id="collAmount"
-                  min="0"
-                  step="any"
                   onKeyDown={onKeyDown}
                   onChange={changeCollAmount}
                   value={collAmount === 0 ? "0" : collAmount || ""}
@@ -454,12 +486,10 @@ export default function Mint() {
                 {ratioType == "Auto" ? (
                   <div className="inputTxt" style={{ width: "120px" }}>
                     <input
-                      type="number"
+                      type="text"
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
                       id="collateralRatio"
-                      min="0"
-                      step="any"
                       onKeyDown={onKeyDown}
                       onChange={changeCollateralRatio}
                       value={collateralRatio === 0 ? "0" : collateralRatio || ""}
@@ -479,12 +509,10 @@ export default function Mint() {
               </div>
               <div className="inputTxt3">
                 <input
-                  type="number"
+                  type="text"
                   placeholder="0"
                   onWheel={(e) => e.target.blur()}
                   id="debtAmount"
-                  min="0"
-                  step="any"
                   onKeyDown={onKeyDown}
                   onChange={changeDebtAmount}
                   value={debtAmount === 0 ? "0" : debtAmount || ""}

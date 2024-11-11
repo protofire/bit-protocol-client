@@ -226,9 +226,17 @@ export default function Vote() {
     }
   }, [systemWeek, lockTotalWeight]);
 
-  // Input handlers
+  // Add this helper function at the top level, similar to initialDeposit.js
+  const enforceThreeDecimals = (value) => {
+    if (value === '' || !value.includes('.')) return value;
+    const parts = value.split('.');
+    return parts[0] + '.' + parts[1].slice(0, 3);
+  };
+
+  // Update the handleAmountChange function
   const handleAmountChange = (index) => (e) => {
-    const value = e.target.value;
+    const value = enforceThreeDecimals(e.target.value);
+
     // Allow empty string or valid numbers including zero
     if (value === '' || (!isNaN(value) && Number(value) >= 0)) {
       setVoteState(prev => ({
@@ -529,8 +537,8 @@ export default function Vote() {
                                       placeholder="0"
                                       onWheel={(e) => e.target.blur()}
                                       id={`amount${index}`}
-                                        min="0"
-                                        step="any"
+                                      min="0"
+                                      step="any"
                                       onKeyDown={onKeyDown}
                                       onChange={handleAmountChange(index)}
                                       value={voteState.amounts[`amount${index}`]}

@@ -38,26 +38,7 @@ export default function Lock() {
   const vinePrice = 1;
 
   const onKeyDown = (e) => {
-    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
-      e.preventDefault();
-    }
-
-    // Allow: backspace, delete, tab, escape, enter, decimal point
-    if ([
-      'Backspace',
-      'Delete',
-      'Tab',
-      'Escape',
-      'Enter',
-      '.',
-      ','
-    ].includes(e.key)) {
-      return;
-    }
-
-    // Prevent if not a number
-    if (isNaN(Number(e.key))) {
+    if (['e', 'E', '+', '-'].includes(e.key)) {
       e.preventDefault();
     }
   };
@@ -123,20 +104,30 @@ export default function Lock() {
     account.status,
   ]);
 
-  const changeAmount = async (e) => {
-    const value = e.target.value;
-    const numValue = Number(value);
+  const enforceThreeDecimals = (value) => {
+    if (value === '' || !value.includes('.')) return value;
+    const parts = value.split('.');
+    return parts[0] + '.' + parts[1].slice(0, 3);
+  };
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= Number(balance))) {
-      setAmount(value === '' ? '' : numValue);
-    } else if (numValue > Number(balance)) {
-      setAmount(Math.floor(balance));
+  const changeAmount = async (e) => {
+    const rawValue = e.target.value;
+    const numValue = rawValue === '' ? 0 : parseFloat(rawValue);
+    const maxBalanceNum = Number(balance);
+
+    if (rawValue === '' || !isNaN(numValue)) {
+      const formattedValue = enforceThreeDecimals(rawValue);
+
+      if (rawValue === '' || numValue <= maxBalanceNum) {
+        setAmount(formattedValue);
+      } else {
+        setAmount(maxBalanceNum.toFixed(3));
+      }
     }
   };
 
   const changeValue = (value) => {
-    setAmount(Math.floor(Number(balance) * value));
+    setAmount((Number(balance) * value).toFixed(3));
   };
 
   useEffect(() => {
@@ -160,10 +151,11 @@ export default function Lock() {
   }, [totalWeight, accountWeight]);
 
   const changeClaimAmount = async (e) => {
-    const value = e.target.value;
-    const numValue = Number(value);
+    const value = enforceThreeDecimals(e.target.value);
 
-    // Get penalty amounts even for zero values
+    const numValue = value === '' ? 0 : Number(value);
+    const maxClaimValue = Number(accountLock);
+
     if (value === '' || numValue >= 0) {
       const withdrawWithPenaltyAmounts = await getWithdrawWithPenaltyAmounts(
         numValue || 0
@@ -172,11 +164,10 @@ export default function Lock() {
       setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
     }
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= Number(accountLock))) {
-      setClaimAmount(value === '' ? '' : numValue);
-    } else if (numValue > Number(accountLock)) {
-      setClaimAmount(Math.floor(accountLock));
+    if (value === '' || (numValue >= 0 && numValue <= maxClaimValue)) {
+      setClaimAmount(value);
+    } else if (numValue > maxClaimValue) {
+      setClaimAmount(maxClaimValue.toFixed(3));
     }
   };
 
@@ -411,10 +402,10 @@ export default function Lock() {
                         onWheel={(e) => e.target.blur()}
                         id="amount"
                           min="0"
-                          step="any"
+                          step="any"  // This is important for decimal numbers
                           onKeyDown={onKeyDown}
                           onChange={changeAmount}
-                          value={amount === 0 ? "0" : amount || ""}
+                          value={amount}  // Remove the empty string condition
                         />
                       <span>bitGOV</span>
                     </div>
@@ -586,7 +577,7 @@ export default function Lock() {
                   step="any"
                   onKeyDown={onKeyDown}
                   onChange={changeClaimAmount}
-                  value={claimAmount === 0 ? "0" : claimAmount || ""}
+                  value={claimAmount === '' ? '' : claimAmount}
                 />
                 <span>$bitGOV</span>
               </div>
