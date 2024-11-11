@@ -39,9 +39,11 @@ export default function Lock() {
   const vinePrice = 1;
 
   const onKeyDown = (e) => {
+    // Block only specific unwanted characters
     if (['e', 'E', '+', '-'].includes(e.key)) {
       e.preventDefault();
     }
+    console.log('Key pressed:', e.key); // Debug log
   };
 
   const marks = {
@@ -114,23 +116,23 @@ export default function Lock() {
   };
 
   const changeAmount = async (e) => {
-    const rawValue = e.target.value;
-    const numValue = rawValue === '' ? 0 : parseFloat(rawValue);
+    const value = enforceThreeDecimals(e.target.value);
+
+    // Only convert to number for comparison
+    const numValue = value === '' ? 0 : Number(value);
     const maxBalanceNum = Number(balance);
 
-    if (rawValue === '' || !isNaN(numValue)) {
-      const formattedValue = enforceThreeDecimals(rawValue);
-
-      if (rawValue === '' || numValue <= maxBalanceNum) {
-        setAmount(formattedValue);
-      } else {
-        setAmount(maxBalanceNum.toFixed(3));
-      }
+    // Handle empty and valid number cases
+    if (value === '' || (numValue >= 0 && numValue <= maxBalanceNum)) {
+      setAmount(value);
+    } else if (numValue > maxBalanceNum) {
+      setAmount(maxBalanceNum.toFixed(3));
     }
   };
 
+
   const changeValue = (value) => {
-    setAmount((Number(balance) * value).toFixed(3));
+    setAmount(Number(Number(balance) * value).toFixed(3));
   };
 
   useEffect(() => {
@@ -153,25 +155,55 @@ export default function Lock() {
     // setLoading(false);
   }, [totalWeight, accountWeight]);
 
-  const changeClaimAmount = async (e) => {
-    const value = enforceThreeDecimals(e.target.value);
-
-    const numValue = value === '' ? 0 : Number(value);
-    const maxClaimValue = Number(accountLock);
-
-    if (value === '' || numValue >= 0) {
-      const withdrawWithPenaltyAmounts = await getWithdrawWithPenaltyAmounts(
-        numValue || 0
-      );
-      setAmountWithdrawn(withdrawWithPenaltyAmounts.amountWithdrawn);
-      setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
+  useEffect(() => {
+    if (debouncedValue) {
+      fetchWithdrawPenaltyAmounts(debouncedValue);
     }
   }, [debouncedValue]);
 
-    if (value === '' || (numValue >= 0 && numValue <= maxClaimValue)) {
+  const fetchWithdrawPenaltyAmounts = async (value) => {
+    const withdrawWithPenaltyAmounts = await getWithdrawWithPenaltyAmounts(
+      value
+    );
+    setAmountWithdrawn(withdrawWithPenaltyAmounts.amountWithdrawn);
+    setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
+  };
+
+  const changeClaimAmount = async (e) => {
+    const value = e.target.value;
+
+    if (value === '') {
+      setClaimAmount('');
+      setAmountWithdrawn(0);
+      setPenaltyAmountPaid(0);
+      return;
+    }
+
+    if (value === '0.') {
       setClaimAmount(value);
-    } else if (numValue > maxClaimValue) {
-      setClaimAmount(maxClaimValue.toFixed(3));
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      const truncated = `${parts[0]}.${parts[1].slice(0, 3)}`;
+      setClaimAmount(truncated);
+      return;
+    }
+
+    const numValue = Number(value);
+    if (!isNaN(numValue)) {
+      if (numValue >= 0 && numValue <= Number(accountLock)) {
+        setClaimAmount(value);
+        setAmountWithdrawn(0);
+        setPenaltyAmountPaid(0);
+      } else if (numValue > Number(accountLock)) {
+        setClaimAmount(Number(accountLock).toFixed(3));
+      }
     }
   };
 
@@ -469,7 +501,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountWeight) +
-                                  Number(amount) * currentValue
+                                Number(amount) * currentValue
                               )}
                             </span>
                           </>
@@ -486,7 +518,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountLock + accountUnLock) +
-                                  Number(amount)
+                                Number(amount)
                               )}
                             </span>
                           </>
@@ -581,7 +613,7 @@ export default function Lock() {
                   step="any"
                   onKeyDown={onKeyDown}
                   onChange={changeClaimAmount}
-                  value={claimAmount === '' ? '' : claimAmount}
+                  value={amount}
                 />
                 <span>$bitGOV</span>
               </div>
@@ -640,9 +672,9 @@ export default function Lock() {
             </div> : null} */}
 
       {loading &&
-      account.status === "connected" &&
-      signatureToken?.user &&
-      signatureTrove?.user ? (
+        account.status === "connected" &&
+        signatureToken?.user &&
+        signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
       {currentState ? <Wait></Wait> : null}
