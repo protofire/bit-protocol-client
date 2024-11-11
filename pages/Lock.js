@@ -9,6 +9,7 @@ import tooltip from "../components/tooltip";
 import Slider from "rc-slider";
 import { formatNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
+import useDebounce from "../hook/useDebounce";
 
 import "rc-slider/assets/index.css";
 
@@ -70,6 +71,8 @@ export default function Lock() {
   const [showUnlock, setShowUnlock] = useState(false);
   const [claimAmount, setClaimAmount] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const debouncedValue = useDebounce(claimAmount, 3000);
 
   const queryData = async () => {
     if (account.status === "connected") {
@@ -163,6 +166,7 @@ export default function Lock() {
       setAmountWithdrawn(withdrawWithPenaltyAmounts.amountWithdrawn);
       setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
     }
+  }, [debouncedValue]);
 
     if (value === '' || (numValue >= 0 && numValue <= maxClaimValue)) {
       setClaimAmount(value);
@@ -177,7 +181,7 @@ export default function Lock() {
   };
 
   const lock = async () => {
-    if (amount === '' || amount === undefined) {
+    if (amount === "" || amount === undefined) {
       return;
     }
 
@@ -270,7 +274,7 @@ export default function Lock() {
   };
 
   const earlyUnlock = async () => {
-    if (claimAmount === '' || claimAmount === undefined) {
+    if (claimAmount === "" || claimAmount === undefined) {
       tooltip.error({ content: "Enter Amount", duration: 5000 });
       return;
     }
@@ -410,11 +414,11 @@ export default function Lock() {
                       <span>bitGOV</span>
                     </div>
                     <div className="changeBalance">
-                        <span onClick={() => changeValue(0.25)}>25%</span>
-                        <span onClick={() => changeValue(0.5)}>50%</span>
-                        <span onClick={() => changeValue(0.75)}>75%</span>
+                      <span onClick={() => changeValue(0.25)}>25%</span>
+                      <span onClick={() => changeValue(0.5)}>50%</span>
+                      <span onClick={() => changeValue(0.75)}>75%</span>
                       <span
-                          onClick={() => changeValue(1)}
+                        onClick={() => changeValue(1)}
                         style={{ border: "none" }}
                       >
                         Max
@@ -465,7 +469,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountWeight) +
-                                Number(amount) * currentValue
+                                  Number(amount) * currentValue
                               )}
                             </span>
                           </>
@@ -482,7 +486,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountLock + accountUnLock) +
-                                Number(amount)
+                                  Number(amount)
                               )}
                             </span>
                           </>
@@ -596,7 +600,11 @@ export default function Lock() {
                 </p>
               ) : null}
               <div
-                className="button rightAngle"
+                className={
+                  Number(debouncedValue) > 0
+                    ? "button rightAngle"
+                    : "button rightAngle disable"
+                }
                 style={{ marginTop: "20px" }}
                 onClick={() => earlyUnlock()}
               >
@@ -632,9 +640,9 @@ export default function Lock() {
             </div> : null} */}
 
       {loading &&
-        account.status === "connected" &&
-        signatureToken?.user &&
-        signatureTrove?.user ? (
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
       {currentState ? <Wait></Wait> : null}
