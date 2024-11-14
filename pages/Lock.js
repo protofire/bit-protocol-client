@@ -116,20 +116,35 @@ export default function Lock() {
   };
 
   const changeAmount = async (e) => {
-    const value = enforceThreeDecimals(e.target.value);
+    const value = e.target.value;
 
-    // Only convert to number for comparison
-    const numValue = value === '' ? 0 : Number(value);
-    const maxBalanceNum = Number(balance);
+    if (value === '') {
+      setAmount('');
+      return;
+    }
 
-    // Handle empty and valid number cases
-    if (value === '' || (numValue >= 0 && numValue <= maxBalanceNum)) {
-      setAmount(value);
-    } else if (numValue > maxBalanceNum) {
-      setAmount(maxBalanceNum.toFixed(3));
+    // Only allow numbers and one decimal point
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    // Limit to 3 decimal places
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      const truncated = `${parts[0]}.${parts[1].slice(0, 3)}`;
+      setAmount(truncated);
+      return;
+    }
+
+    const numValue = Number(value);
+    if (!isNaN(numValue)) {
+      if (numValue >= 0 && numValue <= Number(balance)) {
+        setAmount(value);
+      } else if (numValue > Number(balance)) {
+        setAmount(Number(balance).toFixed(3));
+      }
     }
   };
-
 
   const changeValue = (value) => {
     setAmount(Number(Number(balance) * value).toFixed(3));
@@ -229,70 +244,43 @@ export default function Lock() {
       return;
     }
 
-    try {
-      const amountInWei = ethers.utils.parseEther(amount.toString());
+    if (currentValue < 2 || currentValue > 52) {
+      tooltip.error({ content: "Invalid lock duration", duration: 5000 });
+      return;
+    }
 
-      if (currentValue < 2 || currentValue > 52) {
-        tooltip.error({ content: "Invalid lock duration", duration: 5000 });
-        return;
-      }
+    try {
+      const tx = await lockToken(Math.floor(numAmount), currentValue);
 
       setCurrentWaitInfo({
         type: "loading",
-        info: `Lock ${Number(amount).toLocaleString()} $bitGOV for ${currentValue} weeks`
+        info: "Lock " + Number(numAmount.toFixed(3)).toLocaleString() + " $bitGOV"
       });
       setCurrentState(true);
 
-      const tx = await lockToken(amountInWei, currentValue);
       const result = await tx.wait();
-
       setCurrentState(false);
 
       if (result.status === 0) {
-        const errorMessage = result.logs && result.logs[0]?.data
-          ? `Transaction failed: ${result.logs[0].data}`
-          : "Transaction failed. Please check your balance and try again.";
-
         tooltip.error({
-          content: errorMessage,
+          content: "Transaction failed. Please try again.",
           duration: 5000
         });
       } else {
         setShowUnlock(false);
+        tooltip.success({ content: "Successful", duration: 5000 });
         setAmount("");
-        tooltip.success({ content: "Successfully locked tokens", duration: 5000 });
-
-        // Refresh data
-        queryData();
       }
     } catch (error) {
       console.error("Lock error:", error);
       setCurrentState(false);
-
-      if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
-        tooltip.error({
-          content: "Transaction cannot be completed. Please check your balance and try again.",
-          duration: 5000
-        });
-      } else if (error.code === 'INSUFFICIENT_FUNDS') {
-        tooltip.error({
-          content: "Insufficient funds for gas fee",
-          duration: 5000
-        });
-      } else if (error.reason) {
-        // Handle custom error message from contract
-        tooltip.error({
-          content: `Transaction failed: ${error.reason}`,
-          duration: 5000
-        });
-      } else {
-        tooltip.error({
-          content: "Transaction failed. Please try again or contact support if the issue persists.",
-          duration: 5000
-        });
-      }
+      tooltip.error({
+        content: "Transaction failed. Please try again.",
+        duration: 5000
+      });
     }
   };
+
 
   const validateAndLock = () => {
     if (!amount || Number(amount) === 0) {
@@ -503,7 +491,7 @@ export default function Lock() {
                           step="any"
                           onKeyDown={onKeyDown}
                           onChange={changeAmount}
-                          value={amount}
+                          value={amount === 0 ? "0" : amount || ""}
                         />
                       <span>bitGOV</span>
                     </div>
