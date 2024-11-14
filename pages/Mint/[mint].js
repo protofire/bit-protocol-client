@@ -323,14 +323,15 @@ export default function Mint() {
     }
 
     try {
+      // Convert collAmount using BigNumber properly
+      const collAmountBN = new BigNumber(collAmount);
       const tx = await approve(
         collateralAddr,
-        new BigNumber(collAmount).multipliedBy(1e18).toFixed()
+        collAmountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
-          }`,
+        info: `Approving ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name}`
       });
       setApproved({
         hash: tx,
@@ -339,7 +340,7 @@ export default function Mint() {
       setCurrentState(true);
       setTxHash(tx);
     } catch (error) {
-      console.log;
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -361,16 +362,19 @@ export default function Mint() {
       return;
     }
     try {
+      // Convert both amounts using BigNumber properly
+      const collAmountBN = new BigNumber(collAmount);
+      const debtAmountBN = new BigNumber(debtAmount);
+
       const tx = await adjustTrove(
         router.query.mint,
-        new BigNumber(collAmount).multipliedBy(1e18).toFixed(),
-        new BigNumber(debtAmount).multipliedBy(1e18).toFixed(),
+        collAmountBN.multipliedBy(1e18).integerValue().toFixed(),
+        debtAmountBN.multipliedBy(1e18).integerValue().toFixed(),
         isPayable
       );
       setCurrentWaitInfo({
         type: "loading",
-        info:
-          "Mint " + Number(debtAmount.toFixed(4)).toLocaleString() + " $bitUSD",
+        info: "Mint " + Number(debtAmount).toLocaleString() + " $bitUSD",
       });
       setCurrentState(true);
       const mintResult = await tx.wait();

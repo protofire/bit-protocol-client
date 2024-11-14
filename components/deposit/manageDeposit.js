@@ -290,14 +290,14 @@ export default function ManageDeposit({ address }) {
     }
 
     try {
+      const collAmountBN = new BigNumber(collAmount);
       const tx = await approve(
         collateralAddr,
-        new BigNumber(collAmount).multipliedBy(1e18).toFixed()
+        collAmountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
-          }`,
+        info: `Approving ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name}`
       });
       setApproved({
         hash: tx,
@@ -323,15 +323,15 @@ export default function ManageDeposit({ address }) {
 
     if (status !== 0 && status !== 2) {
       try {
+        const collAmountBN = new BigNumber(collAmount);
         const tx = await addColl(
           address,
-          new BigNumber(collAmount).multipliedBy(1e18).toFixed(),
+          collAmountBN.multipliedBy(1e18).integerValue().toFixed(),
           isPayable
         );
         setCurrentWaitInfo({
           type: "loading",
-          info: `Deposit ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
-            }`,
+          info: `Deposit ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name}`
         });
         setCurrentState(true);
         const result = await tx.wait();
@@ -349,6 +349,7 @@ export default function ManageDeposit({ address }) {
         setLock(false);
         await getData();
       } catch (error) {
+        console.log(error);
         setCurrentState(false);
         tooltip.error({
           content:
@@ -365,14 +366,14 @@ export default function ManageDeposit({ address }) {
     }
 
     try {
+      const collAmountBN = new BigNumber(collAmount);
       const tx = await withdrawColl(
         address,
-        new BigNumber(collAmount).multipliedBy(1e18).toFixed()
+        collAmountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Withdraw ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
-          }`,
+        info: `Withdraw ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name}`
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -388,6 +389,7 @@ export default function ManageDeposit({ address }) {
       }
       setCollAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -403,13 +405,15 @@ export default function ManageDeposit({ address }) {
     }
 
     try {
+      // Convert debtAmount using BigNumber properly and ensure integer value
+      const debtAmountBN = new BigNumber(debtAmount);
       const tx = await repayDebt(
         address,
-        new BigNumber(debtAmount).multipliedBy(1e18).toFixed()
+        debtAmountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Repay ${Number(debtAmount.toFixed(4)).toLocaleString()} $bitUSD`,
+        info: `Repay ${Number(debtAmount).toLocaleString()} $bitUSD`
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -425,6 +429,7 @@ export default function ManageDeposit({ address }) {
       }
       setDebtAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:

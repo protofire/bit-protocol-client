@@ -127,18 +127,26 @@ export default function Earn() {
     }
   };
 
-  const enforceThreeDecimals = (value) => {
-    if (value === '' || !value.includes('.')) return value;
-    const parts = value.split('.');
-    return parts[0] + '.' + parts[1].slice(0, 3);
-  };
-
   const changeAmount = async (e) => {
-    const value = enforceThreeDecimals(e.target.value);
-    const numValue = Number(value);
+    const value = e.target.value;
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
+    if (value === '') {
+      setAmount('');
+      return;
+    }
+
+    // Validate number format and decimal places
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
+    const numValue = Number(value);
+    if (numValue >= 0 && numValue <= maxBalance) {
       setAmount(value);
     } else if (numValue > maxBalance) {
       setAmount(maxBalance.toFixed(3));
@@ -306,12 +314,13 @@ export default function Earn() {
 
   const stakeApproveBitGov = async () => {
     try {
+      const amountBN = new BigNumber(amount);
       const tx = await approveBitGovLp(
-        new BigNumber(amount).multipliedBy(1e18).toFixed()
+        amountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: "Approve " + Number(amount.toFixed(4)).toLocaleString() + " LP",
+        info: "Approve " + Number(amount).toLocaleString() + " LP",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -339,12 +348,13 @@ export default function Earn() {
 
   const stakeLpBitGov = async () => {
     try {
+      const amountBN = new BigNumber(amount);
       const tx = await stakeBitGovLP(
-        new BigNumber(amount).multipliedBy(1e18).toFixed()
+        amountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: "Stake " + Number(amount.toFixed(4)).toLocaleString() + " LP",
+        info: "Stake " + Number(amount).toLocaleString() + " LP",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -372,12 +382,13 @@ export default function Earn() {
 
   const unStakeLpBitGov = async () => {
     try {
+      const amountBN = new BigNumber(amount);
       const tx = await withdrawBitGovLP(
-        new BigNumber(amount).multipliedBy(1e18).toFixed()
+        amountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: "UnStake " + Number(amount.toFixed(4)).toLocaleString() + " LP",
+        info: "UnStake " + Number(amount).toLocaleString() + " LP",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -405,12 +416,13 @@ export default function Earn() {
 
   const stakeApproveBitUsd = async () => {
     try {
+      const amountBN = new BigNumber(amount);
       const tx = await approveBitUsdLp(
-        new BigNumber(amount).multipliedBy(1e18).toFixed()
+        amountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: "Approve " + Number(amount.toFixed(4)).toLocaleString() + " LP",
+        info: "Approve " + Number(amount).toLocaleString() + " LP",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -438,12 +450,13 @@ export default function Earn() {
 
   const stakeLpBitUsd = async () => {
     try {
+      const amountBN = new BigNumber(amount);
       const tx = await stakeBitUsdLP(
-        new BigNumber(amount).multipliedBy(1e18).toFixed()
+        amountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: "Stake " + Number(amount.toFixed(4)).toLocaleString() + " LP",
+        info: "Stake " + Number(amount).toLocaleString() + " LP",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -471,12 +484,13 @@ export default function Earn() {
 
   const unStakeLpBitUsd = async () => {
     try {
+      const amountBN = new BigNumber(amount);
       const tx = await withdrawBitUsdLP(
-        new BigNumber(amount).multipliedBy(1e18).toFixed()
+        amountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: "UnStake " + Number(amount.toFixed(4)).toLocaleString() + " LP",
+        info: "UnStake " + Number(amount).toLocaleString() + " LP",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -504,13 +518,13 @@ export default function Earn() {
 
   const deposit = async () => {
     try {
+      const amountBN = new BigNumber(amount);
       const tx = await provideToSP(
-        new BigNumber(amount).multipliedBy(1e18).toFixed()
+        amountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info:
-          "Deposit " + Number(amount.toFixed(4)).toLocaleString() + " bitUSD",
+        info: "Deposit " + Number(amount).toLocaleString() + " bitUSD",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -538,13 +552,14 @@ export default function Earn() {
 
   const withdraw = async () => {
     try {
+      const amountBN = new BigNumber(amount);
       const tx = await withdrawFromSP(
-        new BigNumber(amount).multipliedBy(1e18).toFixed()
+        amountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
         info:
-          "Withdraw " + Number(amount.toFixed(4)).toLocaleString() + " bitUSD",
+          "Withdraw " + Number(amount).toLocaleString() + " bitUSD",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -1004,15 +1019,13 @@ export default function Earn() {
                       <div className="inputTxt2">
                         <div>
                           <input
-                            type="number"
+                            type="text"
                             placeholder="0"
                             onWheel={(e) => e.target.blur()}
                             id="amount"
-                            min="0"
-                            step="any"
                             onKeyDown={onKeyDown}
                             onChange={changeAmount}
-                            value={amount === '' ? '' : amount}
+                            value={amount}
                           />
                           <span className="font_12_gray">
                             ≈$

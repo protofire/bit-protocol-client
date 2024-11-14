@@ -200,34 +200,37 @@ export default function Redeem() {
 
   const redeem = async () => {
     try {
+      const numAmount = Number(amount);
+
       const tx = await redeemCollateral(
         selectCollateral,
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
+
       setCurrentWaitInfo({
         type: "loading",
-        info:
-          "Redeem " + Number(amount.toFixed(4)).toLocaleString() + " bitUSD",
+        info: "Redeem " + numAmount.toLocaleString() + " bitUSD",
       });
+
       setCurrentState(true);
       const result = await tx.wait();
       setCurrentState(false);
+
       if (result.status === 0) {
         tooltip.error({
-          content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
+          content: "Transaction failed due to a network error. Please refresh the page and try again.",
           duration: 5000,
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
       }
+
       setAmount("");
     } catch (error) {
       console.log(error);
       setCurrentState(false);
       tooltip.error({
-        content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
+        content: "Transaction failed due to a network error. Please refresh the page and try again.",
         duration: 5000,
       });
     }
@@ -242,8 +245,16 @@ export default function Redeem() {
       return;
     }
 
-    // Allow redemption if amount is set (including zero)
     if (amount === '' || amount === undefined) {
+      return;
+    }
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      tooltip.error({
+        content: "Please enter a valid amount",
+        duration: 5000,
+      });
       return;
     }
 

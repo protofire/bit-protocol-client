@@ -10,6 +10,7 @@ import Slider from "rc-slider";
 import { formatNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
 import useDebounce from "../hook/useDebounce";
+import { ethers } from 'ethers';
 
 import "rc-slider/assets/index.css";
 
@@ -43,7 +44,6 @@ export default function Lock() {
     if (['e', 'E', '+', '-'].includes(e.key)) {
       e.preventDefault();
     }
-    console.log('Key pressed:', e.key); // Debug log
   };
 
   const marks = {
@@ -214,38 +214,98 @@ export default function Lock() {
 
   const lock = async () => {
     if (amount === "" || amount === undefined) {
+      tooltip.error({ content: "Please enter an amount", duration: 5000 });
+      return;
+    }
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      tooltip.error({ content: "Please enter a valid amount", duration: 5000 });
+      return;
+    }
+
+    if (numAmount > Number(balance)) {
+      tooltip.error({ content: "Insufficient balance", duration: 5000 });
       return;
     }
 
     try {
-      const tx = await lockToken(amount, currentValue);
+      const amountInWei = ethers.utils.parseEther(amount.toString());
+
+      if (currentValue < 2 || currentValue > 52) {
+        tooltip.error({ content: "Invalid lock duration", duration: 5000 });
+        return;
+      }
+
       setCurrentWaitInfo({
         type: "loading",
-        info: "Lock " + Number(amount.toFixed(4)).toLocaleString() + " $bitGOV",
+        info: `Lock ${Number(amount).toLocaleString()} $bitGOV for ${currentValue} weeks`
       });
       setCurrentState(true);
+
+      const tx = await lockToken(amountInWei, currentValue);
       const result = await tx.wait();
+
       setCurrentState(false);
+
       if (result.status === 0) {
+        const errorMessage = result.logs && result.logs[0]?.data
+          ? `Transaction failed: ${result.logs[0].data}`
+          : "Transaction failed. Please check your balance and try again.";
+
         tooltip.error({
-          content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
-          duration: 5000,
+          content: errorMessage,
+          duration: 5000
         });
       } else {
         setShowUnlock(false);
-        tooltip.success({ content: "Successful", duration: 5000 });
+        setAmount("");
+        tooltip.success({ content: "Successfully locked tokens", duration: 5000 });
+
+        // Refresh data
+        queryData();
       }
-      setAmount("");
     } catch (error) {
-      console.log(error);
+      console.error("Lock error:", error);
       setCurrentState(false);
-      tooltip.error({
-        content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
-        duration: 5000,
-      });
+
+      if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
+        tooltip.error({
+          content: "Transaction cannot be completed. Please check your balance and try again.",
+          duration: 5000
+        });
+      } else if (error.code === 'INSUFFICIENT_FUNDS') {
+        tooltip.error({
+          content: "Insufficient funds for gas fee",
+          duration: 5000
+        });
+      } else if (error.reason) {
+        // Handle custom error message from contract
+        tooltip.error({
+          content: `Transaction failed: ${error.reason}`,
+          duration: 5000
+        });
+      } else {
+        tooltip.error({
+          content: "Transaction failed. Please try again or contact support if the issue persists.",
+          duration: 5000
+        });
+      }
     }
+  };
+
+  const validateAndLock = () => {
+    if (!amount || Number(amount) === 0) {
+      tooltip.error({ content: "Please enter an amount", duration: 5000 });
+      return;
+    }
+
+    if (Number(amount) > Number(balance)) {
+      tooltip.error({ content: "Amount exceeds balance", duration: 5000 });
+      return;
+    }
+
+    lock();
   };
 
   const enableAutoLock = async () => {
@@ -312,10 +372,12 @@ export default function Lock() {
     }
 
     try {
-      const tx = await withdrawWithPenalty(Math.floor(claimAmount));
+      const claimAmountInWei = ethers.utils.parseEther(claimAmount.toString());
+
+      const tx = await withdrawWithPenalty(claimAmountInWei);
       setCurrentWaitInfo({
         type: "loading",
-        info: "Early Unlock " + Math.floor(claimAmount) + " $bitGOV",
+        info: "Early Unlock " + Number(claimAmount).toLocaleString() + " $bitGOV",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -438,10 +500,10 @@ export default function Lock() {
                         onWheel={(e) => e.target.blur()}
                         id="amount"
                           min="0"
-                          step="any"  // This is important for decimal numbers
+                          step="any"
                           onKeyDown={onKeyDown}
                           onChange={changeAmount}
-                          value={amount}  // Remove the empty string condition
+                          value={amount}
                         />
                       <span>bitGOV</span>
                     </div>
@@ -480,12 +542,8 @@ export default function Lock() {
                   </div>
                   <div className={styles.button}>
                     <div
-                      className={
-                        !amount
-                          ? "button rightAngle height disable"
-                          : "button rightAngle height"
-                      }
-                      onClick={() => lock()}
+                        className={!amount ? "button rightAngle height disable" : "button rightAngle height"}
+                        onClick={validateAndLock}
                     >
                       LOCK
                     </div>

@@ -1,7 +1,7 @@
 import styles from "../../styles/dapp.module.scss";
 import { BlockchainContext } from "../../hook/blockchain";
 import { useEffect, useState, useContext } from "react";
-import BigNumber from "bignumber.js";
+import { ethers } from "ethers";
 import Wait from "../../components/tooltip/wait";
 import tooltip from "../../components/tooltip";
 import { useWaitForTransactionReceipt } from "wagmi";
@@ -231,44 +231,79 @@ export default function InitialDeposit({ address }) {
   };
 
   const approveCollateral = async () => {
-    if (!collAmount || !debtAmount) {
-      return;
-    }
-    if (Number(debtAmount) < 1) {
+    if (!numberHelpers.isValidNumber(collAmount)) {
       tooltip.error({
-        content: "A Minimum Debt of 1 bitUSD is Required!",
-        duration: 5000,
+        content: "Please enter a valid collateral amount",
+        duration: 5000
       });
       return;
     }
+
     try {
+      const collateralWei = numberHelpers.toWei(collAmount);
+
       const tx = await approve(
         collateralAddr,
-        new BigNumber(collAmount).multipliedBy(1e18).toFixed()
+        collateralWei
       );
+
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount.toFixed(3)).toLocaleString()} $${collateral?.collateral?.name
-          }`,
+        info: `Approving ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name}`
       });
+
       setApproved({
         hash: tx,
-        status: false,
+        status: false
       });
+
       setCurrentState(true);
       setTxHash(tx);
     } catch (error) {
+      console.error('Approval error:', error);
       setCurrentState(false);
+
+      let errorMessage = "Approval failed. Please try again.";
+      if (error.error && error.error.message) {
+        errorMessage = error.error.message
+          .replace('execution reverted: ', '')
+          .replace('VM Exception while processing transaction: revert ', '');
+      }
+
       tooltip.error({
-        content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
-        duration: 5000,
+        content: errorMessage,
+        duration: 5000
       });
     }
   };
 
+  const numberHelpers = {
+    toWei: (value) => {
+      try {
+        if (!value || value === '') return '0';
+        // Remove commas and ensure string
+        const cleanValue = value.toString().replace(/,/g, '');
+        // Use ethers to parse ether to wei
+        return ethers.utils.parseEther(cleanValue).toString();
+      } catch (error) {
+        console.error('Error converting to Wei:', error);
+        return '0';
+      }
+    },
+
+    isValidNumber: (value) => {
+      if (value === '' || value === undefined) return false;
+      const num = Number(value);
+      return !isNaN(num) && num > 0;
+    }
+  };
+
   const mint = async () => {
-    if (collAmount === '' || debtAmount === '') {
+    if (!numberHelpers.isValidNumber(collAmount) || !numberHelpers.isValidNumber(debtAmount)) {
+      tooltip.error({
+        content: "Please enter valid amounts",
+        duration: 5000
+      });
       return;
     }
 
@@ -276,47 +311,70 @@ export default function InitialDeposit({ address }) {
     if (numDebtAmount < 1) {
       tooltip.error({
         content: "A Minimum Debt of 1 bitUSD is Required!",
-        duration: 5000,
+        duration: 5000
       });
       return;
     }
 
     try {
-      const tx = await openTrove(
-        address,
-        new BigNumber(collAmount || 0).multipliedBy(1e18).toFixed(),
-        new BigNumber(debtAmount).multipliedBy(1e18).toFixed(),
-        isPayable
-      );
+      const collateralWei = numberHelpers.toWei(collAmount);
+      const debtWei = numberHelpers.toWei(debtAmount);
+
+      // Set loading state
       setCurrentWaitInfo({
         type: "loading",
-        info:
-          "Mint " + Number(debtAmount.toFixed(3)).toLocaleString() + " $bitUSD",
+        info: `Mint ${Number(debtAmount).toLocaleString()} $bitUSD`
       });
       setCurrentState(true);
-      const mintResult = await tx.wait();
+
+      // Send transaction
+      const tx = await openTrove(
+        address,
+        collateralWei,
+        debtWei,
+        isPayable,
+        isPayable ? {
+          value: collateralWei
+        } : {}
+      );
+
+      const result = await tx.wait();
       setCurrentState(false);
-      if (mintResult.status === 0) {
+
+      if (result.status === 0) {
         tooltip.error({
-          content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
-          duration: 5000,
+          content: "Transaction failed. Please verify collateral ratio and try again.",
+          duration: 5000
         });
       } else {
-        tooltip.success({ content: "Successful", duration: 5000 });
+        tooltip.success({ content: "Successfully minted bitUSD", duration: 5000 });
+        // Clear inputs
+        setCollAmount("");
+        setDebtAmount("");
+        // Refresh data
+        await getData();
       }
-      setCollAmount("");
-      setDebtAmount("");
-      await getData();
     } catch (error) {
-      console.error(error);
+      console.error('Mint error:', error);
       setCurrentState(false);
+
+      let errorMessage = "Transaction failed. Please try again.";
+
+      if (error.error && error.error.message) {
+        errorMessage = error.error.message
+          .replace('execution reverted: ', '')
+          .replace('VM Exception while processing transaction: revert ', '');
+      } else if (error.message && error.message.includes('insufficient funds')) {
+        errorMessage = "Insufficient funds for transaction.";
+      }
+
       tooltip.error({
-        content: "Transaction failed due to a network error. Please refresh the page and try again.",
-        duration: 5000,
+        content: errorMessage,
+        duration: 5000
       });
     }
   };
+
 
   return (
     <>

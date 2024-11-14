@@ -226,32 +226,26 @@ export default function Vote() {
     }
   }, [systemWeek, lockTotalWeight]);
 
-  // Add this helper function at the top level, similar to initialDeposit.js
-  const enforceThreeDecimals = (value) => {
-    if (value === '' || !value.includes('.')) return value;
-    const parts = value.split('.');
-    return parts[0] + '.' + parts[1].slice(0, 3);
-  };
-
-  // Update the handleAmountChange function
   const handleAmountChange = (index) => (e) => {
-    const value = enforceThreeDecimals(e.target.value);
-
-    // Allow empty string or valid numbers including zero
-    if (value === '' || (!isNaN(value) && Number(value) >= 0)) {
-      setVoteState(prev => ({
+    const inputHandler = createBlockchainInputHandler(
+      (value) => setVoteState(prev => ({
         ...prev,
         amounts: {
           ...prev.amounts,
           [`amount${index}`]: value
         }
-      }));
-    }
+      })),
+      10000 // Max value for voting
+    );
+
+    inputHandler(e);
   };
 
   const handleVote = async () => {
-    const totalVotes = Object.values(voteState.amounts).reduce((sum, amount) =>
-      sum + (amount === '' ? 0 : Number(amount)), 0);
+    if (!showVote) return;
+
+    const totalVotes = Object.values(voteState.amounts)
+      .reduce((sum, amount) => sum + (amount === '' ? 0 : Number(amount)), 0);
 
     if (totalVotes > 10000) {
       tooltip.error({
@@ -261,38 +255,22 @@ export default function Vote() {
       return;
     }
 
-    if (!showVote) return;
-
     try {
-      // Include all votes, including zeros
       const voteData = Object.entries(voteState.amounts)
         .map(([key, amount]) => [
           Number(key.slice(-1)),
-          (amount === '' ? 0 : Number(amount)) * 100
+          blockchainHelpers.toBlockchainFormat(amount || '0')
         ]);
 
-      const tx = await registerAccountWeightAndVote(voteData);
-
-      setCurrentWaitInfo({ type: "loading" });
-      setCurrentState(true);
-
-      const result = await tx.wait();
-      setCurrentState(false);
-
-      if (result.status === 0) {
-        tooltip.error({
-          content: "Transaction failed. Please refresh and try again.",
-          duration: 5000
-        });
-      } else {
-        tooltip.success({ content: "Successful", duration: 5000 });
-        queryData(); // Refresh data after successful vote
-      }
+      await handleBlockchainTransaction(
+        voteData,
+        registerAccountWeightAndVote
+      );
     } catch (error) {
-      console.error(error);
+      console.error('Vote error:', error);
       setCurrentState(false);
       tooltip.error({
-        content: "Transaction failed. Please refresh and try again.",
+        content: "Voting failed. Please try again.",
         duration: 5000
       });
     }
