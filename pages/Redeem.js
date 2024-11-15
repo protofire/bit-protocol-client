@@ -21,6 +21,7 @@ export default function Redeem() {
   const [rosePrice, setRosePrice] = useState(0);
   const [selectCollateral, setSelectedCollateral] = useState("");
   const [canRedeem, setCanRedeem] = useState(false);
+  const initializedRef = useRef(false)
 
   const account = useAccount();
 
@@ -160,8 +161,11 @@ export default function Redeem() {
     if (Object.keys(collaterals).length !== 0) {
       const price = getRosePrice();
       setRosePrice(price);
-      if (selectCollateral === "") {
+
+      // Only set initial collateral if it hasn't been set yet
+      if (selectCollateral === "" && !initializedRef.current) {
         selectCollateralChange(Object.keys(collaterals)[0]);
+        initializedRef.current = true;
       }
     }
   };
