@@ -233,13 +233,15 @@ export default function Lock() {
       return;
     }
 
-    const numAmount = Number(amount);
-    if (isNaN(numAmount) || numAmount <= 0) {
+    // Convert the amount to BigNumber with correct decimals
+    const numAmount = ethers.utils.parseUnits(amount.toString(), 18);
+
+    if (numAmount.lte(0)) {
       tooltip.error({ content: "Please enter a valid amount", duration: 5000 });
       return;
     }
 
-    if (numAmount > Number(balance)) {
+    if (numAmount.gt(ethers.utils.parseUnits(balance.toString(), 18))) {
       tooltip.error({ content: "Insufficient balance", duration: 5000 });
       return;
     }
@@ -250,11 +252,11 @@ export default function Lock() {
     }
 
     try {
-      const tx = await lockToken(Math.floor(numAmount), currentValue);
+      const tx = await lockToken(numAmount, currentValue);
 
       setCurrentWaitInfo({
         type: "loading",
-        info: "Lock " + Number(numAmount.toFixed(3)).toLocaleString() + " $bitGOV"
+        info: "Lock " + Number(amount.toFixed(3)).toLocaleString() + " $bitGOV"
       });
       setCurrentState(true);
 
@@ -280,7 +282,6 @@ export default function Lock() {
       });
     }
   };
-
 
   const validateAndLock = () => {
     if (!amount || Number(amount) === 0) {
