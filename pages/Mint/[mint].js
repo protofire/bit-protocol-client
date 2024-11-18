@@ -76,8 +76,8 @@ export default function Mint() {
       setIsPayable(collaterals[router.query.mint]?.collateral.payable);
       const tokenBalance = !collaterals[router.query.mint]?.collateral.payable
         ? await getTokenBalance(
-          collaterals[router.query.mint]?.collateral.address
-        )
+            collaterals[router.query.mint]?.collateral.address
+          )
         : 0;
       setCollateralBalance(tokenBalance);
     }
@@ -153,20 +153,16 @@ export default function Mint() {
 
   const onKeyDown = (e) => {
     // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
+    if (["-", "+", "e", "E"].includes(e.key)) {
       e.preventDefault();
     }
 
     // Allow: backspace, delete, tab, escape, enter, decimal point
-    if ([
-      'Backspace',
-      'Delete',
-      'Tab',
-      'Escape',
-      'Enter',
-      '.',
-      ','
-    ].includes(e.key)) {
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", ","].includes(
+        e.key
+      )
+    ) {
       return;
     }
 
@@ -183,15 +179,17 @@ export default function Mint() {
     const maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
 
     // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
-      setCollAmount(value === '' ? '' : numValue);
+    if (value === "" || (numValue >= 0 && numValue <= maxBalance)) {
+      setCollAmount(value === "" ? "" : numValue);
 
       // Update debt amount based on new collateral amount
-      if (value === '' || numValue === 0) {
-        setDebtAmount('');
+      if (value === "" || numValue === 0) {
+        setDebtAmount("");
         setDebtMax(0);
       } else if (collateralRatio && ratioType === "Auto") {
-        const max = (Number(deposits + numValue) * price) / (collateralRatio / 100) - debt;
+        const max =
+          (Number(deposits + numValue) * price) / (collateralRatio / 100) -
+          debt;
         setDebtAmount(max);
         setDebtMax(max);
       } else {
@@ -211,7 +209,8 @@ export default function Mint() {
 
     // Update debt amount based on new collateral amount
     if (collateralRatio && ratioType === "Auto") {
-      const max = (Number(deposits + newAmount) * price) / (collateralRatio / 100) - debt;
+      const max =
+        (Number(deposits + newAmount) * price) / (collateralRatio / 100) - debt;
       setDebtAmount(max);
       setDebtMax(max);
     } else {
@@ -226,12 +225,14 @@ export default function Mint() {
     const numValue = Number(value);
 
     // Allow empty string or non-negative values
-    if (value === '' || numValue >= 0) {
-      setCollateralRatio(value === '' ? '' : numValue);
+    if (value === "" || numValue >= 0) {
+      setCollateralRatio(value === "" ? "" : numValue);
 
       // Update debt max and amount based on new ratio
       if (collAmount && numValue > 0) {
-        const max = (Number(deposits + Number(collAmount)) * price) / (numValue / 100) - debt;
+        const max =
+          (Number(deposits + Number(collAmount)) * price) / (numValue / 100) -
+          debt;
         setDebtMax(max);
         setDebtAmount(max);
       }
@@ -255,8 +256,8 @@ export default function Mint() {
     const numValue = Number(value);
 
     // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= debtMax)) {
-      setDebtAmount(value === '' ? '' : numValue);
+    if (value === "" || (numValue >= 0 && numValue <= debtMax)) {
+      setDebtAmount(value === "" ? "" : numValue);
     } else if (numValue > debtMax) {
       setDebtAmount(debtMax);
     }
@@ -275,8 +276,12 @@ export default function Mint() {
   };
 
   const approveCollateral = async () => {
-    if ((collAmount === '' || collAmount === undefined) ||
-      (debtAmount === '' || debtAmount === undefined)) {
+    if (
+      collAmount === "" ||
+      collAmount === undefined ||
+      debtAmount === "" ||
+      debtAmount === undefined
+    ) {
       return;
     }
 
@@ -295,8 +300,9 @@ export default function Mint() {
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
-          }`,
+        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${
+          collateral?.collateral?.name
+        }`,
       });
       setApproved({
         hash: tx,
@@ -305,7 +311,6 @@ export default function Mint() {
       setCurrentState(true);
       setTxHash(tx);
     } catch (error) {
-      console.log;
       setCurrentState(false);
       tooltip.error({
         content:
@@ -353,7 +358,6 @@ export default function Mint() {
       setCollAmount("");
       setDebtAmount("");
     } catch (error) {
-      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -462,7 +466,9 @@ export default function Mint() {
                       step="any"
                       onKeyDown={onKeyDown}
                       onChange={changeCollateralRatio}
-                      value={collateralRatio === 0 ? "0" : collateralRatio || ""}
+                      value={
+                        collateralRatio === 0 ? "0" : collateralRatio || ""
+                      }
                     />
                     <span>%</span>
                   </div>

@@ -42,6 +42,8 @@ export default function Earn() {
     withdrawBitUsdLP,
     signatureTrove,
     signatureToken,
+    getLpTokenPrice,
+    getBitGovPrice,
     // getTokenBalance,
   } = useContext(BlockchainContext);
 
@@ -78,9 +80,8 @@ export default function Earn() {
   const [vUSDBaseApr2, setvUSDBaseApr2] = useState(0);
   const [vUSDBaseApr3, setvUSDBaseApr3] = useState(0);
   const [vUSDBaseApr4, setvUSDBaseApr4] = useState(0);
-
-  const vinePrice = 1;
-  const lpPrice = 1;
+  const [bitGovPrice, setBitGovPrice] = useState(0);
+  const [bitGovLPPrice, setBitGovbitGovLPPrice] = useState(0);
 
   const rosePrice = getRosePrice();
 
@@ -104,20 +105,16 @@ export default function Earn() {
 
   const onKeyDown = (e) => {
     // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
+    if (["-", "+", "e", "E"].includes(e.key)) {
       e.preventDefault();
     }
 
     // Allow: backspace, delete, tab, escape, enter, decimal point
-    if ([
-      'Backspace',
-      'Delete',
-      'Tab',
-      'Escape',
-      'Enter',
-      '.',
-      ','
-    ].includes(e.key)) {
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", ","].includes(
+        e.key
+      )
+    ) {
       return;
     }
 
@@ -132,8 +129,8 @@ export default function Earn() {
     const numValue = Number(value);
 
     // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
-      setAmount(value === '' ? '' : numValue);
+    if (value === "" || (numValue >= 0 && numValue <= maxBalance)) {
+      setAmount(value === "" ? "" : numValue);
     } else if (numValue > maxBalance) {
       setAmount(maxBalance);
     }
@@ -166,6 +163,8 @@ export default function Earn() {
       // FIGURE IT OUT HOW TO GET DEBT TOKEN BALANCE OF THE POOL
       // const usdcBalance = await getTokenBalance()
       setVUSDLpBalance(0);
+      setBitGovbitGovLPPrice(await getLpTokenPrice());
+      setBitGovPrice(await getBitGovPrice());
 
       //bitUSD Minting
       setBaseAPR1(
@@ -195,23 +194,24 @@ export default function Earn() {
 
   useEffect(() => {
     const vUSDBaseApr1 =
-      (baseAPR1 * 86400 * 365 * vinePrice * 100) / bitUSDCirculation;
+      (baseAPR1 * 86400 * 365 * bitGovPrice * 100) / bitUSDCirculation;
     setvUSDBaseApr1(vUSDBaseApr1);
     const vUSDBaseApr2 =
-      (baseAPR2 * 86400 * 365 * vinePrice * 100) /
-      (Number(mockLpBalance) * lpPrice);
+      (baseAPR2 * 86400 * 365 * bitGovPrice * 100) /
+      (Number(mockLpBalance) * bitGovLPPrice);
     setvUSDBaseApr2(vUSDBaseApr2);
     const vUSDBaseApr4 =
-      (baseAPR4 * 86400 * 365 * vinePrice * 100) / (Number(VUSDLpBalance) * 2);
+      (baseAPR4 * 86400 * 365 * bitGovPrice * 100) /
+      (Number(VUSDLpBalance) * 2);
     setvUSDBaseApr4(vUSDBaseApr4);
     const vUSDBaseApr3 =
-      (baseAPR3 * 86400 * 365 * vinePrice * 100) /
+      (baseAPR3 * 86400 * 365 * bitGovPrice * 100) /
       (Number(stabilityPoolBalance) +
         Number(stabilityPool.balance) * rosePrice);
     setvUSDBaseApr3(vUSDBaseApr3);
   }, [
     baseAPR3,
-    vinePrice,
+    bitGovPrice,
     stabilityPoolBalance,
     stabilityPool.balance,
     baseAPR1,
@@ -219,7 +219,7 @@ export default function Earn() {
     baseAPR3,
     bitUSDCirculation,
     rosePrice,
-    lpPrice,
+    bitGovLPPrice,
   ]);
 
   useEffect(() => {
@@ -280,7 +280,7 @@ export default function Earn() {
   useEffect(() => {
     let num = 0;
     if (typeName == "bitGOV/ROSE LP") {
-      num = Number(mockLpBalance) * lpPrice;
+      num = Number(mockLpBalance) * bitGovLPPrice;
     } else if (typeName == "bitUSD/USDC LP") {
       num = Number(VUSDLpBalance) * 2;
     } else {
@@ -294,8 +294,8 @@ export default function Earn() {
     rosePrice,
     stabilityPool.balance,
     typeName,
-    lpPrice,
-    lpPrice,
+    bitGovLPPrice,
+    bitGovLPPrice,
   ]);
 
   const stakeApproveBitGov = async () => {
@@ -598,7 +598,7 @@ export default function Earn() {
   const Operate = () => {
     if (typeName == "bitGOV/ROSE LP") {
       // Allow zero amounts for approval and staking operations
-      if (amount === '' || amount === undefined) {
+      if (amount === "" || amount === undefined) {
         return;
       }
       if (buttonName == "Approve") {
@@ -609,7 +609,7 @@ export default function Earn() {
         unStakeLpBitGov();
       }
     } else if (typeName == "bitUSD/USDC LP") {
-      if (amount === '' || amount === undefined) {
+      if (amount === "" || amount === undefined) {
         return;
       }
       if (buttonName == "Approve") {
@@ -621,12 +621,12 @@ export default function Earn() {
       }
     } else {
       if (buttonName == "Deposit") {
-        if (amount === '' || amount === undefined) {
+        if (amount === "" || amount === undefined) {
           return;
         }
         deposit();
       } else if (buttonName == "Withdraw") {
-        if (amount === '' || amount === undefined) {
+        if (amount === "" || amount === undefined) {
           return;
         }
         withdraw();
@@ -716,7 +716,7 @@ export default function Earn() {
                       $
                       {formatNumber(
                         Number(stabilityPoolBalance) +
-                        Number(stabilityPool.balance) * rosePrice
+                          Number(stabilityPool.balance) * rosePrice
                       )}
                     </span>
                   </div>
@@ -762,7 +762,7 @@ export default function Earn() {
                   <div className={styles.dataItem}>
                     <p>TVL</p>
                     <span>
-                      ${formatNumber(Number(mockLpBalance) * lpPrice)}
+                      ${formatNumber(Number(mockLpBalance) * bitGovLPPrice)}
                     </span>
                   </div>
                   <div className={styles.dataItem}>
@@ -855,8 +855,8 @@ export default function Earn() {
                       {typeName == "bitGOV/ROSE LP"
                         ? formatNumber(vUSDBaseApr2 * boost)
                         : typeName == "bitUSD/USDC LP"
-                          ? formatNumber(vUSDBaseApr4 * boost)
-                          : formatNumber(vUSDBaseApr3 * boost)}{" "}
+                        ? formatNumber(vUSDBaseApr4 * boost)
+                        : formatNumber(vUSDBaseApr3 * boost)}{" "}
                       ({boost}x)
                     </p>
                   </div>
@@ -874,8 +874,8 @@ export default function Earn() {
                       {typeName == "bitGOV/ROSE LP"
                         ? "Stake bitGOV/ROSE LP to earn bitGOV rewards."
                         : typeName == "bitUSD/USDC LP"
-                          ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
-                          : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
+                        ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
+                        : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
                       {typeName == "Stability Pool" ? (
                         <Link
                           target="_blank"
@@ -909,7 +909,7 @@ export default function Earn() {
                       </>
                     ) : null}
                     {typeName == "bitGOV/ROSE LP" ||
-                      typeName == "bitUSD/USDC LP" ? (
+                    typeName == "bitUSD/USDC LP" ? (
                       <>
                         <span
                           className={
@@ -1002,8 +1002,8 @@ export default function Earn() {
                             placeholder="0"
                             onWheel={(e) => e.target.blur()}
                             id="amount"
-                            min="0"  // Prevent negative values
-                            step="any"  // Allow decimal values
+                            min="0" // Prevent negative values
+                            step="any" // Allow decimal values
                             onKeyDown={onKeyDown}
                             onChange={changeAmount}
                             value={amount === 0 ? "0" : amount || ""}
@@ -1011,12 +1011,12 @@ export default function Earn() {
                           <span className="font_12_gray">
                             ≈$
                             {typeName == "bitGOV/ROSE LP"
-                              ? formatNumber(Number(amount) * lpPrice)
+                              ? formatNumber(Number(amount) * bitGovLPPrice)
                               : typeName == "bitUSD/USDC LP"
-                                ? formatNumber(
+                              ? formatNumber(
                                   Number(amount) * (tvl / USDCtotalSupply)
                                 )
-                                : formatNumber(Number(amount))}
+                              : formatNumber(Number(amount))}
                           </span>
                         </div>
                         <span className="font_14 gray">{coin}</span>
@@ -1070,9 +1070,9 @@ export default function Earn() {
       </div>
 
       {!Object.keys(stabilityPool).length > 0 &&
-        account.status === "connected" &&
-        signatureToken?.user &&
-        signatureTrove?.user ? (
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
 
