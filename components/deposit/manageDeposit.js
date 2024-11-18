@@ -17,7 +17,7 @@ export default function ManageDeposit({ address }) {
   const [operateType2, setOperateType2] = useState("Deposit");
   const [collAmount, setCollAmount] = useState("");
   const [currentRatio, setCurrentRatio] = useState(0);
-  const [afterDepositRatio, setDepoistAfterRatio] = useState(0);
+  const [afterDepositRatio, setDepositAfterRatio] = useState(0);
   const [afterWithdrawRatio, setWithdrawAfterRatio] = useState(0);
   const [debtAmount, setDebtAmount] = useState("");
   const [withdrawMax, setWithdrawMax] = useState(0);
@@ -249,7 +249,7 @@ export default function ManageDeposit({ address }) {
     if (collAmount) {
       const ratio2 = (((deposits + Number(collAmount)) * price) / debt) * 100;
       const ratio3 = (((deposits - Number(collAmount)) * price) / debt) * 100;
-      setDepoistAfterRatio(ratio2);
+      setDepositAfterRatio(ratio2);
       setWithdrawAfterRatio(ratio3);
     }
   }, [collAmount, debt, deposits, price]);
