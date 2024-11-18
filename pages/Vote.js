@@ -8,6 +8,7 @@ import Loading from "../components/tooltip/loading";
 import { BlockchainContext } from "../hook/blockchain";
 import { formatNumber, fromBigNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
+import { ethers } from 'ethers';
 
 export default function Vote() {
   const account = useAccount();
@@ -132,11 +133,11 @@ export default function Vote() {
     const { votes } = voteState;
     const { totalPoint, totalPointUpper, totalWeightAtData, currentWeeklyEmissions, upperWeeklyEmissions } = weightState;
 
-    // Ensure safe percentage calculations for votes
     const votesPercentage = Object.keys(votes).reduce((acc, key) => ({
       ...acc,
-      [key]: votes[key] ? (votes[key] / 100).toFixed(2) : "0.00"  // Default to "0.00" if no value
+      [key]: votes[key] ? (votes[key] / 100).toFixed(2) : "0.00"  // Since votes are in points
     }), {});
+
 
     const emissions = {
       current: {},
@@ -144,22 +145,19 @@ export default function Vote() {
     };
 
     for (let i = 0; i < 5; i++) {
-      // Handle current emissions calculations
       emissions.current[`current${i}`] = isFinite((currentWeeklyEmissions * totalWeightAtData[`current${i}`]) / totalPoint)
         ? formatNumber((currentWeeklyEmissions * totalWeightAtData[`current${i}`]) / totalPoint)
         : "0";
 
-      // Handle upper emissions calculations with proper default
       emissions.upper[`upper${i}`] = totalPointUpper <= 0 ? "0" :
         isFinite((upperWeeklyEmissions * totalWeightAtData[`current${i}`]) / totalPointUpper)
           ? formatNumber((upperWeeklyEmissions * totalWeightAtData[`current${i}`]) / totalPointUpper)
           : "0";
     }
 
-    // Calculate allocated and remaining percentages
     const totalVotes = Object.values(votes).reduce((sum, vote) => sum + (Number(vote) || 0), 0);
-    const Allocated = ((totalVotes / 10000) * 100).toFixed(2);
-    const Remaining = (100 - (totalVotes / 10000) * 100).toFixed(2);
+    const Allocated = totalVotes.toFixed(2);
+    const Remaining = (100 - totalVotes).toFixed(2);
 
     return {
       votesPercentage,
@@ -169,7 +167,6 @@ export default function Vote() {
     };
   }, [voteState.votes, weightState]);
 
-  // Optimized data fetching
   const queryData = useCallback(async () => {
     if (!systemWeek || !lockTotalWeight) return;
 
@@ -179,13 +176,11 @@ export default function Vote() {
       const weightAt = await getTotalWeightAt();
       const currentWeeklyEmissions = await weeklyEmissions();
 
-      // Process votes data
       const processedVotes = votes?.reduce((acc, vote) => {
         acc[`votes${vote.id}`] = Number(vote.points);
         return acc;
       }, { votes0: 0, votes1: 0, votes2: 0, votes3: 0, votes4: 0 });
 
-      // Update vote state
       setVoteState(prev => ({
         ...prev,
         isLocks: locks.lockData.amount > 0 || locks.frozenAmount > 0,
@@ -194,14 +189,12 @@ export default function Vote() {
         votes: processedVotes
       }));
 
-      // Fetch and update weight data
       const newWeightData = {
         totalPoint: weightAt,
         currentWeeklyEmissions: fromBigNumber(currentWeeklyEmissions),
         totalWeightAtData: { ...weightState.totalWeightAtData }
       };
 
-      // Fetch current weights
       for (let i = 0; i < 5; i++) {
         newWeightData.totalWeightAtData[`current${i}`] = await getReceiverWeightAt(i, systemWeek);
       }
@@ -226,6 +219,65 @@ export default function Vote() {
     }
   }, [systemWeek, lockTotalWeight]);
 
+  const blockchainHelpers = {
+    // Convert human readable amount to blockchain format (multiplied by 10^3)
+    toBlockchainFormat: (amount) => {
+      try {
+        if (!amount || amount === '') return '0';
+
+        return ethers.utils.parseUnits(amount.toString(), 3);
+      } catch (error) {
+        console.error('Error converting to blockchain format:', error);
+        throw new Error('Invalid amount format');
+      }
+    },
+
+    fromBlockchainFormat: (amount) => {
+      try {
+        return ethers.utils.formatUnits(amount, 3);
+      } catch (error) {
+        console.error('Error converting from blockchain format:', error);
+        return '0';
+      }
+    },
+
+    // Limit to two decimal places because of SC limitations
+    isValidDecimal: (value) => {
+      if (value === '' || value === undefined) return true;
+      return /^\d*\.?\d{0,2}$/.test(value);
+    },
+
+    // Limit to two decimal places because of SC limitations
+    enforceDecimals: (value) => {
+      if (value === '' || !value.includes('.')) return value;
+      const parts = value.split('.');
+      return `${parts[0]}.${parts[1].slice(0, 2)}`;
+    }
+  };
+
+  const createBlockchainInputHandler = (setState, maxValue = 100) => (e) => {
+    let value = e.target.value;
+
+    if (value === '') {
+      setState('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) return;
+
+    value = blockchainHelpers.enforceDecimals(value);
+
+    const numValue = Number(value);
+
+    if (!isNaN(numValue) && numValue >= 0) {
+      if (numValue <= maxValue) {
+        setState(value);
+      } else {
+        setState(maxValue.toString());
+      }
+    }
+  };  
+
   const handleAmountChange = (index) => (e) => {
     const inputHandler = createBlockchainInputHandler(
       (value) => setVoteState(prev => ({
@@ -235,7 +287,7 @@ export default function Vote() {
           [`amount${index}`]: value
         }
       })),
-      10000 // Max value for voting
+      100 // Max value for voting
     );
 
     inputHandler(e);
@@ -247,9 +299,9 @@ export default function Vote() {
     const totalVotes = Object.values(voteState.amounts)
       .reduce((sum, amount) => sum + (amount === '' ? 0 : Number(amount)), 0);
 
-    if (totalVotes > 10000) {
+    if (totalVotes > 100) {
       tooltip.error({
-        content: "Total amount of votes shouldn't exceed 10,000.",
+        content: "Total amount of votes shouldn't exceed 100%.",
         duration: 3000
       });
       return;
@@ -259,24 +311,48 @@ export default function Vote() {
       const voteData = Object.entries(voteState.amounts)
         .map(([key, amount]) => [
           Number(key.slice(-1)),
-          blockchainHelpers.toBlockchainFormat(amount || '0')
+          amount === '' ? 0 : Math.round(Number(amount) * 100)
         ]);
 
-      await handleBlockchainTransaction(
-        voteData,
-        registerAccountWeightAndVote
-      );
+
+      setCurrentWaitInfo({
+        type: "loading",
+        info: "Processing vote submission"
+      });
+      setCurrentState(true);
+
+      const tx = await registerAccountWeightAndVote(voteData);
+      const result = await tx.wait();
+
+      setCurrentState(false);
+
+      if (result.status === 0) {
+        tooltip.error({
+          content: "Vote transaction failed. Please try again.",
+          duration: 5000
+        });
+      } else {
+        tooltip.success({ content: "Vote submitted successfully", duration: 5000 });
+        await queryData();
+      }
     } catch (error) {
       console.error('Vote error:', error);
       setCurrentState(false);
+
+      let errorMessage = "Voting failed. Please try again.";
+      if (error.error && error.error.message) {
+        errorMessage = error.error.message
+          .replace('execution reverted: ', '')
+          .replace('VM Exception while processing transaction: revert ', '');
+      }
+
       tooltip.error({
-        content: "Voting failed. Please try again.",
+        content: errorMessage,
         duration: 5000
       });
     }
   };
 
-  // Effects
   useEffect(() => {
     queryData();
     const interval = setInterval(queryData, 30000);
@@ -287,7 +363,7 @@ export default function Vote() {
     const totalAmount = Object.values(voteState.amounts).reduce((sum, amount) =>
       sum + (amount === '' ? 0 : Number(amount)), 0);
     // Only check if the user has locks and total amount is within range (including zero)
-    setShowVote(voteState.isLocks && totalAmount <= 10000);
+    setShowVote(voteState.isLocks && totalAmount <= 100);
   }, [voteState.amounts, voteState.isLocks]);
 
   return (
@@ -490,7 +566,7 @@ export default function Vote() {
                             <div
                               className={styles.center}
                               style={
-                                isOpen ? { transform: "rotate(180deg)" } : null
+                                isOpen ? { transform: "rotate(30deg)" } : null
                               }
                             >
                               <img
