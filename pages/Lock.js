@@ -40,11 +40,10 @@ export default function Lock() {
   const vinePrice = 1;
 
   const onKeyDown = (e) => {
-    // Block only specific unwanted characters
-    if (['e', 'E', '+', '-'].includes(e.key)) {
+    if (['e', 'E', '+', '-', '.'].includes(e.key)) {
       e.preventDefault();
     }
-  };
+  };  
 
   const marks = {
     2: "2",
@@ -109,13 +108,7 @@ export default function Lock() {
     account.status,
   ]);
 
-  const enforceThreeDecimals = (value) => {
-    if (value === '' || !value.includes('.')) return value;
-    const parts = value.split('.');
-    return parts[0] + '.' + parts[1].slice(0, 3);
-  };
-
-  const changeAmount = async (e) => {
+  const changeAmount = (e) => {
     const value = e.target.value;
 
     if (value === '') {
@@ -123,32 +116,25 @@ export default function Lock() {
       return;
     }
 
-    // Only allow numbers and one decimal point
-    if (!/^\d*\.?\d*$/.test(value)) {
-      return;
-    }
-
-    // Limit to 3 decimal places
-    const parts = value.split('.');
-    if (parts[1] && parts[1].length > 3) {
-      const truncated = `${parts[0]}.${parts[1].slice(0, 3)}`;
-      setAmount(truncated);
+    // Only allow integers
+    if (!/^\d+$/.test(value)) {
       return;
     }
 
     const numValue = Number(value);
-    if (!isNaN(numValue)) {
-      if (numValue >= 0 && numValue <= Number(balance)) {
-        setAmount(value);
-      } else if (numValue > Number(balance)) {
-        setAmount(Number(balance).toFixed(3));
-      }
+    if (numValue >= 0 && numValue <= Math.floor(Number(balance))) {
+      setAmount(value);
+    } else if (numValue > Number(balance)) {
+      setAmount(Math.floor(Number(balance)).toString());
     }
+  };  
+
+  const changeValue = (percentage) => {
+    // percentage should be an integer, e.g., 25 for 25%
+    const newAmount = Math.floor((Number(balance) * percentage) / 100);
+    setAmount(newAmount.toString());
   };
 
-  const changeValue = (value) => {
-    setAmount(Number(Number(balance) * value).toFixed(3));
-  };
 
   useEffect(() => {
     if (Number(amount) && currentValue) {
@@ -184,7 +170,7 @@ export default function Lock() {
     setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
   };
 
-  const changeClaimAmount = async (e) => {
+  const changeClaimAmount = (e) => {
     const value = e.target.value;
 
     if (value === '') {
@@ -194,33 +180,20 @@ export default function Lock() {
       return;
     }
 
-    if (value === '0.') {
-      setClaimAmount(value);
-      return;
-    }
-
-    if (!/^\d*\.?\d*$/.test(value)) {
-      return;
-    }
-
-    const parts = value.split('.');
-    if (parts[1] && parts[1].length > 3) {
-      const truncated = `${parts[0]}.${parts[1].slice(0, 3)}`;
-      setClaimAmount(truncated);
+    // Only allow integers
+    if (!/^\d+$/.test(value)) {
       return;
     }
 
     const numValue = Number(value);
-    if (!isNaN(numValue)) {
-      if (numValue >= 0 && numValue <= Number(accountLock)) {
-        setClaimAmount(value);
-        setAmountWithdrawn(0);
-        setPenaltyAmountPaid(0);
-      } else if (numValue > Number(accountLock)) {
-        setClaimAmount(Number(accountLock).toFixed(3));
-      }
+    if (numValue >= 0 && numValue <= Math.floor(Number(accountLock))) {
+      setClaimAmount(value);
+      setAmountWithdrawn(0);
+      setPenaltyAmountPaid(0);
+    } else if (numValue > Number(accountLock)) {
+      setClaimAmount(Math.floor(Number(accountLock)).toString());
     }
-  };
+  };  
 
   const changeShowUnlock = async () => {
     setClaimAmount(accountUnLock);
@@ -233,15 +206,14 @@ export default function Lock() {
       return;
     }
 
-    // Convert the amount to BigNumber with correct decimals
-    const numAmount = ethers.utils.parseUnits(amount.toString(), 18);
+    const numAmount = ethers.utils.parseUnits(amount.toString(), 0); // Since no decimals
 
     if (numAmount.lte(0)) {
       tooltip.error({ content: "Please enter a valid amount", duration: 5000 });
       return;
     }
 
-    if (numAmount.gt(ethers.utils.parseUnits(balance.toString(), 18))) {
+    if (numAmount.gt(ethers.BigNumber.from(balance))) {
       tooltip.error({ content: "Insufficient balance", duration: 5000 });
       return;
     }
@@ -256,7 +228,7 @@ export default function Lock() {
 
       setCurrentWaitInfo({
         type: "loading",
-        info: "Lock " + Number(amount.toFixed(3)).toLocaleString() + " $bitGOV"
+        info: "Lock " + Number(amount).toLocaleString() + " $bitGOV"
       });
       setCurrentState(true);
 
@@ -281,7 +253,7 @@ export default function Lock() {
         duration: 5000
       });
     }
-  };
+  };  
 
   const validateAndLock = () => {
     if (!amount || Number(amount) === 0) {
@@ -478,7 +450,7 @@ export default function Lock() {
                       <span>Enter amount</span>
                       <span style={{ fontSize: "12px" }}>
                         Balance{" "}
-                        {Number(Number(balance).toFixed(2)).toLocaleString()}
+                          {Math.floor(balance)}
                         $bitGOV
                       </span>
                     </div>
@@ -489,21 +461,19 @@ export default function Lock() {
                         onWheel={(e) => e.target.blur()}
                         id="amount"
                           min="0"
-                          step="any"
+                          step="1"
                           onKeyDown={onKeyDown}
                           onChange={changeAmount}
                           value={amount === 0 ? "0" : amount || ""}
                         />
+
                       <span>bitGOV</span>
                     </div>
                     <div className="changeBalance">
-                      <span onClick={() => changeValue(0.25)}>25%</span>
-                      <span onClick={() => changeValue(0.5)}>50%</span>
-                      <span onClick={() => changeValue(0.75)}>75%</span>
-                      <span
-                        onClick={() => changeValue(1)}
-                        style={{ border: "none" }}
-                      >
+                        <span onClick={() => changeValue(25)}>25%</span>
+                        <span onClick={() => changeValue(50)}>50%</span>
+                        <span onClick={() => changeValue(75)}>75%</span>
+                        <span onClick={() => changeValue(100)} style={{ border: "none" }}>
                         Max
                       </span>
                     </div>
@@ -657,10 +627,10 @@ export default function Lock() {
                   onWheel={(e) => e.target.blur()}
                   id="claimAmount"
                   min="0"
-                  step="any"
+                  step="1"
                   onKeyDown={onKeyDown}
                   onChange={changeClaimAmount}
-                  value={amount}
+                  value={claimAmount === 0 ? "0" : claimAmount || ""}
                 />
                 <span>$bitGOV</span>
               </div>
