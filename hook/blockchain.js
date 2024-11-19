@@ -1502,7 +1502,7 @@ export const BlockchainContextProvider = ({ children }) => {
       args: [debt],
     });
 
-    const maxFee = fromBigNumber(borrowingFee) / fromBigNumber(debt);
+    const maxFee = (fromBigNumber(borrowingFee) / fromBigNumber(debt)) * 1.2;
 
     return new BigNumber(maxFee).multipliedBy(1e18).toFixed();
   };
