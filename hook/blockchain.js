@@ -663,7 +663,7 @@ export const BlockchainContextProvider = ({ children }) => {
       const tx = await borrowerOps.adjustTrove(
         address,
         account.address,
-        maxFee.toFixed(),
+        maxFee,
         collAmount,
         0,
         debtAmount,
