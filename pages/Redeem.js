@@ -265,6 +265,41 @@ export default function Redeem() {
     redeem();
   };
 
+  const renderCollateralInfo = () => {
+    const selectedCollateralInfo = collaterals[selectCollateral]?.collateral;
+    const collateralSymbol = selectedCollateralInfo?.symbol || selectedCollateralInfo?.name || 'ROSE';
+
+    return (
+      <div className={styles.data} style={{ borderTop: "none" }}>
+        <div className={styles.dataItem}>
+          <p>Collateral Price</p>
+          <span>${formatNumber(rosePrice)}</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Redemption Fee</p>
+          <span>{formatNumber(fee * 100)}%</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Redemption Fee Amount</p>
+          <span>{formatNumber(feeAmount)} {collateralSymbol}</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Expected Collateral Received</p>
+          <span>{formatNumber(expectedCollateralReceived)} {collateralSymbol}</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Value of Collateral Received</p>
+          <span>${formatNumber(expectedCollateralReceived * rosePrice)}</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Actual Redemption Amount</p>
+          <span>{formatNumber(amount)} bitUSD</span>
+        </div>
+      </div>
+    );
+  };
+
+
   return (
     <>
       <Header type="dapp" dappMenu="Redeem"></Header>
@@ -396,37 +431,7 @@ export default function Redeem() {
                     >
                       Redeem
                     </div> */}
-                    <div className={styles.data} style={{ borderTop: "none" }}>
-                      <div className={styles.dataItem}>
-                        <p>Collateral Price</p>
-                        <span>${formatNumber(rosePrice)}</span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Redemption Fee</p>
-                        <span>{formatNumber(fee * 100)}%</span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Redemption Fee Amount</p>
-                        <span>{formatNumber(feeAmount)} ROSE</span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Expected Collateral Received</p>
-                        <span>
-                          {formatNumber(expectedCollateralReceived)} ROSE
-                        </span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Value of Collateral Received</p>
-                        <span>
-                          $
-                          {formatNumber(expectedCollateralReceived * rosePrice)}
-                        </span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Actual Redemption Amount</p>
-                        <span>{formatNumber(amount)} bitUSD</span>
-                      </div>
-                    </div>
+                      {renderCollateralInfo()}
                   </div>
                 )}
               </div>
