@@ -1012,23 +1012,13 @@ export const BlockchainContextProvider = ({ children }) => {
   };
 
   const getTokenBalance = async (address) => {
-    try {
-      if (!account.address || !address) {
-        return 0;
-      }
-
-      const contract = new ethers.Contract(
-        address,
-        BitGovABI,
-        sapphire.wrap(signer || signerQuery)
-      );
-
-      const balance = await contract.balanceOf(account.address);
-      return fromBigNumber(balance);
-    } catch (error) {
-      console.error("Error getting token balance:", error);
-      return 0;
-    }
+    const balance = await publicClient.readContract({
+      abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
+      address,
+      functionName: "balanceOf",
+      args: [account.address],
+    });
+    return fromBigNumber(balance);
   };
 
   const getAccountWeight = async () => {

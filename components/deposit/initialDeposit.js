@@ -292,9 +292,8 @@ export default function InitialDeposit({ address }) {
 
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount).toLocaleString()} $${
-          collateral?.collateral?.name
-        }`,
+        info: `Approving ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name
+          }`,
       });
 
       setApproved({
@@ -616,9 +615,10 @@ export default function InitialDeposit({ address }) {
                   <p>Liquidation Price</p>
                   <span>
                     {collateral?.collateral?.name} = $
-                    {Number(((debt || 0) * 1.5) / deposits)
-                      .toFixed(3)
-                      .toLocaleString()}
+                    {deposits > 0
+                      ? Number(((debt || 0) * 1.5) / deposits).toFixed(3).toLocaleString()
+                      : 0
+                    }
                   </span>
                 </div>
               </div>

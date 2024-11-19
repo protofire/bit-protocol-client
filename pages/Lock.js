@@ -226,7 +226,7 @@ export default function Lock() {
 
     try {
       const tx = await lockToken(
-        new BigNumber(amount).multipliedBy(1e18).toFixed(),
+        amount.toString(),
         currentValue
       );
       setCurrentWaitInfo({
@@ -256,7 +256,7 @@ export default function Lock() {
         duration: 5000
       });
     }
-  };  
+  };
 
   const validateAndLock = () => {
     if (!amount || Number(amount) === 0) {

@@ -251,7 +251,7 @@ export default function Mint() {
       return;
     }
 
-    if (!/^\d*\.?\d*$/.test(value)) {
+    if (!/^\d*\.?\d{0,3}$/.test(value)) {
       return;
     }
 

@@ -165,9 +165,9 @@ export default function Vote() {
         (currentWeeklyEmissions * totalWeightAtData[`current${i}`]) / totalPoint
       )
         ? formatNumber(
-            (currentWeeklyEmissions * totalWeightAtData[`current${i}`]) /
-              totalPoint
-          )
+          (currentWeeklyEmissions * totalWeightAtData[`current${i}`]) /
+          totalPoint
+        )
         : "0";
 
       // Handle upper emissions calculations with proper default
@@ -175,14 +175,14 @@ export default function Vote() {
         totalPointUpper <= 0
           ? "0"
           : isFinite(
-              (upperWeeklyEmissions * totalWeightAtData[`current${i}`]) /
-                totalPointUpper
-            )
+            (upperWeeklyEmissions * totalWeightAtData[`current${i}`]) /
+            totalPointUpper
+          )
           ? formatNumber(
               (upperWeeklyEmissions * totalWeightAtData[`current${i}`]) /
-                totalPointUpper
+            totalPointUpper
             )
-          : "0";
+            : "0";
     }
 
     // Calculate allocated and remaining percentages
@@ -202,16 +202,12 @@ export default function Vote() {
   }, [voteState.votes, weightState]);
 
   const queryData = useCallback(async () => {
-    console.log("Querying data... inside 1", { systemWeek, lockTotalWeight });
     if ((!systemWeek && systemWeek !== 0) || !lockTotalWeight) return;
-    console.log("Querying data... inside 2");
     try {
       const locks = await getAccountActiveLocks();
       const votes = await getAccountCurrentVotes();
       const weightAt = await getTotalWeightAt();
       const currentWeeklyEmissions = await weeklyEmissions();
-
-      console.log({ locks, accountUnlockAmount, accountLockAmount });
 
       // Process votes data
       const processedVotes = votes?.reduce(
@@ -320,10 +316,15 @@ export default function Vote() {
         setState(maxValue.toString());
       }
     }
-  };  
+  };
 
   const handleAmountChange = (index) => (e) => {
     const value = e.target.value;
+
+    if (!/^\d*\.?\d{0,3}$/.test(value)) {
+      return;
+    }
+
     // Allow empty string or valid numbers including zero
     if (value === "" || (!isNaN(value) && Number(value) >= 0)) {
       setVoteState((prev) => ({
@@ -353,12 +354,12 @@ export default function Vote() {
     try {
       // Include all votes, including zeros
       const voteData = Object.entries(voteState.amounts).map(
-        ([key, amount]) => [
-          Number(key.slice(-1)),
-          (amount === "" ? 0 : Number(amount)) * 100,
-        ]
+        ([key, amount]) => {
+          const amountValue = amount === "" ? 0 : Number(amount);
+          const points = Math.floor(amountValue * 100);
+          return [Number(key.slice(-1)), points];
+        }
       );
-
 
       setCurrentWaitInfo({
         type: "loading",
@@ -399,7 +400,6 @@ export default function Vote() {
   };
 
   useEffect(() => {
-    console.log("Querying data... useEffect");
     queryData();
     const interval = setInterval(queryData, 30000);
     return () => clearInterval(interval);
@@ -573,7 +573,7 @@ export default function Vote() {
                             <div className={styles.center}>
                               {
                                 calculatedValues.votesPercentage[
-                                  `votes${index}`
+                                `votes${index}`
                                 ]
                               }
                               %
@@ -583,12 +583,12 @@ export default function Vote() {
                                 weightState.totalPointUpper <= 0
                                   ? 0
                                   : (
-                                      (weightState.totalWeightAtData[
-                                        `upper${index}`
-                                      ] /
-                                        weightState.totalPointUpper) *
-                                      100
-                                    ).toFixed(2)
+                                    (weightState.totalWeightAtData[
+                                      `upper${index}`
+                                    ] /
+                                      weightState.totalPointUpper) *
+                                    100
+                                  ).toFixed(2)
                               ) || 0}
                               %
                               <img
@@ -601,12 +601,12 @@ export default function Vote() {
                                   weightState.totalPoint <= 0
                                     ? 0
                                     : (
-                                        (weightState.totalWeightAtData[
-                                          `current${index}`
-                                        ] /
-                                          weightState.totalPoint) *
-                                        100
-                                      ).toFixed(2)
+                                      (weightState.totalWeightAtData[
+                                        `current${index}`
+                                      ] /
+                                        weightState.totalPoint) *
+                                      100
+                                    ).toFixed(2)
                                 ) || 0}
                                 %
                               </span>
@@ -614,7 +614,7 @@ export default function Vote() {
                             <div className={styles.center}>
                               {
                                 calculatedValues.emissions.upper[
-                                  `upper${index}`
+                                `upper${index}`
                                 ]
                               }
                               <img
@@ -625,7 +625,7 @@ export default function Vote() {
                               <span>
                                 {
                                   calculatedValues.emissions.current[
-                                    `current${index}`
+                                  `current${index}`
                                   ]
                                 }
                               </span>

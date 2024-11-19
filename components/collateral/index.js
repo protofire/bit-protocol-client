@@ -41,11 +41,11 @@ export default function Collateral({ props }) {
         </div>
         <div className={styles.dataItem}>
           <p>Borrow interest rate</p>
-          <span>{borrowingRate.toFixed(2)}%</span>
+          <span>{borrowingRate}%</span>
         </div>
         <div className={styles.dataItem}>
           <p>Redemption rate</p>
-          <span>{redemptionRate.toFixed(2)}%</span>
+          <span>{redemptionRate}%</span>
         </div>
       </div>
       <div
