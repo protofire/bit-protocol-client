@@ -480,11 +480,10 @@ export const BlockchainContextProvider = ({ children }) => {
       const next = await getNext(collaterals[address].sortedTroves);
 
       const maxFee = await calcMaxFeePercentage(address, debtAmount);
-
       const tx = await borrowerOps.openTrove(
         address,
         account.address,
-        maxFee.toFixed(),
+        maxFee,
         collAmount,
         debtAmount,
         prev,
@@ -713,8 +712,7 @@ export const BlockchainContextProvider = ({ children }) => {
   ]);
 
   const getRedemptionHints = async (troveManager, amount) => {
-    // GET PRICE DYNAMICALLY
-    const rosePrice = getRosePrice();
+    const price = collateralPrices[troveManager];
     try {
       const multiCollateralHintHelpers = new ethers.Contract(
         addresses.multiCollateralHintHelpers[account.chainId],
@@ -725,7 +723,7 @@ export const BlockchainContextProvider = ({ children }) => {
       const hints = await multiCollateralHintHelpers.getRedemptionHints(
         troveManager,
         amount,
-        new BigNumber(rosePrice).multipliedBy(1e18).toFixed(),
+        new BigNumber(price).multipliedBy(1e18).toFixed(),
         0
       );
 
@@ -1504,7 +1502,9 @@ export const BlockchainContextProvider = ({ children }) => {
       args: [debt],
     });
 
-    return new BigNumber(borrowingFee).multipliedBy(1e18).div(debt);
+    const maxFee = fromBigNumber(borrowingFee) / fromBigNumber(debt);
+
+    return new BigNumber(maxFee).multipliedBy(1e18).toFixed();
   };
 
   return (
