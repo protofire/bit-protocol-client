@@ -7,6 +7,7 @@ import Wait from "../components/tooltip/wait";
 import Loading from "../components/tooltip/loading";
 import tooltip from "../components/tooltip";
 import Slider from "rc-slider";
+import BigNumber from "bignumber.js";
 import { formatNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
 import useDebounce from "../hook/useDebounce";
@@ -164,7 +165,7 @@ export default function Lock() {
 
   const fetchWithdrawPenaltyAmounts = async (value) => {
     const withdrawWithPenaltyAmounts = await getWithdrawWithPenaltyAmounts(
-      value
+      Number(value)
     );
     setAmountWithdrawn(withdrawWithPenaltyAmounts.amountWithdrawn);
     setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
@@ -224,8 +225,10 @@ export default function Lock() {
     }
 
     try {
-      const tx = await lockToken(numAmount, currentValue);
-
+      const tx = await lockToken(
+        new BigNumber(amount).multipliedBy(1e18).toFixed(),
+        currentValue
+      );
       setCurrentWaitInfo({
         type: "loading",
         info: "Lock " + Number(amount).toLocaleString() + " $bitGOV"

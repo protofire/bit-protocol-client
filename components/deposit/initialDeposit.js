@@ -135,19 +135,17 @@ export default function InitialDeposit({ address }) {
   }, [approved]);
 
   const onKeyDown = (e) => {
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
+    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
+    if (["-", "+", "e", "E"].includes(e.key)) {
       e.preventDefault();
     }
 
-    if ([
-      'Backspace',
-      'Delete',
-      'Tab',
-      'Escape',
-      'Enter',
-      '.',
-      ','
-    ].includes(e.key)) {
+    // Allow: backspace, delete, tab, escape, enter, decimal point
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", ","].includes(
+        e.key
+      )
+    ) {
       return;
     }
 
@@ -165,11 +163,28 @@ export default function InitialDeposit({ address }) {
   const changeCollAmount = async (e) => {
     const value = enforceThreeDecimals(e.target.value);
     const numValue = Number(value);
-    const balanceValue = isPayable ? balance : collateralBalance;
-    const maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
+    const userBalance = isPayable ? balance : collateralBalance;
+    const maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
 
-    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
-      setCollAmount(value);
+    // Allow empty string or values within range (including zero)
+    if (value === "" || (numValue >= 0 && numValue <= maxBalance)) {
+      setCollAmount(value === "" ? "" : numValue);
+
+      // Update debt amount based on new collateral amount
+      if (value === "" || numValue === 0) {
+        setDebtAmount("");
+        setDebtMax(0);
+      } else if (collateralRatio && ratioType === "Auto") {
+        const max =
+          (Number(deposits + numValue) * price) / (collateralRatio / 100) -
+          debt;
+        setDebtAmount(max);
+        setDebtMax(max);
+      } else {
+        const max = (Number(deposits + numValue) * price) / 1.55 - debt;
+        setDebtAmount(max);
+        setDebtMax(max);
+      }
     } else if (numValue > maxBalance) {
       setCollAmount(maxBalance.toFixed(3));
     }
@@ -177,23 +192,50 @@ export default function InitialDeposit({ address }) {
 
   const changeCollValue = (value) => {
     const balanceValue = isPayable ? balance : collateralBalance;
-    setCollAmount(((balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value).toFixed(3));
+    const newAmount = (balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value;
+    setCollAmount(newAmount);
+
+    // Update debt amount based on new collateral amount
+    if (collateralRatio && ratioType === "Auto") {
+      const max =
+        (Number(deposits + newAmount) * price) / (collateralRatio / 100) - debt;
+      setDebtAmount(max);
+      setDebtMax(max);
+    } else {
+      const max = (Number(deposits + newAmount) * price) / 1.55 - debt;
+      setDebtAmount(max);
+      setDebtMax(max);
+    }
   };
 
-  const changeCollateralRatio = (e) => {
-    const value = enforceThreeDecimals(e.target.value);
-    if (value === '' || (!isNaN(value) && Number(value) >= 0)) {
-      setCollateralRatio(value);
+  const changeCollateralRatio = async (e) => {
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    // Allow empty string or non-negative values
+    if (value === "" || numValue >= 0) {
+      setCollateralRatio(value === "" ? "" : numValue);
+
+      // Update debt max and amount based on new ratio
+      if (collAmount && numValue > 0) {
+        const max =
+          (Number(deposits + Number(collAmount)) * price) / (numValue / 100) -
+          debt;
+        setDebtMax(max);
+        setDebtAmount(max);
+      }
     }
   };
 
   useEffect(() => {
     const currentDebt = Number(debt);
     const currentDeposits = Number(deposits);
-    const newDebt = debtAmount === '' ? 0 : parseFloat(debtAmount);
-    const newColl = collAmount === '' ? 0 : Number(collAmount);
+    const newDebt = debtAmount === "" ? 0 : Number(debtAmount);
+    const newColl = collAmount === "" ? 0 : Number(collAmount);
 
-    const value = currentDebt === 0 ? 0 : ((currentDeposits * price) / currentDebt) * 100;
+    // Calculate current ratio
+    const value =
+      currentDebt === 0 ? 0 : ((currentDeposits * price) / currentDebt) * 100;
     setRatio(value || 0);
 
     if (collateralRatio && ratioType === "Auto") {
@@ -201,7 +243,8 @@ export default function InitialDeposit({ address }) {
     } else {
       const totalDebt = currentDebt + newDebt;
       const totalColl = currentDeposits + newColl;
-      const valueNew = totalDebt === 0 ? 0 : ((totalColl * price) / totalDebt) * 100;
+      const valueNew =
+        totalDebt === 0 ? 0 : ((totalColl * price) / totalDebt) * 100;
       setRatioNew(valueNew || 0);
     }
   }, [collAmount, price, collateralRatio, ratioType]);
@@ -210,11 +253,11 @@ export default function InitialDeposit({ address }) {
     const value = enforceThreeDecimals(e.target.value);
     const numValue = Number(value);
 
-    if (value === '' || (!isNaN(value) && numValue >= 0)) {
-      if (debtMax > 0 && numValue > debtMax) {
-        setDebtAmount(debtMax.toFixed(3));
+    if (value === "" || (!isNaN(value) && numValue >= 0)) {
+      if (numValue > debtMax) {
+        setDebtAmount(debtMax);
       } else {
-        setDebtAmount(value);
+        setDebtAmount(value === "" ? "" : numValue);
       }
     }
   };
@@ -249,7 +292,9 @@ export default function InitialDeposit({ address }) {
 
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name}`
+        info: `Approving ${Number(collAmount).toLocaleString()} $${
+          collateral?.collateral?.name
+        }`,
       });
 
       setApproved({
@@ -260,7 +305,7 @@ export default function InitialDeposit({ address }) {
       setCurrentState(true);
       setTxHash(tx);
     } catch (error) {
-      console.error('Approval error:', error);
+      console.log("approval", error);
       setCurrentState(false);
 
       let errorMessage = "Approval failed. Please try again.";
@@ -299,11 +344,8 @@ export default function InitialDeposit({ address }) {
   };
 
   const mint = async () => {
-    if (!numberHelpers.isValidNumber(collAmount) || !numberHelpers.isValidNumber(debtAmount)) {
-      tooltip.error({
-        content: "Please enter valid amounts",
-        duration: 5000
-      });
+    // Allow zero collateral amount but require positive debt amount
+    if (collAmount === "" || debtAmount === "") {
       return;
     }
 
@@ -355,7 +397,7 @@ export default function InitialDeposit({ address }) {
         await getData();
       }
     } catch (error) {
-      console.error('Mint error:', error);
+      console.log("mint", error);
       setCurrentState(false);
 
       let errorMessage = "Transaction failed. Please try again.";
@@ -369,8 +411,9 @@ export default function InitialDeposit({ address }) {
       }
 
       tooltip.error({
-        content: errorMessage,
-        duration: 5000
+        content:
+          "Transaction failed due to a network error. Please refresh the page and try again.",
+        duration: 5000,
       });
     }
   };
@@ -467,11 +510,13 @@ export default function InitialDeposit({ address }) {
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
                       id="collateralRatio"
-                      min="0"
-                      step="0.001"
+                      min="0" // Allow zero and prevent negative values
+                      step="any" // Allow decimal values
                       onKeyDown={onKeyDown}
                       onChange={changeCollateralRatio}
-                      value={collateralRatio === 0 ? "0" : collateralRatio || ""}
+                      value={
+                        collateralRatio === 0 ? "0" : collateralRatio || ""
+                      } // Handle zero explicitly
                     />
                     <span>%</span>
                   </div>
@@ -492,8 +537,8 @@ export default function InitialDeposit({ address }) {
                   placeholder="0"
                   onWheel={(e) => e.target.blur()}
                   id="debtAmount"
-                  min="0"
-                  step="0.001"
+                  min="0" // Allow zero and prevent negative values
+                  step="any" // Allow decimal values
                   onKeyDown={onKeyDown}
                   onChange={changeDebtAmount}
                   value={debtAmount === '' ? '' : debtAmount}
