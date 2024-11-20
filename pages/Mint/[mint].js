@@ -79,8 +79,8 @@ export default function Mint() {
       setIsPayable(collaterals[router.query.mint]?.collateral.payable);
       const tokenBalance = !collaterals[router.query.mint]?.collateral.payable
         ? await getTokenBalance(
-          collaterals[router.query.mint]?.collateral.address
-        )
+            collaterals[router.query.mint]?.collateral.address
+          )
         : 0;
       setCollateralBalance(tokenBalance);
     }
@@ -145,9 +145,17 @@ export default function Mint() {
       const collAmountBN = new BigNumber(collAmount);
       let max;
       if (collateralRatio && ratioType === "Auto") {
-        max = collAmountBN.plus(deposits).multipliedBy(price).dividedBy(collateralRatio / 100).minus(debt);
+        max = collAmountBN
+          .plus(deposits)
+          .multipliedBy(price)
+          .dividedBy(collateralRatio / 100)
+          .minus(debt);
       } else {
-        max = collAmountBN.plus(deposits).multipliedBy(price).dividedBy(1.55).minus(debt);
+        max = collAmountBN
+          .plus(deposits)
+          .multipliedBy(price)
+          .dividedBy(1.55)
+          .minus(debt);
       }
       setDebtAmount(max.toFixed(18)); // Use higher precision
     }
@@ -174,8 +182,8 @@ export default function Mint() {
   };
 
   useEffect(() => {
-    if (debouncedCollAmount === '') {
-      setCollAmount('');
+    if (debouncedCollAmount === "") {
+      setCollAmount("");
       return;
     }
 
@@ -183,7 +191,7 @@ export default function Mint() {
       return;
     }
 
-    const parts = debouncedCollAmount.split('.');
+    const parts = debouncedCollAmount.split(".");
     if (parts[1] && parts[1].length > 3) {
       return;
     }
@@ -193,11 +201,14 @@ export default function Mint() {
     const maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
 
     // Allow empty string or values within range (including zero)
-    if (value === "" || (numValue >= 0 && numValue <= maxBalance)) {
-      setCollAmount(value === "" ? "" : numValue);
+    if (
+      debouncedCollAmount === "" ||
+      (numValue >= 0 && numValue <= maxBalance)
+    ) {
+      setCollAmount(debouncedCollAmount === "" ? "" : numValue);
 
       // Update debt amount based on new collateral amount
-      if (value === "" || numValue === 0) {
+      if (debouncedCollAmount === "" || numValue === 0) {
         setDebtAmount("");
         setDebtMax(0);
       } else if (collateralRatio && ratioType === "Auto") {
@@ -214,7 +225,17 @@ export default function Mint() {
     } else if (numValue > maxBalance) {
       setCollAmount(maxBalance.toFixed(3));
     }
-  }, [debouncedCollAmount, isPayable, balance, collateralBalance, deposits, price, collateralRatio, ratioType, debt]);
+  }, [
+    debouncedCollAmount,
+    isPayable,
+    balance,
+    collateralBalance,
+    deposits,
+    price,
+    collateralRatio,
+    ratioType,
+    debt,
+  ]);
 
   const changeCollAmount = (e) => {
     const value = e.target.value;
@@ -246,8 +267,8 @@ export default function Mint() {
   const changeCollateralRatio = async (e) => {
     const value = e.target.value;
 
-    if (value === '') {
-      setCollateralRatio('');
+    if (value === "") {
+      setCollateralRatio("");
       return;
     }
 
@@ -255,7 +276,7 @@ export default function Mint() {
       return;
     }
 
-    const parts = value.split('.');
+    const parts = value.split(".");
     if (parts[1] && parts[1].length > 3) {
       return;
     }
@@ -277,8 +298,8 @@ export default function Mint() {
           setDebtAmount(max.toFixed(3));
         }
       }
-    };
-  }
+    }
+  };
 
   useEffect(() => {
     if (collateralRatio && ratioType == "Auto") {
@@ -342,8 +363,9 @@ export default function Mint() {
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
-          }`,
+        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${
+          collateral?.collateral?.name
+        }`,
       });
       setApproved({
         hash: tx,
