@@ -31,6 +31,8 @@ import TokenLockerABI from "../abi/tokenLocker";
 import IncentiveVotingABI from "../abi/IncentiveVoting";
 import BitLpTokenABI from "../abi/BitLpTokenPool";
 import MultiCollateralHintHelpersABI from "../abi/MultiCollateralHintHelpers";
+import BitLpOracleABI from "../abi/BitLpOracle";
+import TWAPOracleABI from "../abi/TWAPOracle";
 import { fromBigNumber } from "../utils/helpers";
 import BigNumber from "bignumber.js";
 import * as sapphire from "@oasisprotocol/sapphire-paratime";
@@ -67,52 +69,54 @@ export const BlockchainContext = createContext({
   systemWeek: 0,
 
   // FUNCTIONS
-  signTrove: async () => { },
-  setSignatureTrove: async () => { },
-  checkAuth: async () => { },
-  checkAuthToken: async () => { },
-  getData: async () => { },
-  getTrove: async () => { },
-  openTrove: async () => { },
-  signDebtToken: async () => { },
-  getRosePrice: async () => { },
-  getWithdrawWithPenaltyAmounts: async () => { },
-  setCurrentState: async () => { },
-  setCurrentWaitInfo: async () => { },
-  approve: async () => { },
-  addColl: async () => { },
-  getTokenBalance: async () => { },
-  withdrawColl: async () => { },
-  repayDebt: async () => { },
-  closeTrove: async () => { },
-  provideToSP: async () => { },
-  withdrawFromSP: async () => { },
-  claimCollateralGains: async () => { },
-  adjustTrove: async () => { },
-  batchClaimRewards: async () => { },
-  lockToken: async () => { },
-  freeze: async () => { },
-  unfreeze: async () => { },
-  withdrawWithPenalty: async () => { },
-  getAccountActiveLocks: async () => { },
-  getAccountBalances: async () => { },
-  getAccountCurrentVotes: async () => { },
-  getTotalWeightAt: async () => { },
-  weeklyEmissions: async () => { },
-  getReceiverWeightAt: async () => { },
-  registerAccountWeightAndVote: async () => { },
-  bitGovLpData: async () => { },
-  bitUsdLpData: async () => { },
-  approveBitGovLp: async () => { },
-  stakeBitGovLP: async () => { },
-  withdrawBitGovLP: async () => { },
-  approveBitUsdLp: async () => { },
-  withdrawBitUsdLP: async () => { },
-  stakeBitUsdLP: async () => { },
-  redeemCollateral: async () => { },
-  getRedemptionHints: async () => { },
-  getData: async () => { },
-  setLock: () => { },
+  signTrove: async () => {},
+  setSignatureTrove: async () => {},
+  checkAuth: async () => {},
+  checkAuthToken: async () => {},
+  getData: async () => {},
+  getTrove: async () => {},
+  openTrove: async () => {},
+  signDebtToken: async () => {},
+  getRosePrice: async () => {},
+  getWithdrawWithPenaltyAmounts: async () => {},
+  setCurrentState: async () => {},
+  setCurrentWaitInfo: async () => {},
+  approve: async () => {},
+  addColl: async () => {},
+  getTokenBalance: async () => {},
+  withdrawColl: async () => {},
+  repayDebt: async () => {},
+  closeTrove: async () => {},
+  provideToSP: async () => {},
+  withdrawFromSP: async () => {},
+  claimCollateralGains: async () => {},
+  adjustTrove: async () => {},
+  batchClaimRewards: async () => {},
+  lockToken: async () => {},
+  freeze: async () => {},
+  unfreeze: async () => {},
+  withdrawWithPenalty: async () => {},
+  getAccountActiveLocks: async () => {},
+  getAccountBalances: async () => {},
+  getAccountCurrentVotes: async () => {},
+  getTotalWeightAt: async () => {},
+  weeklyEmissions: async () => {},
+  getReceiverWeightAt: async () => {},
+  registerAccountWeightAndVote: async () => {},
+  bitGovLpData: async () => {},
+  bitUsdLpData: async () => {},
+  approveBitGovLp: async () => {},
+  stakeBitGovLP: async () => {},
+  withdrawBitGovLP: async () => {},
+  approveBitUsdLp: async () => {},
+  withdrawBitUsdLP: async () => {},
+  stakeBitUsdLP: async () => {},
+  redeemCollateral: async () => {},
+  getRedemptionHints: async () => {},
+  getData: async () => {},
+  setLock: () => {},
+  getLpTokenPrice: async () => {},
+  getBitGovPrice: async () => {},
 });
 
 export const BlockchainContextProvider = ({ children }) => {
@@ -475,10 +479,11 @@ export const BlockchainContextProvider = ({ children }) => {
       const prev = await getPrev(collaterals[address].sortedTroves);
       const next = await getNext(collaterals[address].sortedTroves);
 
+      const maxFee = await calcMaxFeePercentage(address, debtAmount);
       const tx = await borrowerOps.openTrove(
         address,
         account.address,
-        new BigNumber(1e16).toFixed(),
+        maxFee,
         collAmount,
         debtAmount,
         prev,
@@ -501,6 +506,14 @@ export const BlockchainContextProvider = ({ children }) => {
 
       const prev = await getPrev(collaterals[address].sortedTroves);
       const next = await getNext(collaterals[address].sortedTroves);
+
+      console.log("ADD COLL", {
+        address,
+        collAmount,
+        prev,
+        next,
+        borrowerOps,
+      });
 
       const tx = await borrowerOps.addColl(
         address,
@@ -645,10 +658,12 @@ export const BlockchainContextProvider = ({ children }) => {
       const prev = await getPrev(collaterals[address].sortedTroves);
       const next = await getNext(collaterals[address].sortedTroves);
 
+      const maxFee = await calcMaxFeePercentage(address, debtAmount);
+
       const tx = await borrowerOps.adjustTrove(
         address,
         account.address,
-        new BigNumber(1e16).toFixed(),
+        maxFee,
         collAmount,
         0,
         debtAmount,
@@ -697,7 +712,7 @@ export const BlockchainContextProvider = ({ children }) => {
   ]);
 
   const getRedemptionHints = async (troveManager, amount) => {
-    const rosePrice = getRosePrice();
+    const price = collateralPrices[troveManager];
     try {
       const multiCollateralHintHelpers = new ethers.Contract(
         addresses.multiCollateralHintHelpers[account.chainId],
@@ -708,7 +723,7 @@ export const BlockchainContextProvider = ({ children }) => {
       const hints = await multiCollateralHintHelpers.getRedemptionHints(
         troveManager,
         amount,
-        new BigNumber(rosePrice).multipliedBy(1e18).toFixed(),
+        new BigNumber(price).multipliedBy(1e18).toFixed(),
         0
       );
 
@@ -1242,8 +1257,8 @@ export const BlockchainContextProvider = ({ children }) => {
 
         collateralsCache[address] = {
           mcr: fromBigNumber(mcr) * 100,
-          borrowingRate: fromBigNumber(borrowingRate) * 100,
-          redemptionRate: fromBigNumber(redemptionRate) * 100,
+          borrowingRate: (fromBigNumber(borrowingRate) * 100).toFixed(2),
+          redemptionRate: (fromBigNumber(redemptionRate) * 100).toFixed(2),
           mintedBitUSD: fromBigNumber(systemBalances[1]),
           tvl: tvl,
           collateral: {
@@ -1295,6 +1310,31 @@ export const BlockchainContextProvider = ({ children }) => {
 
   const getRosePrice = () => {
     return Object.values(collateralPrices)[0];
+  };
+
+  const getLpTokenPrice = async () => {
+    const price = await publicClient.readContract({
+      abi: BitLpOracleABI,
+      address: addresses.lpOracle[account.chainId],
+      functionName: "getLPPrice",
+      args: [],
+    });
+
+    return fromBigNumber(price);
+  };
+
+  const getBitGovPrice = async () => {
+    const price = await publicClient.readContract({
+      abi: TWAPOracleABI,
+      address: addresses.bitGovTWAP[account.chainId],
+      functionName: "consult",
+      args: [addresses.bitGov[account.chainId], new BigNumber(1e18).toFixed()],
+    });
+
+    const bitGovPrice = fromBigNumber(price);
+    const rosePrice = getRosePrice();
+
+    return bitGovPrice * rosePrice;
   };
 
   const checkAuth = () => {
@@ -1373,14 +1413,14 @@ export const BlockchainContextProvider = ({ children }) => {
         name: "BitSignature.SignIn",
         version: "1",
         chainId: account.chainId,
-        verifyingContract: addresses.debtToken[account.chainId]
+        verifyingContract: addresses.debtToken[account.chainId],
       };
 
       const types = {
         SignIn: [
           { name: "user", type: "address" },
           { name: "time", type: "uint32" },
-        ]
+        ],
       };
 
       const message = {
@@ -1411,20 +1451,20 @@ export const BlockchainContextProvider = ({ children }) => {
         if (walletClient?.request) {
           try {
             signature = await walletClient.request({
-              method: 'eth_signTypedData_v4',
+              method: "eth_signTypedData_v4",
               params: [user, JSON.stringify(typedData)],
             });
           } catch (innerErr) {
-            console.error('Direct eth_signTypedData_v4 failed:', innerErr);
+            console.error("Direct eth_signTypedData_v4 failed:", innerErr);
             throw innerErr;
           }
         } else {
-          throw new Error('Wallet client request method not available');
+          throw new Error("Wallet client request method not available");
         }
       }
 
       if (!signature) {
-        throw new Error('No signature received from wallet');
+        throw new Error("No signature received from wallet");
       }
 
       const rsv = ethers.utils.splitSignature(signature);
@@ -1440,17 +1480,31 @@ export const BlockchainContextProvider = ({ children }) => {
       return true;
     } catch (error) {
       // Enhanced error reporting
-      let errorMessage = 'Failed to sign message. ';
-      if (error.code === 'ACTION_REJECTED') {
-        errorMessage += 'You rejected the signature request.';
+      let errorMessage = "Failed to sign message. ";
+      if (error.code === "ACTION_REJECTED") {
+        errorMessage += "You rejected the signature request.";
       } else if (error.code === -32603) {
-        errorMessage += 'There was an issue with the network connection. Please verify your network settings.';
+        errorMessage +=
+          "There was an issue with the network connection. Please verify your network settings.";
       } else if (error.message) {
         errorMessage += error.message;
       }
 
       throw new Error(errorMessage);
     }
+  };
+
+  const calcMaxFeePercentage = async (troveAddr, debt) => {
+    const borrowingFee = await publicClient.readContract({
+      abi: TroveManagerABI,
+      address: troveAddr,
+      functionName: "getBorrowingFee",
+      args: [debt],
+    });
+
+    const maxFee = (fromBigNumber(borrowingFee) / fromBigNumber(debt)) * 1.2;
+
+    return new BigNumber(maxFee).multipliedBy(1e18).toFixed();
   };
 
   return (
@@ -1529,6 +1583,8 @@ export const BlockchainContextProvider = ({ children }) => {
         getRedemptionHints,
         getData,
         setLock,
+        getLpTokenPrice,
+        getBitGovPrice,
       }}
     >
       {children}
