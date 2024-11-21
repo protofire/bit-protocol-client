@@ -89,17 +89,22 @@ export const addresses = {
     [23295]: "0xb26E77c803AcCdA1eD4B0CF8CD74dDf4c04E96Ca",
     [19236265]: "",
   },
-  // bitUsdTWAP: {
-  //   [23294]: "",
-  //   [23295]: "",
-  //   [19236265]: "",
-  // },
+  bitUsdTWAP: {
+    [23294]: "",
+    [23295]: "0xC73b089972B5a13ff37A7cB4a80FEB29eBC3eF8c",
+    [19236265]: "",
+  },
+  bitUsdLpOracle: {
+    [23294]: "",
+    [23295]: "0x78fD3ad43E305d2ffC81E7dA8d322eA869aDFaBe",
+    [19236265]: "",
+  },
   bitGovTWAP: {
     [23294]: "",
     [23295]: "0xd474453896c2Da138867D6C3164C3202f4fCe5E2",
     [19236265]: "",
   },
-  lpOracle: {
+  bitGovLpOracle: {
     [23294]: "",
     [23295]: "0x0A078D570bD8DBD1c452ad8e576Fa243eDD67b17",
     [19236265]: "",

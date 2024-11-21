@@ -82,6 +82,7 @@ export default function Earn() {
   const [vUSDBaseApr4, setvUSDBaseApr4] = useState(0);
   const [bitGovPrice, setBitGovPrice] = useState(0);
   const [bitGovLPPrice, setBitGovbitGovLPPrice] = useState(0);
+  const [bitUsdLPPrice, setBitUsdLPPrice] = useState(0);
 
   const rosePrice = getRosePrice();
 
@@ -162,8 +163,9 @@ export default function Earn() {
       setUnStakeLpBalance2(bitUsdLp.depositBalance);
       // FIGURE IT OUT HOW TO GET DEBT TOKEN BALANCE OF THE POOL
       // const usdcBalance = await getTokenBalance()
-      setVUSDLpBalance(0);
-      setBitGovbitGovLPPrice(await getLpTokenPrice());
+      setVUSDLpBalance(bitUsdLp.depositLpBalance);
+      setBitUsdLPPrice(await getLpTokenPrice("bitUSD"));
+      setBitGovbitGovLPPrice(await getLpTokenPrice("bitGOV"));
       setBitGovPrice(await getBitGovPrice());
 
       //bitUSD Minting
@@ -806,7 +808,9 @@ export default function Earn() {
                   </div>
                   <div className={styles.dataItem}>
                     <p>TVL</p>
-                    <span>${formatNumber(Number(VUSDLpBalance) * 2)}</span>
+                    <span>
+                      ${formatNumber(Number(VUSDLpBalance) * bitUsdLPPrice)}
+                    </span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Base APR</p>

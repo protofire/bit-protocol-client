@@ -338,7 +338,7 @@ export const BlockchainContextProvider = ({ children }) => {
       account.address,
       "0x0000000000000000000000000000000000000000",
       [
-        // addresses.troveManager[account.chainId],
+        addresses.troveManager[account.chainId],
         addresses.stabilityPool[account.chainId],
         addresses.bitGovDeposit[account.chainId],
         addresses.bitUsdDeposit[account.chainId],
@@ -757,6 +757,12 @@ export const BlockchainContextProvider = ({ children }) => {
       functionName: "balanceOf",
       args: [account.address],
     });
+    const depositLpBalance = await publicClient.readContract({
+      abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
+      address: addresses.bitUsdLp[account.chainId],
+      functionName: "balanceOf",
+      args: [addresses.bitUsdDeposit[account.chainId]],
+    });
     const rewardRate = await publicClient.readContract({
       abi: BitLpTokenABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitUsdDeposit[account.chainId],
@@ -774,6 +780,7 @@ export const BlockchainContextProvider = ({ children }) => {
       balance: fromBigNumber(balanceLp),
       allowance: fromBigNumber(allowanceLp),
       depositBalance: fromBigNumber(deposiitBalance),
+      depositLpBalance: fromBigNumber(depositLpBalance),
       rewardRate: fromBigNumber(rewardRate),
       totalSupply: fromBigNumber(totalSupply),
     };
@@ -1312,10 +1319,15 @@ export const BlockchainContextProvider = ({ children }) => {
     return Object.values(collateralPrices)[0];
   };
 
-  const getLpTokenPrice = async () => {
+  const getLpTokenPrice = async (lpName) => {
+    const lpAddress =
+      lpName === "bitGov"
+        ? addresses.bitGovLpOracle[account.chainId]
+        : addresses.bitUsdLpOracle[account.chainId];
+
     const price = await publicClient.readContract({
       abi: BitLpOracleABI,
-      address: addresses.lpOracle[account.chainId],
+      address: lpAddress,
       functionName: "getLPPrice",
       args: [],
     });
