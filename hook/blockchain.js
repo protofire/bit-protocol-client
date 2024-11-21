@@ -1319,10 +1319,15 @@ export const BlockchainContextProvider = ({ children }) => {
     return Object.values(collateralPrices)[0];
   };
 
-  const getLpTokenPrice = async () => {
+  const getLpTokenPrice = async (lpName) => {
+    const lpAddress =
+      lpName === "bitGov"
+        ? addresses.bitGovLpOracle[account.chainId]
+        : addresses.bitUsdLpOracle[account.chainId];
+
     const price = await publicClient.readContract({
       abi: BitLpOracleABI,
-      address: addresses.lpOracle[account.chainId],
+      address: lpAddress,
       functionName: "getLPPrice",
       args: [],
     });
