@@ -8,7 +8,7 @@ import Loading from "../components/tooltip/loading";
 import { BlockchainContext } from "../hook/blockchain";
 import { formatNumber, fromBigNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
 export default function Vote() {
   const account = useAccount();
@@ -153,7 +153,6 @@ export default function Vote() {
       {}
     );
 
-
     const emissions = {
       current: {},
       upper: {},
@@ -165,9 +164,9 @@ export default function Vote() {
         (currentWeeklyEmissions * totalWeightAtData[`current${i}`]) / totalPoint
       )
         ? formatNumber(
-          (currentWeeklyEmissions * totalWeightAtData[`current${i}`]) /
-          totalPoint
-        )
+            (currentWeeklyEmissions * totalWeightAtData[`current${i}`]) /
+              totalPoint
+          )
         : "0";
 
       // Handle upper emissions calculations with proper default
@@ -175,14 +174,14 @@ export default function Vote() {
         totalPointUpper <= 0
           ? "0"
           : isFinite(
-            (upperWeeklyEmissions * totalWeightAtData[`current${i}`]) /
-            totalPointUpper
-          )
+              (upperWeeklyEmissions * totalWeightAtData[`current${i}`]) /
+                totalPointUpper
+            )
           ? formatNumber(
               (upperWeeklyEmissions * totalWeightAtData[`current${i}`]) /
-            totalPointUpper
+                totalPointUpper
             )
-            : "0";
+          : "0";
     }
 
     // Calculate allocated and remaining percentages
@@ -263,12 +262,12 @@ export default function Vote() {
     // Convert human readable amount to blockchain format (multiplied by 10^3)
     toBlockchainFormat: (amount) => {
       try {
-        if (!amount || amount === '') return '0';
+        if (!amount || amount === "") return "0";
 
         return ethers.utils.parseUnits(amount.toString(), 3);
       } catch (error) {
-        console.error('Error converting to blockchain format:', error);
-        throw new Error('Invalid amount format');
+        console.error("Error converting to blockchain format:", error);
+        throw new Error("Invalid amount format");
       }
     },
 
@@ -276,52 +275,54 @@ export default function Vote() {
       try {
         return ethers.utils.formatUnits(amount, 3);
       } catch (error) {
-        console.error('Error converting from blockchain format:', error);
-        return '0';
+        console.error("Error converting from blockchain format:", error);
+        return "0";
       }
     },
 
     // Limit to two decimal places because of SC limitations
     isValidDecimal: (value) => {
-      if (value === '' || value === undefined) return true;
+      if (value === "" || value === undefined) return true;
       return /^\d*\.?\d{0,2}$/.test(value);
     },
 
     // Limit to two decimal places because of SC limitations
     enforceDecimals: (value) => {
-      if (value === '' || !value.includes('.')) return value;
-      const parts = value.split('.');
+      if (value === "" || !value.includes(".")) return value;
+      const parts = value.split(".");
       return `${parts[0]}.${parts[1].slice(0, 2)}`;
-    }
+    },
   };
 
-  const createBlockchainInputHandler = (setState, maxValue = 100) => (e) => {
-    let value = e.target.value;
+  const createBlockchainInputHandler =
+    (setState, maxValue = 100) =>
+    (e) => {
+      let value = e.target.value;
 
-    if (value === '') {
-      setState('');
-      return;
-    }
-
-    if (!/^\d*\.?\d*$/.test(value)) return;
-
-    value = blockchainHelpers.enforceDecimals(value);
-
-    const numValue = Number(value);
-
-    if (!isNaN(numValue) && numValue >= 0) {
-      if (numValue <= maxValue) {
-        setState(value);
-      } else {
-        setState(maxValue.toString());
+      if (value === "") {
+        setState("");
+        return;
       }
-    }
-  };
+
+      if (!/^\d*\.?\d*$/.test(value)) return;
+
+      value = blockchainHelpers.enforceDecimals(value);
+
+      const numValue = Number(value);
+
+      if (!isNaN(numValue) && numValue >= 0) {
+        if (numValue <= maxValue) {
+          setState(value);
+        } else {
+          setState(maxValue.toString());
+        }
+      }
+    };
 
   const handleAmountChange = (index) => (e) => {
     const value = e.target.value;
 
-    if (!/^\d*\.?\d{0,3}$/.test(value)) {
+    if (!/^\d*\.?\d{0,2}$/.test(value)) {
       return;
     }
 
@@ -363,7 +364,7 @@ export default function Vote() {
 
       setCurrentWaitInfo({
         type: "loading",
-        info: "Processing vote submission"
+        info: "Processing vote submission",
       });
       setCurrentState(true);
 
@@ -378,18 +379,21 @@ export default function Vote() {
           duration: 5000,
         });
       } else {
-        tooltip.success({ content: "Vote submitted successfully", duration: 5000 });
+        tooltip.success({
+          content: "Vote submitted successfully",
+          duration: 5000,
+        });
         await queryData();
       }
     } catch (error) {
-      console.error('Vote error:', error);
+      console.error("Vote error:", error);
       setCurrentState(false);
 
       let errorMessage = "Voting failed. Please try again.";
       if (error.error && error.error.message) {
         errorMessage = error.error.message
-          .replace('execution reverted: ', '')
-          .replace('VM Exception while processing transaction: revert ', '');
+          .replace("execution reverted: ", "")
+          .replace("VM Exception while processing transaction: revert ", "");
       }
 
       tooltip.error({
@@ -573,7 +577,7 @@ export default function Vote() {
                             <div className={styles.center}>
                               {
                                 calculatedValues.votesPercentage[
-                                `votes${index}`
+                                  `votes${index}`
                                 ]
                               }
                               %
@@ -583,12 +587,12 @@ export default function Vote() {
                                 weightState.totalPointUpper <= 0
                                   ? 0
                                   : (
-                                    (weightState.totalWeightAtData[
-                                      `upper${index}`
-                                    ] /
-                                      weightState.totalPointUpper) *
-                                    100
-                                  ).toFixed(2)
+                                      (weightState.totalWeightAtData[
+                                        `upper${index}`
+                                      ] /
+                                        weightState.totalPointUpper) *
+                                      100
+                                    ).toFixed(2)
                               ) || 0}
                               %
                               <img
@@ -601,12 +605,12 @@ export default function Vote() {
                                   weightState.totalPoint <= 0
                                     ? 0
                                     : (
-                                      (weightState.totalWeightAtData[
-                                        `current${index}`
-                                      ] /
-                                        weightState.totalPoint) *
-                                      100
-                                    ).toFixed(2)
+                                        (weightState.totalWeightAtData[
+                                          `current${index}`
+                                        ] /
+                                          weightState.totalPoint) *
+                                        100
+                                      ).toFixed(2)
                                 ) || 0}
                                 %
                               </span>
@@ -614,7 +618,7 @@ export default function Vote() {
                             <div className={styles.center}>
                               {
                                 calculatedValues.emissions.upper[
-                                `upper${index}`
+                                  `upper${index}`
                                 ]
                               }
                               <img
@@ -625,7 +629,7 @@ export default function Vote() {
                               <span>
                                 {
                                   calculatedValues.emissions.current[
-                                  `current${index}`
+                                    `current${index}`
                                   ]
                                 }
                               </span>

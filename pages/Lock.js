@@ -11,7 +11,7 @@ import BigNumber from "bignumber.js";
 import { formatNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
 import useDebounce from "../hook/useDebounce";
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
 import "rc-slider/assets/index.css";
 
@@ -41,10 +41,10 @@ export default function Lock() {
   const vinePrice = 1;
 
   const onKeyDown = (e) => {
-    if (['e', 'E', '+', '-', '.'].includes(e.key)) {
+    if (["e", "E", "+", "-", "."].includes(e.key)) {
       e.preventDefault();
     }
-  };  
+  };
 
   const marks = {
     2: "2",
@@ -112,8 +112,8 @@ export default function Lock() {
   const changeAmount = (e) => {
     const value = e.target.value;
 
-    if (value === '') {
-      setAmount('');
+    if (value === "") {
+      setAmount("");
       return;
     }
 
@@ -128,14 +128,13 @@ export default function Lock() {
     } else if (numValue > Number(balance)) {
       setAmount(Math.floor(Number(balance)).toString());
     }
-  };  
+  };
 
   const changeValue = (percentage) => {
     // percentage should be an integer, e.g., 25 for 25%
     const newAmount = Math.floor((Number(balance) * percentage) / 100);
     setAmount(newAmount.toString());
   };
-
 
   useEffect(() => {
     if (Number(amount) && currentValue) {
@@ -174,8 +173,8 @@ export default function Lock() {
   const changeClaimAmount = (e) => {
     const value = e.target.value;
 
-    if (value === '') {
-      setClaimAmount('');
+    if (value === "") {
+      setClaimAmount("");
       setAmountWithdrawn(0);
       setPenaltyAmountPaid(0);
       return;
@@ -194,7 +193,7 @@ export default function Lock() {
     } else if (numValue > Number(accountLock)) {
       setClaimAmount(Math.floor(Number(accountLock)).toString());
     }
-  };  
+  };
 
   const changeShowUnlock = async () => {
     setClaimAmount(accountUnLock);
@@ -214,7 +213,7 @@ export default function Lock() {
       return;
     }
 
-    if (numAmount.gt(ethers.BigNumber.from(balance))) {
+    if (Number(amount) > balance) {
       tooltip.error({ content: "Insufficient balance", duration: 5000 });
       return;
     }
@@ -225,13 +224,10 @@ export default function Lock() {
     }
 
     try {
-      const tx = await lockToken(
-        amount.toString(),
-        currentValue
-      );
+      const tx = await lockToken(amount.toString(), currentValue);
       setCurrentWaitInfo({
         type: "loading",
-        info: "Lock " + Number(amount).toLocaleString() + " $bitGOV"
+        info: "Lock " + Number(amount).toLocaleString() + " $bitGOV",
       });
       setCurrentState(true);
 
@@ -241,7 +237,7 @@ export default function Lock() {
       if (result.status === 0) {
         tooltip.error({
           content: "Transaction failed. Please try again.",
-          duration: 5000
+          duration: 5000,
         });
       } else {
         setShowUnlock(false);
@@ -253,7 +249,7 @@ export default function Lock() {
       setCurrentState(false);
       tooltip.error({
         content: "Transaction failed. Please try again.",
-        duration: 5000
+        duration: 5000,
       });
     }
   };
@@ -341,7 +337,8 @@ export default function Lock() {
       const tx = await withdrawWithPenalty(claimAmountInWei);
       setCurrentWaitInfo({
         type: "loading",
-        info: "Early Unlock " + Number(claimAmount).toLocaleString() + " $bitGOV",
+        info:
+          "Early Unlock " + Number(claimAmount).toLocaleString() + " $bitGOV",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -452,8 +449,7 @@ export default function Lock() {
                     <div className={styles.miniTitle}>
                       <span>Enter amount</span>
                       <span style={{ fontSize: "12px" }}>
-                        Balance{" "}
-                          {Math.floor(balance)}
+                        Balance {Math.floor(balance)}
                         $bitGOV
                       </span>
                     </div>
@@ -463,20 +459,23 @@ export default function Lock() {
                         placeholder="0"
                         onWheel={(e) => e.target.blur()}
                         id="amount"
-                          min="0"
-                          step="1"
-                          onKeyDown={onKeyDown}
-                          onChange={changeAmount}
-                          value={amount === 0 ? "0" : amount || ""}
-                        />
+                        min="0"
+                        step="1"
+                        onKeyDown={onKeyDown}
+                        onChange={changeAmount}
+                        value={amount === 0 ? "0" : amount || ""}
+                      />
 
                       <span>bitGOV</span>
                     </div>
                     <div className="changeBalance">
-                        <span onClick={() => changeValue(25)}>25%</span>
-                        <span onClick={() => changeValue(50)}>50%</span>
-                        <span onClick={() => changeValue(75)}>75%</span>
-                        <span onClick={() => changeValue(100)} style={{ border: "none" }}>
+                      <span onClick={() => changeValue(25)}>25%</span>
+                      <span onClick={() => changeValue(50)}>50%</span>
+                      <span onClick={() => changeValue(75)}>75%</span>
+                      <span
+                        onClick={() => changeValue(100)}
+                        style={{ border: "none" }}
+                      >
                         Max
                       </span>
                     </div>
@@ -504,8 +503,12 @@ export default function Lock() {
                   </div>
                   <div className={styles.button}>
                     <div
-                        className={!amount ? "button rightAngle height disable" : "button rightAngle height"}
-                        onClick={validateAndLock}
+                      className={
+                        !amount
+                          ? "button rightAngle height disable"
+                          : "button rightAngle height"
+                      }
+                      onClick={validateAndLock}
                     >
                       LOCK
                     </div>
@@ -521,7 +524,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountWeight) +
-                                Number(amount) * currentValue
+                                  Number(amount) * currentValue
                               )}
                             </span>
                           </>
@@ -538,7 +541,7 @@ export default function Lock() {
                             <span>
                               {formatNumber(
                                 Number(accountLock + accountUnLock) +
-                                Number(amount)
+                                  Number(amount)
                               )}
                             </span>
                           </>
@@ -692,9 +695,9 @@ export default function Lock() {
             </div> : null} */}
 
       {loading &&
-        account.status === "connected" &&
-        signatureToken?.user &&
-        signatureTrove?.user ? (
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
       {currentState ? <Wait></Wait> : null}
