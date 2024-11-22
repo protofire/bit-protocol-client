@@ -251,6 +251,8 @@ export const BlockchainContextProvider = ({ children }) => {
         firstRedemptionHint
       );
 
+      console.log({ firstRedemptionHint, next, prev });
+
       const tx = await troveManager.redeemCollateral(
         amount,
         firstRedemptionHint,
@@ -968,18 +970,12 @@ export const BlockchainContextProvider = ({ children }) => {
       ],
     });
 
-    const collateralGainsByDepositor = [];
-    for await (const index of [
-      ...Array(Object.keys(collaterals).length).keys(),
-    ]) {
-      const value = await publicClient.readContract({
-        abi: StabilityPoolABI,
-        address: addresses.stabilityPool[account.chainId],
-        functionName: "collateralGainsByDepositor",
-        args: [account.address, index],
-      });
-      collateralGainsByDepositor.push(value);
-    }
+    const collateralGainsByDepositor = await publicClient.readContract({
+      abi: StabilityPoolABI,
+      address: addresses.stabilityPool[account.chainId],
+      functionName: "getDepositorCollateralGain",
+      args: [account.address],
+    });
 
     setStabilityPool({
       deposits: fromBigNumber(deposits),
