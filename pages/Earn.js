@@ -184,19 +184,14 @@ export default function Earn() {
   };
 
   let timerLoading = useRef(null);
+
   useEffect(() => {
     queryData();
     timerLoading.current = setInterval(() => {
       queryData();
-    }, 3000);
+    }, 30000);
     return () => clearInterval(timerLoading.current);
-  }, [
-    bitUSDCirculation,
-    stabilityPool,
-    account,
-    collaterals,
-    claimableRewards,
-  ]);
+  }, [account.status, account.address, stabilityPool, collaterals]);
 
   useEffect(() => {
     const vUSDBaseApr1 =
@@ -722,7 +717,7 @@ export default function Earn() {
                       $
                       {formatNumber(
                         Number(stabilityPoolBalance) +
-                          Number(stabilityPool.balance) * rosePrice
+                        Number(stabilityPool.balance) * rosePrice
                       )}
                     </span>
                   </div>
@@ -863,8 +858,8 @@ export default function Earn() {
                       {typeName == "bitGOV/ROSE LP"
                         ? formatNumber(vUSDBaseApr2 * boost)
                         : typeName == "bitUSD/USDC LP"
-                        ? formatNumber(vUSDBaseApr4 * boost)
-                        : formatNumber(vUSDBaseApr3 * boost)}{" "}
+                          ? formatNumber(vUSDBaseApr4 * boost)
+                          : formatNumber(vUSDBaseApr3 * boost)}{" "}
                       ({boost}x)
                     </p>
                   </div>
@@ -882,8 +877,8 @@ export default function Earn() {
                       {typeName == "bitGOV/ROSE LP"
                         ? "Stake bitGOV/ROSE LP to earn bitGOV rewards."
                         : typeName == "bitUSD/USDC LP"
-                        ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
-                        : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
+                          ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
+                          : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
                       {typeName == "Stability Pool" ? (
                         <Link
                           target="_blank"
@@ -917,7 +912,7 @@ export default function Earn() {
                       </>
                     ) : null}
                     {typeName == "bitGOV/ROSE LP" ||
-                    typeName == "bitUSD/USDC LP" ? (
+                      typeName == "bitUSD/USDC LP" ? (
                       <>
                         <span
                           className={
@@ -970,7 +965,7 @@ export default function Earn() {
                     {typeName == "Stability Pool" && changeType == "Claim" ? (
                       <>
                         {depositorCollateralGain.map((item, index) => (
-                          <div className="value">
+                          <div key={index} className="value">
                             <p>
                               {changeType} $
                               {
@@ -1021,10 +1016,10 @@ export default function Earn() {
                             {typeName == "bitGOV/ROSE LP"
                               ? formatNumber(Number(amount) * bitGovLPPrice)
                               : typeName == "bitUSD/USDC LP"
-                              ? formatNumber(
+                                ? formatNumber(
                                   Number(amount) * (tvl / USDCtotalSupply)
                                 )
-                              : formatNumber(Number(amount))}
+                                : formatNumber(Number(amount))}
                           </span>
                         </div>
                         <span className="font_14 gray">{coin}</span>
@@ -1078,9 +1073,9 @@ export default function Earn() {
       </div>
 
       {!Object.keys(stabilityPool).length > 0 &&
-      account.status === "connected" &&
-      signatureToken?.user &&
-      signatureTrove?.user ? (
+        account.status === "connected" &&
+        signatureToken?.user &&
+        signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
 
