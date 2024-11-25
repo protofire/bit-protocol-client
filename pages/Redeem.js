@@ -21,6 +21,7 @@ export default function Redeem() {
   const [rosePrice, setRosePrice] = useState(0);
   const [selectCollateral, setSelectedCollateral] = useState("");
   const [canRedeem, setCanRedeem] = useState(false);
+  const initializedRef = useRef(false)
 
   const account = useAccount();
 
@@ -82,14 +83,30 @@ export default function Redeem() {
 
   const changeAmount = async (e) => {
     const value = e.target.value;
+
+    // Only convert to number for comparison, keep string value for state
     const numValue = Number(value);
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= Number(bitUSDBalance))) {
-      setAmount(value === '' ? '' : numValue);
+    // Handle empty string case
+    if (value === '') {
+      setAmount('');
+      setFeeAmount(0);
+      setExpectedCollateralReceived(0);
+      return;
+    }
 
-      // Calculate fee and expected collateral even for zero values
-      if (value === '' || numValue === 0) {
+    // Enforce 3 decimal places if there's a decimal point
+    let formattedValue = value;
+    if (value.includes('.')) {
+      const parts = value.split('.');
+      formattedValue = parts[0] + '.' + parts[1].slice(0, 3);
+    }
+
+    // Check if the value is within valid range
+    if (numValue >= 0 && numValue <= Number(bitUSDBalance)) {
+      setAmount(formattedValue);
+
+      if (numValue === 0) {
         setFeeAmount(0);
         setExpectedCollateralReceived(0);
       } else {
@@ -100,9 +117,7 @@ export default function Redeem() {
         );
       }
     } else if (numValue > Number(bitUSDBalance)) {
-      setAmount(Number(bitUSDBalance));
-
-      // Calculate fee and expected collateral for max amount
+      setAmount(bitUSDBalance.toString());
       const feeAmountCalc = (Number(bitUSDBalance) / rosePrice) * fee;
       setFeeAmount(feeAmountCalc);
       setExpectedCollateralReceived(
@@ -112,18 +127,18 @@ export default function Redeem() {
   };
 
   const changeAmountValue = (value) => {
-    const newAmount = Number(bitUSDBalance) * value;
+    const newAmount = (Number(bitUSDBalance) * value).toFixed(3);
     setAmount(newAmount);
 
-    // Calculate fee and expected collateral for percentage amount
-    if (newAmount === 0) {
+    if (newAmount === '0' || newAmount === '0.000') {
       setFeeAmount(0);
       setExpectedCollateralReceived(0);
     } else {
-      const feeAmountCalc = (newAmount / rosePrice) * fee;
+      const numAmount = Number(newAmount);
+      const feeAmountCalc = (numAmount / rosePrice) * fee;
       setFeeAmount(feeAmountCalc);
       setExpectedCollateralReceived(
-        (newAmount / rosePrice) - feeAmountCalc
+        (numAmount / rosePrice) - feeAmountCalc
       );
     }
   };
@@ -146,8 +161,11 @@ export default function Redeem() {
     if (Object.keys(collaterals).length !== 0) {
       const price = getRosePrice();
       setRosePrice(price);
-      if (selectCollateral === "") {
+
+      // Only set initial collateral if it hasn't been set yet
+      if (selectCollateral === "" && !initializedRef.current) {
         selectCollateralChange(Object.keys(collaterals)[0]);
+        initializedRef.current = true;
       }
     }
   };
@@ -186,34 +204,37 @@ export default function Redeem() {
 
   const redeem = async () => {
     try {
+      const numAmount = Number(amount);
+
       const tx = await redeemCollateral(
         selectCollateral,
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
+
       setCurrentWaitInfo({
         type: "loading",
-        info:
-          "Redeem " + Number(amount.toFixed(4)).toLocaleString() + " bitUSD",
+        info: "Redeem " + numAmount.toLocaleString() + " bitUSD",
       });
+
       setCurrentState(true);
       const result = await tx.wait();
       setCurrentState(false);
+
       if (result.status === 0) {
         tooltip.error({
-          content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
+          content: "Transaction failed due to a network error. Please refresh the page and try again.",
           duration: 5000,
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
       }
+
       setAmount("");
     } catch (error) {
       console.log(error);
       setCurrentState(false);
       tooltip.error({
-        content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
+        content: "Transaction failed due to a network error. Please refresh the page and try again.",
         duration: 5000,
       });
     }
@@ -228,13 +249,56 @@ export default function Redeem() {
       return;
     }
 
-    // Allow redemption if amount is set (including zero)
     if (amount === '' || amount === undefined) {
+      return;
+    }
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      tooltip.error({
+        content: "Please enter a valid amount",
+        duration: 5000,
+      });
       return;
     }
 
     redeem();
   };
+
+  const renderCollateralInfo = () => {
+    const selectedCollateralInfo = collaterals[selectCollateral]?.collateral;
+    const collateralSymbol = selectedCollateralInfo?.symbol || selectedCollateralInfo?.name || 'ROSE';
+
+    return (
+      <div className={styles.data} style={{ borderTop: "none" }}>
+        <div className={styles.dataItem}>
+          <p>Collateral Price</p>
+          <span>${formatNumber(rosePrice)}</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Redemption Fee</p>
+          <span>{formatNumber(fee * 100)}%</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Redemption Fee Amount</p>
+          <span>{formatNumber(feeAmount)} {collateralSymbol}</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Expected Collateral Received</p>
+          <span>{formatNumber(expectedCollateralReceived)} {collateralSymbol}</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Value of Collateral Received</p>
+          <span>${formatNumber(expectedCollateralReceived * rosePrice)}</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Actual Redemption Amount</p>
+          <span>{formatNumber(amount)} bitUSD</span>
+        </div>
+      </div>
+    );
+  };
+
 
   return (
     <>
@@ -367,37 +431,7 @@ export default function Redeem() {
                     >
                       Redeem
                     </div> */}
-                    <div className={styles.data} style={{ borderTop: "none" }}>
-                      <div className={styles.dataItem}>
-                        <p>Collateral Price</p>
-                        <span>${formatNumber(rosePrice)}</span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Redemption Fee</p>
-                        <span>{formatNumber(fee * 100)}%</span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Redemption Fee Amount</p>
-                        <span>{formatNumber(feeAmount)} ROSE</span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Expected Collateral Received</p>
-                        <span>
-                          {formatNumber(expectedCollateralReceived)} ROSE
-                        </span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Value of Collateral Received</p>
-                        <span>
-                          $
-                          {formatNumber(expectedCollateralReceived * rosePrice)}
-                        </span>
-                      </div>
-                      <div className={styles.dataItem}>
-                        <p>Actual Redemption Amount</p>
-                        <span>{formatNumber(amount)} bitUSD</span>
-                      </div>
-                    </div>
+                      {renderCollateralInfo()}
                   </div>
                 )}
               </div>

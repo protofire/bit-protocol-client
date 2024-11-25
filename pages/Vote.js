@@ -8,6 +8,7 @@ import Loading from "../components/tooltip/loading";
 import { BlockchainContext } from "../hook/blockchain";
 import { formatNumber, fromBigNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
+import { ethers } from "ethers";
 
 export default function Vote() {
   const account = useAccount();
@@ -199,18 +200,13 @@ export default function Vote() {
     };
   }, [voteState.votes, weightState]);
 
-  // Optimized data fetching
   const queryData = useCallback(async () => {
-    console.log("Querying data... inside 1", { systemWeek, lockTotalWeight });
     if ((!systemWeek && systemWeek !== 0) || !lockTotalWeight) return;
-    console.log("Querying data... inside 2");
     try {
       const locks = await getAccountActiveLocks();
       const votes = await getAccountCurrentVotes();
       const weightAt = await getTotalWeightAt();
       const currentWeeklyEmissions = await weeklyEmissions();
-
-      console.log({ locks, accountUnlockAmount, accountLockAmount });
 
       // Process votes data
       const processedVotes = votes?.reduce(
@@ -230,14 +226,12 @@ export default function Vote() {
         votes: processedVotes,
       }));
 
-      // Fetch and update weight data
       const newWeightData = {
         totalPoint: weightAt,
         currentWeeklyEmissions: fromBigNumber(currentWeeklyEmissions),
         totalWeightAtData: { ...weightState.totalWeightAtData },
       };
 
-      // Fetch current weights
       for (let i = 0; i < 5; i++) {
         newWeightData.totalWeightAtData[`current${i}`] =
           await getReceiverWeightAt(i, systemWeek);
@@ -264,9 +258,74 @@ export default function Vote() {
     }
   }, [systemWeek, lockTotalWeight]);
 
-  // Input handlers
+  const blockchainHelpers = {
+    // Convert human readable amount to blockchain format (multiplied by 10^3)
+    toBlockchainFormat: (amount) => {
+      try {
+        if (!amount || amount === "") return "0";
+
+        return ethers.utils.parseUnits(amount.toString(), 3);
+      } catch (error) {
+        console.error("Error converting to blockchain format:", error);
+        throw new Error("Invalid amount format");
+      }
+    },
+
+    fromBlockchainFormat: (amount) => {
+      try {
+        return ethers.utils.formatUnits(amount, 3);
+      } catch (error) {
+        console.error("Error converting from blockchain format:", error);
+        return "0";
+      }
+    },
+
+    // Limit to two decimal places because of SC limitations
+    isValidDecimal: (value) => {
+      if (value === "" || value === undefined) return true;
+      return /^\d*\.?\d{0,2}$/.test(value);
+    },
+
+    // Limit to two decimal places because of SC limitations
+    enforceDecimals: (value) => {
+      if (value === "" || !value.includes(".")) return value;
+      const parts = value.split(".");
+      return `${parts[0]}.${parts[1].slice(0, 2)}`;
+    },
+  };
+
+  const createBlockchainInputHandler =
+    (setState, maxValue = 100) =>
+    (e) => {
+      let value = e.target.value;
+
+      if (value === "") {
+        setState("");
+        return;
+      }
+
+      if (!/^\d*\.?\d*$/.test(value)) return;
+
+      value = blockchainHelpers.enforceDecimals(value);
+
+      const numValue = Number(value);
+
+      if (!isNaN(numValue) && numValue >= 0) {
+        if (numValue <= maxValue) {
+          setState(value);
+        } else {
+          setState(maxValue.toString());
+        }
+      }
+    };
+
   const handleAmountChange = (index) => (e) => {
     const value = e.target.value;
+
+    if (!/^\d*\.?\d{0,2}$/.test(value)) {
+      return;
+    }
+
     // Allow empty string or valid numbers including zero
     if (value === "" || (!isNaN(value) && Number(value) >= 0)) {
       setVoteState((prev) => ({
@@ -285,7 +344,7 @@ export default function Vote() {
       0
     );
 
-    if (totalVotes > 10000) {
+    if (totalVotes > 100) {
       tooltip.error({
         content: "Total amount of votes shouldn't exceed 10,000.",
         duration: 3000,
@@ -293,23 +352,25 @@ export default function Vote() {
       return;
     }
 
-    if (!showVote) return;
-
     try {
       // Include all votes, including zeros
       const voteData = Object.entries(voteState.amounts).map(
-        ([key, amount]) => [
-          Number(key.slice(-1)),
-          (amount === "" ? 0 : Number(amount)) * 100,
-        ]
+        ([key, amount]) => {
+          const amountValue = amount === "" ? 0 : Number(amount);
+          const points = Math.floor(amountValue * 100);
+          return [Number(key.slice(-1)), points];
+        }
       );
 
-      const tx = await registerAccountWeightAndVote(voteData);
-
-      setCurrentWaitInfo({ type: "loading" });
+      setCurrentWaitInfo({
+        type: "loading",
+        info: "Processing vote submission",
+      });
       setCurrentState(true);
 
+      const tx = await registerAccountWeightAndVote(voteData);
       const result = await tx.wait();
+
       setCurrentState(false);
 
       if (result.status === 0) {
@@ -318,12 +379,23 @@ export default function Vote() {
           duration: 5000,
         });
       } else {
-        tooltip.success({ content: "Successful", duration: 5000 });
-        queryData(); // Refresh data after successful vote
+        tooltip.success({
+          content: "Vote submitted successfully",
+          duration: 5000,
+        });
+        await queryData();
       }
     } catch (error) {
-      console.error(error);
+      console.error("Vote error:", error);
       setCurrentState(false);
+
+      let errorMessage = "Voting failed. Please try again.";
+      if (error.error && error.error.message) {
+        errorMessage = error.error.message
+          .replace("execution reverted: ", "")
+          .replace("VM Exception while processing transaction: revert ", "");
+      }
+
       tooltip.error({
         content: "Transaction failed. Please refresh and try again.",
         duration: 5000,
@@ -331,9 +403,7 @@ export default function Vote() {
     }
   };
 
-  // Effects
   useEffect(() => {
-    console.log("Querying data... useEffect");
     queryData();
     const interval = setInterval(queryData, 30000);
     return () => clearInterval(interval);
@@ -345,7 +415,7 @@ export default function Vote() {
       0
     );
     // Only check if the user has locks and total amount is within range (including zero)
-    setShowVote(voteState.isLocks && totalAmount <= 10000);
+    setShowVote(voteState.isLocks && totalAmount <= 100);
   }, [voteState.amounts, voteState.isLocks]);
 
   return (
@@ -567,7 +637,7 @@ export default function Vote() {
                             <div
                               className={styles.center}
                               style={
-                                isOpen ? { transform: "rotate(180deg)" } : null
+                                isOpen ? { transform: "rotate(30deg)" } : null
                               }
                             >
                               <img

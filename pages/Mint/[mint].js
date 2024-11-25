@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import { BlockchainContext } from "../../hook/blockchain";
 import PageBack from "../../components/pageBack";
 import { useWaitForTransactionReceipt } from "wagmi";
+import useDebounce from "../../hook/useDebounce";
 
 export default function Mint() {
   const router = useRouter();
@@ -58,6 +59,8 @@ export default function Mint() {
       payable: false,
     },
   });
+  const [collInputValue, setCollInputValue] = useState("");
+  const debouncedCollAmount = useDebounce(collInputValue, 200);
 
   const price = collateralPrices[router.query.mint];
 
@@ -139,15 +142,22 @@ export default function Mint() {
 
   useEffect(() => {
     if (collAmount) {
-      if (collateralRatio && ratioType == "Auto") {
-        const max =
-          (Number(deposits + collAmount) * price) / (collateralRatio / 100) -
-          debt;
-        setDebtAmount(max);
+      const collAmountBN = new BigNumber(collAmount);
+      let max;
+      if (collateralRatio && ratioType === "Auto") {
+        max = collAmountBN
+          .plus(deposits)
+          .multipliedBy(price)
+          .dividedBy(collateralRatio / 100)
+          .minus(debt);
       } else {
-        const max = (Number(deposits + collAmount) * price) / 1.55 - debt;
-        setDebtAmount(max);
+        max = collAmountBN
+          .plus(deposits)
+          .multipliedBy(price)
+          .dividedBy(1.55)
+          .minus(debt);
       }
+      setDebtAmount(max.toFixed(18)); // Use higher precision
     }
   }, [collAmount, ratioType, collateralRatio]);
 
@@ -166,24 +176,39 @@ export default function Mint() {
       return;
     }
 
-    // Prevent if not a number
     if (isNaN(Number(e.key))) {
       e.preventDefault();
     }
   };
 
-  const changeCollAmount = async (e) => {
-    const value = e.target.value;
-    const numValue = Number(value);
+  useEffect(() => {
+    if (debouncedCollAmount === "") {
+      setCollAmount("");
+      return;
+    }
+
+    if (!/^\d*\.?\d{0,3}$/.test(debouncedCollAmount)) {
+      return;
+    }
+
+    const parts = debouncedCollAmount.split(".");
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
+    const numValue = Number(debouncedCollAmount);
     const userBalance = isPayable ? balance : collateralBalance;
     const maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
 
     // Allow empty string or values within range (including zero)
-    if (value === "" || (numValue >= 0 && numValue <= maxBalance)) {
-      setCollAmount(value === "" ? "" : numValue);
+    if (
+      debouncedCollAmount === "" ||
+      (numValue >= 0 && numValue <= maxBalance)
+    ) {
+      setCollAmount(debouncedCollAmount === "" ? "" : numValue);
 
       // Update debt amount based on new collateral amount
-      if (value === "" || numValue === 0) {
+      if (debouncedCollAmount === "" || numValue === 0) {
         setDebtAmount("");
         setDebtMax(0);
       } else if (collateralRatio && ratioType === "Auto") {
@@ -194,12 +219,32 @@ export default function Mint() {
         setDebtMax(max);
       } else {
         const max = (Number(deposits + numValue) * price) / 1.55 - debt;
-        setDebtAmount(max);
+        setDebtAmount(max.toFixed(3));
         setDebtMax(max);
       }
     } else if (numValue > maxBalance) {
-      setCollAmount(maxBalance);
+      setCollAmount(maxBalance.toFixed(3));
     }
+  }, [
+    debouncedCollAmount,
+    isPayable,
+    balance,
+    collateralBalance,
+    deposits,
+    price,
+    collateralRatio,
+    ratioType,
+    debt,
+  ]);
+
+  const changeCollAmount = (e) => {
+    const value = e.target.value;
+
+    if (!/^\d*\.?\d{0,3}$/.test(value)) {
+      return;
+    }
+
+    setCollInputValue(value);
   };
 
   const changeCollValue = (value) => {
@@ -207,7 +252,6 @@ export default function Mint() {
     const newAmount = (balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value;
     setCollAmount(newAmount);
 
-    // Update debt amount based on new collateral amount
     if (collateralRatio && ratioType === "Auto") {
       const max =
         (Number(deposits + newAmount) * price) / (collateralRatio / 100) - debt;
@@ -222,19 +266,37 @@ export default function Mint() {
 
   const changeCollateralRatio = async (e) => {
     const value = e.target.value;
+
+    if (value === "") {
+      setCollateralRatio("");
+      return;
+    }
+
+    if (!/^\d*\.?\d{0,3}$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split(".");
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
     const numValue = Number(value);
+    if (numValue >= 0) {
+      setCollateralRatio(value);
 
-    // Allow empty string or non-negative values
-    if (value === "" || numValue >= 0) {
-      setCollateralRatio(value === "" ? "" : numValue);
+      // Allow empty string or non-negative values
+      if (value === "" || numValue >= 0) {
+        setCollateralRatio(value === "" ? "" : numValue);
 
-      // Update debt max and amount based on new ratio
-      if (collAmount && numValue > 0) {
-        const max =
-          (Number(deposits + Number(collAmount)) * price) / (numValue / 100) -
-          debt;
-        setDebtMax(max);
-        setDebtAmount(max);
+        // Update debt max and amount based on new ratio
+        if (collAmount && numValue > 0) {
+          const max =
+            (Number(deposits + Number(collAmount)) * price) / (numValue / 100) -
+            debt;
+          setDebtMax(max);
+          setDebtAmount(max.toFixed(3));
+        }
       }
     }
   };
@@ -251,9 +313,9 @@ export default function Mint() {
     }
   }, [collAmount, price, collateralRatio, ratioType]);
 
-  const changeDebtAmount = async (e) => {
+  const changeDebtAmount = (e) => {
     const value = e.target.value;
-    const numValue = Number(value);
+    if (!/^\d*\.?\d*$/.test(value)) return;
 
     // Allow empty string or values within range (including zero)
     if (value === "" || (numValue >= 0 && numValue <= debtMax)) {
@@ -294,9 +356,10 @@ export default function Mint() {
     }
 
     try {
+      const collAmountBN = new BigNumber(collAmount);
       const tx = await approve(
         collateralAddr,
-        new BigNumber(collAmount).multipliedBy(1e18).toFixed()
+        collAmountBN.multipliedBy(1e18).integerValue().toString()
       );
       setCurrentWaitInfo({
         type: "loading",
@@ -332,16 +395,19 @@ export default function Mint() {
       return;
     }
     try {
+      // Convert both amounts using BigNumber properly
+      const collAmountBN = new BigNumber(collAmount);
+      const debtAmountBN = new BigNumber(debtAmount);
+
       const tx = await adjustTrove(
         router.query.mint,
-        new BigNumber(collAmount).multipliedBy(1e18).toFixed(),
-        new BigNumber(debtAmount).multipliedBy(1e18).toFixed(),
+        collAmountBN.multipliedBy(1e18).integerValue().toString(),
+        debtAmountBN.multipliedBy(1e18).integerValue().toString(),
         isPayable
       );
       setCurrentWaitInfo({
         type: "loading",
-        info:
-          "Mint " + Number(debtAmount.toFixed(4)).toLocaleString() + " $bitUSD",
+        info: "Mint " + Number(debtAmount).toLocaleString() + " $bitUSD",
       });
       setCurrentState(true);
       const mintResult = await tx.wait();
@@ -406,15 +472,13 @@ export default function Mint() {
 
               <div className="inputTxt3">
                 <input
-                  type="number"
+                  type="text"
                   placeholder="0"
                   onWheel={(e) => e.target.blur()}
                   id="collAmount"
-                  min="0"
-                  step="any"
                   onKeyDown={onKeyDown}
                   onChange={changeCollAmount}
-                  value={collAmount === 0 ? "0" : collAmount || ""}
+                  value={collInputValue}
                 />
                 <span>${collateral?.collateral?.name}</span>
               </div>
@@ -458,12 +522,10 @@ export default function Mint() {
                 {ratioType == "Auto" ? (
                   <div className="inputTxt" style={{ width: "120px" }}>
                     <input
-                      type="number"
+                      type="text"
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
                       id="collateralRatio"
-                      min="0"
-                      step="any"
                       onKeyDown={onKeyDown}
                       onChange={changeCollateralRatio}
                       value={
@@ -485,12 +547,10 @@ export default function Mint() {
               </div>
               <div className="inputTxt3">
                 <input
-                  type="number"
+                  type="text"
                   placeholder="0"
                   onWheel={(e) => e.target.blur()}
                   id="debtAmount"
-                  min="0"
-                  step="any"
                   onKeyDown={onKeyDown}
                   onChange={changeDebtAmount}
                   value={debtAmount === 0 ? "0" : debtAmount || ""}

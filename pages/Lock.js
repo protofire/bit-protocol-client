@@ -11,6 +11,7 @@ import BigNumber from "bignumber.js";
 import { formatNumber } from "../utils/helpers";
 import { useAccount } from "wagmi";
 import useDebounce from "../hook/useDebounce";
+import { ethers } from "ethers";
 
 import "rc-slider/assets/index.css";
 
@@ -40,22 +41,7 @@ export default function Lock() {
   const vinePrice = 1;
 
   const onKeyDown = (e) => {
-    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
-    if (["-", "+", "e", "E"].includes(e.key)) {
-      e.preventDefault();
-    }
-
-    // Allow: backspace, delete, tab, escape, enter, decimal point
-    if (
-      ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", ","].includes(
-        e.key
-      )
-    ) {
-      return;
-    }
-
-    // Prevent if not a number
-    if (isNaN(Number(e.key))) {
+    if (["e", "E", "+", "-", "."].includes(e.key)) {
       e.preventDefault();
     }
   };
@@ -123,20 +109,31 @@ export default function Lock() {
     account.status,
   ]);
 
-  const changeAmount = async (e) => {
+  const changeAmount = (e) => {
     const value = e.target.value;
-    const numValue = Number(value);
 
-    // Allow empty string or values within range (including zero)
-    if (value === "" || (numValue >= 0 && numValue <= Number(balance))) {
-      setAmount(value === "" ? "" : numValue);
+    if (value === "") {
+      setAmount("");
+      return;
+    }
+
+    // Only allow integers
+    if (!/^\d+$/.test(value)) {
+      return;
+    }
+
+    const numValue = Number(value);
+    if (numValue >= 0 && numValue <= Math.floor(Number(balance))) {
+      setAmount(value);
     } else if (numValue > Number(balance)) {
-      setAmount(Math.floor(balance));
+      setAmount(Math.floor(Number(balance)).toString());
     }
   };
 
-  const changeValue = (value) => {
-    setAmount(Math.floor(Number(balance) * value));
+  const changeValue = (percentage) => {
+    // percentage should be an integer, e.g., 25 for 25%
+    const newAmount = Math.floor((Number(balance) * percentage) / 100);
+    setAmount(newAmount.toString());
   };
 
   useEffect(() => {
@@ -173,15 +170,28 @@ export default function Lock() {
     setPenaltyAmountPaid(withdrawWithPenaltyAmounts.penaltyAmountPaid);
   };
 
-  const changeClaimAmount = async (e) => {
-    const value = Number(e.target.value);
-    setAmountWithdrawn(0);
-    setPenaltyAmountPaid(0);
+  const changeClaimAmount = (e) => {
+    const value = e.target.value;
 
-    if (value < Number(accountLock)) {
-      setClaimAmount(value == 0 ? "" : value);
-    } else {
-      setClaimAmount(Math.floor(accountLock));
+    if (value === "") {
+      setClaimAmount("");
+      setAmountWithdrawn(0);
+      setPenaltyAmountPaid(0);
+      return;
+    }
+
+    // Only allow integers
+    if (!/^\d+$/.test(value)) {
+      return;
+    }
+
+    const numValue = Number(value);
+    if (numValue >= 0 && numValue <= Math.floor(Number(accountLock))) {
+      setClaimAmount(value);
+      setAmountWithdrawn(0);
+      setPenaltyAmountPaid(0);
+    } else if (numValue > Number(accountLock)) {
+      setClaimAmount(Math.floor(Number(accountLock)).toString());
     }
   };
 
@@ -192,41 +202,70 @@ export default function Lock() {
 
   const lock = async () => {
     if (amount === "" || amount === undefined) {
+      tooltip.error({ content: "Please enter an amount", duration: 5000 });
+      return;
+    }
+
+    const numAmount = ethers.utils.parseUnits(amount.toString(), 0); // Since no decimals
+
+    if (numAmount.lte(0)) {
+      tooltip.error({ content: "Please enter a valid amount", duration: 5000 });
+      return;
+    }
+
+    if (Number(amount) > balance) {
+      tooltip.error({ content: "Insufficient balance", duration: 5000 });
+      return;
+    }
+
+    if (currentValue < 2 || currentValue > 52) {
+      tooltip.error({ content: "Invalid lock duration", duration: 5000 });
       return;
     }
 
     try {
-      const tx = await lockToken(
-        new BigNumber(amount).multipliedBy(1e18).toFixed(),
-        currentValue
-      );
+      const tx = await lockToken(amount.toString(), currentValue);
       setCurrentWaitInfo({
         type: "loading",
-        info: "Lock " + Number(amount.toFixed(4)).toLocaleString() + " $bitGOV",
+        info: "Lock " + Number(amount).toLocaleString() + " $bitGOV",
       });
       setCurrentState(true);
+
       const result = await tx.wait();
       setCurrentState(false);
+
       if (result.status === 0) {
         tooltip.error({
-          content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
+          content: "Transaction failed. Please try again.",
           duration: 5000,
         });
       } else {
         setShowUnlock(false);
         tooltip.success({ content: "Successful", duration: 5000 });
+        setAmount("");
       }
-      setAmount("");
     } catch (error) {
-      console.log(error);
+      console.error("Lock error:", error);
       setCurrentState(false);
       tooltip.error({
-        content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
+        content: "Transaction failed. Please try again.",
         duration: 5000,
       });
     }
+  };
+
+  const validateAndLock = () => {
+    if (!amount || Number(amount) === 0) {
+      tooltip.error({ content: "Please enter an amount", duration: 5000 });
+      return;
+    }
+
+    if (Number(amount) > Number(balance)) {
+      tooltip.error({ content: "Amount exceeds balance", duration: 5000 });
+      return;
+    }
+
+    lock();
   };
 
   const enableAutoLock = async () => {
@@ -293,10 +332,13 @@ export default function Lock() {
     }
 
     try {
-      const tx = await withdrawWithPenalty(Math.floor(claimAmount));
+      const claimAmountInWei = ethers.utils.parseEther(claimAmount.toString());
+
+      const tx = await withdrawWithPenalty(claimAmountInWei);
       setCurrentWaitInfo({
         type: "loading",
-        info: "Early Unlock " + Math.floor(claimAmount) + " $bitGOV",
+        info:
+          "Early Unlock " + Number(claimAmount).toLocaleString() + " $bitGOV",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -407,8 +449,7 @@ export default function Lock() {
                     <div className={styles.miniTitle}>
                       <span>Enter amount</span>
                       <span style={{ fontSize: "12px" }}>
-                        Balance{" "}
-                        {Number(Number(balance).toFixed(2)).toLocaleString()}
+                        Balance {Math.floor(balance)}
                         $bitGOV
                       </span>
                     </div>
@@ -419,19 +460,20 @@ export default function Lock() {
                         onWheel={(e) => e.target.blur()}
                         id="amount"
                         min="0"
-                        step="any"
+                        step="1"
                         onKeyDown={onKeyDown}
                         onChange={changeAmount}
                         value={amount === 0 ? "0" : amount || ""}
                       />
+
                       <span>bitGOV</span>
                     </div>
                     <div className="changeBalance">
-                      <span onClick={() => changeValue(0.25)}>25%</span>
-                      <span onClick={() => changeValue(0.5)}>50%</span>
-                      <span onClick={() => changeValue(0.75)}>75%</span>
+                      <span onClick={() => changeValue(25)}>25%</span>
+                      <span onClick={() => changeValue(50)}>50%</span>
+                      <span onClick={() => changeValue(75)}>75%</span>
                       <span
-                        onClick={() => changeValue(1)}
+                        onClick={() => changeValue(100)}
                         style={{ border: "none" }}
                       >
                         Max
@@ -466,7 +508,7 @@ export default function Lock() {
                           ? "button rightAngle height disable"
                           : "button rightAngle height"
                       }
-                      onClick={() => lock()}
+                      onClick={validateAndLock}
                     >
                       LOCK
                     </div>
@@ -591,7 +633,7 @@ export default function Lock() {
                   onWheel={(e) => e.target.blur()}
                   id="claimAmount"
                   min="0"
-                  step="any"
+                  step="1"
                   onKeyDown={onKeyDown}
                   onChange={changeClaimAmount}
                   value={claimAmount === 0 ? "0" : claimAmount || ""}

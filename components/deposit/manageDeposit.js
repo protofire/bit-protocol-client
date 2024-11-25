@@ -17,7 +17,7 @@ export default function ManageDeposit({ address }) {
   const [operateType2, setOperateType2] = useState("Deposit");
   const [collAmount, setCollAmount] = useState("");
   const [currentRatio, setCurrentRatio] = useState(0);
-  const [afterDepositRatio, setDepoistAfterRatio] = useState(0);
+  const [afterDepositRatio, setDepositAfterRatio] = useState(0);
   const [afterWithdrawRatio, setWithdrawAfterRatio] = useState(0);
   const [debtAmount, setDebtAmount] = useState("");
   const [withdrawMax, setWithdrawMax] = useState(0);
@@ -180,27 +180,54 @@ export default function ManageDeposit({ address }) {
 
   const changeCollAmount = async (e) => {
     const value = e.target.value;
+
+    if (value === '') {
+      setCollAmount('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
     const numValue = Number(value);
     const balanceValue = isPayable ? balance : collateralBalance;
     const maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= maxBalance)) {
-      setCollAmount(value === '' ? '' : numValue);
+    if (numValue >= 0 && numValue <= maxBalance) {
+      setCollAmount(value);
     } else if (numValue > maxBalance) {
-      setCollAmount(maxBalance);
+      setCollAmount(maxBalance.toFixed(3));
     }
   };
 
   const changeWithdrawAmount = async (e) => {
     const value = e.target.value;
-    const numValue = Number(value);
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= withdrawMax)) {
-      setCollAmount(value === '' ? '' : numValue);
+    if (value === '') {
+      setCollAmount('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
+    const numValue = Number(value);
+    if (numValue >= 0 && numValue <= withdrawMax) {
+      setCollAmount(value);
     } else if (numValue > withdrawMax) {
-      setCollAmount(withdrawMax);
+      setCollAmount(withdrawMax.toFixed(3));
     }
   };
 
@@ -222,20 +249,33 @@ export default function ManageDeposit({ address }) {
     if (collAmount) {
       const ratio2 = (((deposits + Number(collAmount)) * price) / debt) * 100;
       const ratio3 = (((deposits - Number(collAmount)) * price) / debt) * 100;
-      setDepoistAfterRatio(ratio2);
+      setDepositAfterRatio(ratio2);
       setWithdrawAfterRatio(ratio3);
     }
   }, [collAmount, debt, deposits, price]);
 
   const changeDebtAmount = async (e) => {
     const value = e.target.value;
-    const numValue = Number(value);
 
-    // Allow empty string or values within range (including zero)
-    if (value === '' || (numValue >= 0 && numValue <= Number(bitUSDBalance))) {
-      setDebtAmount(value === '' ? '' : numValue);
+    if (value === '') {
+      setDebtAmount('');
+      return;
+    }
+
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
+    const numValue = Number(value);
+    if (numValue >= 0 && numValue <= Number(bitUSDBalance)) {
+      setDebtAmount(value);
     } else if (numValue > Number(bitUSDBalance)) {
-      setDebtAmount(Number(bitUSDBalance));
+      setDebtAmount(Number(bitUSDBalance).toFixed(3));
     }
   };
 
@@ -250,14 +290,14 @@ export default function ManageDeposit({ address }) {
     }
 
     try {
+      const collAmountBN = new BigNumber(collAmount);
       const tx = await approve(
         collateralAddr,
-        new BigNumber(collAmount).multipliedBy(1e18).toFixed()
+        collAmountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
-          }`,
+        info: `Approving ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name}`
       });
       setApproved({
         hash: tx,
@@ -283,15 +323,15 @@ export default function ManageDeposit({ address }) {
 
     if (status !== 0 && status !== 2) {
       try {
+        const collAmountBN = new BigNumber(collAmount);
         const tx = await addColl(
           address,
-          new BigNumber(collAmount).multipliedBy(1e18).toFixed(),
+          collAmountBN.multipliedBy(1e18).integerValue().toFixed(),
           isPayable
         );
         setCurrentWaitInfo({
           type: "loading",
-          info: `Deposit ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
-            }`,
+          info: `Deposit ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name}`
         });
         setCurrentState(true);
         const result = await tx.wait();
@@ -309,6 +349,7 @@ export default function ManageDeposit({ address }) {
         setLock(false);
         await getData();
       } catch (error) {
+        console.log(error);
         setCurrentState(false);
         tooltip.error({
           content:
@@ -325,14 +366,14 @@ export default function ManageDeposit({ address }) {
     }
 
     try {
+      const collAmountBN = new BigNumber(collAmount);
       const tx = await withdrawColl(
         address,
-        new BigNumber(collAmount).multipliedBy(1e18).toFixed()
+        collAmountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Withdraw ${Number(collAmount.toFixed(4)).toLocaleString()} $${collateral?.collateral?.name
-          }`,
+        info: `Withdraw ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name}`
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -348,6 +389,7 @@ export default function ManageDeposit({ address }) {
       }
       setCollAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -363,13 +405,15 @@ export default function ManageDeposit({ address }) {
     }
 
     try {
+      // Convert debtAmount using BigNumber properly and ensure integer value
+      const debtAmountBN = new BigNumber(debtAmount);
       const tx = await repayDebt(
         address,
-        new BigNumber(debtAmount).multipliedBy(1e18).toFixed()
+        debtAmountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
-        info: `Repay ${Number(debtAmount.toFixed(4)).toLocaleString()} $bitUSD`,
+        info: `Repay ${Number(debtAmount).toLocaleString()} $bitUSD`
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -385,6 +429,7 @@ export default function ManageDeposit({ address }) {
       }
       setDebtAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -536,21 +581,17 @@ export default function ManageDeposit({ address }) {
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
                       {Number(
-                        Number(isPayable ? balance : collateralBalance).toFixed(
-                          4
-                        )
+                        Number(isPayable ? balance : collateralBalance).toFixed(3)
                       ).toLocaleString()}{" "}
                       ${collateral?.collateral?.name}
                     </span>
                   </div>
                   <div className="inputTxt3">
                     <input
-                      type="number"
+                      type="text"
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
                       id="collAmount"
-                      min="0"
-                      step="any"
                       onKeyDown={onKeyDown}
                       onChange={changeCollAmount}
                       value={collAmount === 0 ? "0" : collAmount || ""}
@@ -564,18 +605,16 @@ export default function ManageDeposit({ address }) {
                     <span>Enter amount</span>
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
-                      {Number(Number(withdrawMax).toFixed(4)).toLocaleString()}{" "}
+                        {Number(Number(withdrawMax).toFixed(3)).toLocaleString()}{" "}
                       ${collateral?.collateral?.name}
                     </span>
                   </div>
                   <div className="inputTxt3">
                     <input
-                      type="number"
+                        type="text"
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
-                      id="collAmount"
-                        min="0"
-                        step="any"
+                        id="collAmount"
                         onKeyDown={onKeyDown}
                         onChange={changeWithdrawAmount}
                         value={collAmount === 0 ? "0" : collAmount || ""}
@@ -589,20 +628,16 @@ export default function ManageDeposit({ address }) {
                     <span>{operateType} bitUSD</span>
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
-                      {Number(
-                        Number(bitUSDBalance).toFixed(4)
-                      ).toLocaleString()}{" "}
+                          {Number(Number(bitUSDBalance).toFixed(3)).toLocaleString()}{" "}
                       bitUSD
                     </span>
                   </div>
                   <div className="inputTxt3">
                     <input
-                      type="number"
+                          type="text"
                       placeholder="0"
                       onWheel={(e) => e.target.blur()}
-                      id="debtAmount"
-                          min="0"
-                          step="any"
+                          id="debtAmount"
                           onKeyDown={onKeyDown}
                           onChange={changeDebtAmount}
                           value={debtAmount === 0 ? "0" : debtAmount || ""}
@@ -661,41 +696,24 @@ export default function ManageDeposit({ address }) {
 
               {operateType == "Close" ? (
                 <>
-                  <div
-                    className={`${styles.miniTitle} ${styles.borderGreen}`}
-                    style={{ fontSize: "12px", marginTop: "10px" }}
-                  >
+                  <div className={`${styles.miniTitle} ${styles.borderGreen}`} style={{ fontSize: "12px", marginTop: "10px" }}>
                     <span>Total Collateral</span>
                     <span>
-                      {Number(Number(deposits).toFixed(4)).toLocaleString()} $
+                      {Number(Number(deposits).toFixed(3)).toLocaleString()} $
                       {collateral?.collateral?.name}
                     </span>
                   </div>
-                  <div
-                    className={`${styles.miniTitle} ${styles.borderGray}`}
-                    style={{ fontSize: "12px", marginTop: "10px" }}
-                  >
+                  <div className={`${styles.miniTitle} ${styles.borderGray}`} style={{ fontSize: "12px", marginTop: "10px" }}>
                     <span>Your Total Debt</span>
                     <span>
-                      {Number(Number(debt).toFixed(4)).toLocaleString()} $bitUSD
+                      {Number(Number(debt).toFixed(3)).toLocaleString()} $bitUSD
                     </span>
                   </div>
-                  <div
-                    className={`${styles.miniTitle}`}
-                    style={{ fontSize: "12px", marginTop: "10px" }}
-                  >
+                  <div className={`${styles.miniTitle}`} style={{ fontSize: "12px", marginTop: "10px" }}>
                     <span>Wallet Balance</span>
                     <div className={styles.walletBalance}>
-                      <span
-                        style={
-                          Number(bitUSDBalance) < Number(debt)
-                            ? null
-                            : { color: "#fff" }
-                        }
-                      >
-                        {Number(
-                          Number(bitUSDBalance).toFixed(4)
-                        ).toLocaleString()}
+                      <span style={Number(bitUSDBalance) < Number(debt) ? null : { color: "#fff" }}>
+                        {Number(Number(bitUSDBalance).toFixed(3)).toLocaleString()}
                       </span>{" "}
                       $bitUSD
                     </div>
@@ -758,13 +776,11 @@ export default function ManageDeposit({ address }) {
               <div className={styles.data}>
                 <div className={styles.dataItem}>
                   <p>Total Value Locked</p>
-                  <span>
-                    ${Number((deposits * price).toFixed(4)).toLocaleString()}
-                  </span>
+                    <span>${Number((deposits * price).toFixed(3)).toLocaleString()}</span>
                 </div>
                 <div className={styles.dataItem}>
                   <p>Minted bitUSD</p>
-                  <span>${Number(debt.toFixed(4)).toLocaleString()}</span>
+                    <span>${Number(debt.toFixed(3)).toLocaleString()}</span>
                 </div>
                 <div className={styles.dataItem}>
                   <p>Mint Fee</p>
@@ -800,27 +816,16 @@ export default function ManageDeposit({ address }) {
               You will need to repay any outstanding bitUSD debt:
             </p>
             <div className={styles.closeCoin}>
-              <p>{Number(Number(debt).toFixed(4)).toLocaleString()}</p>
+              <p>{Number(Number(debt).toFixed(3)).toLocaleString()}</p>
               <div>
-                <img
-                  style={{ width: 24, height: 24 }}
-                  src="/dapp/bitUSD.svg"
-                  alt="vUSD"
-                ></img>
+                <img style={{ width: 24, height: 24 }} src="/dapp/bitUSD.svg" alt="vUSD"></img>
                 $bitUSD
               </div>
             </div>
-            <p className={styles.closeDesc}>
-              You will receive your collateral of:
-            </p>
             <div className={styles.closeCoin}>
-              <p>{Number(Number(deposits).toFixed(4)).toLocaleString()}</p>
+              <p>{Number(Number(deposits).toFixed(3)).toLocaleString()}</p>
               <div>
-                <img
-                  style={{ width: 24, height: 24 }}
-                  src={`/dapp/${collateral?.collateral?.logo}`}
-                  alt="rose"
-                ></img>
+                <img style={{ width: 24, height: 24 }} src={`/dapp/${collateral?.collateral?.logo}`} alt="rose"></img>
                 ${collateral?.collateral?.name}
               </div>
             </div>

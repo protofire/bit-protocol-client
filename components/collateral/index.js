@@ -1,5 +1,4 @@
 import styles from "../../styles/dapp.module.scss";
-import { useEffect, useState, useContext, useRef } from "react";
 import { useRouter } from "next/router";
 import { formatNumber } from "../../utils/helpers";
 

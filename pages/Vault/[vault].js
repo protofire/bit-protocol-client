@@ -1,13 +1,7 @@
-import styles from "../../styles/dapp.module.scss";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
-import { UserContext } from "../../hook/user";
 import { BlockchainContext } from "../../hook/blockchain";
 import { useEffect, useState, useContext } from "react";
-import BigNumber from "bignumber.js";
-import Wait from "../../components/tooltip/wait";
-import tooltip from "../../components/tooltip";
-import DepositsAndDebt from "../../components/dapp/depositsAndDebt";
 import { useRouter } from "next/router";
 import ManageDeposit from "../../components/deposit/manageDeposit";
 import InitialDeposit from "../../components/deposit/initialDeposit";

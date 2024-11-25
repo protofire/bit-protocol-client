@@ -129,6 +129,10 @@ export default function Earn() {
     const value = e.target.value;
     const numValue = Number(value);
 
+    if (!/^\d*\.?\d{0,3}$/.test(value)) {
+      return;
+    }
+
     // Allow empty string or values within range (including zero)
     if (value === "" || (numValue >= 0 && numValue <= maxBalance)) {
       setAmount(value === "" ? "" : numValue);
