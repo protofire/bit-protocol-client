@@ -105,6 +105,7 @@ export default function InitialDeposit({ address }) {
           status: true,
         });
       }
+      getData();
     }
     if (txError && txHash) {
       setCurrentState(false);
@@ -130,6 +131,7 @@ export default function InitialDeposit({ address }) {
           status: false,
         });
       }
+      getData();
     }
     MintApproved();
   }, [approved]);
