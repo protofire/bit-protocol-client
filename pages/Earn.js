@@ -191,7 +191,7 @@ export default function Earn() {
       queryData();
     }, 30000);
     return () => clearInterval(timerLoading.current);
-  }, [account.status, account.address, stabilityPool, collaterals]);
+  }, [account.status, account.address, stabilityPool, collaterals, depositorCollateralGain]);
 
   useEffect(() => {
     const vUSDBaseApr1 =
@@ -319,6 +319,7 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
@@ -352,6 +353,7 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
@@ -385,6 +387,7 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
@@ -418,6 +421,7 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
@@ -451,6 +455,7 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
@@ -484,6 +489,7 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
@@ -518,6 +524,7 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
@@ -552,6 +559,7 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
@@ -583,6 +591,7 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
