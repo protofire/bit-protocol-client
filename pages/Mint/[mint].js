@@ -26,6 +26,7 @@ export default function Mint() {
     adjustTrove,
     getTokenBalance,
     approve,
+    getData,
   } = useContext(BlockchainContext);
 
   const [ratioType, setRatioType] = useState("Custom");
@@ -97,6 +98,7 @@ export default function Mint() {
           status: true,
         });
       }
+      getData();
     }
     if (txError && txHash) {
       setCurrentState(false);
