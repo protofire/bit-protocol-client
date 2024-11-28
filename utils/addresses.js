@@ -1,112 +1,107 @@
 export const addresses = {
   troveManager: {
     [23294]: "",
-    [23295]: "0x44fa3A93b5df7033D97c889De322512ac460284E", // 0x73F2c9F69aA23d47f630e82C5caA5527a52A41CC
+    [23295]: "0x6E9Efb78343aa7302E1035E0b0F84711f45fAC68", // 0x4e8075a501C3E5F838797CF16B768C2c90Bb40C0
     [19236265]: "",
   },
   troveManagerGetter: {
     [23294]: "",
-    [23295]: "0x1517bB47a74196d193205B63DE95d7bb52fDc4Cd",
+    [23295]: "0xE8f225b4A7C90F301F08C773C66Cc4142234635e",
     [19236265]: "",
   },
   factory: {
     [23294]: "",
-    [23295]: "0xa5F6799B234F19E67Bd3430043cdB8497926Db53",
+    [23295]: "0x6FF6Cb011baaAE0391CccFaEd558d387aF0398F4",
     [19236265]: "",
   },
   priceFeed: {
     [23294]: "",
-    [23295]: "0x3FE50b4e3C556988c65c11380BC010A7796D5f56",
+    [23295]: "0x958755c3A709c3D3DA89740CFC11F7096fb0f1D0",
     [19236265]: "",
   },
   borrowerOps: {
     [23294]: "",
-    [23295]: "0xc90159BA0c148d0609c26655e2588ddF155FFB02",
-    [19236265]: "",
-  },
-  sortedTroves: {
-    [23294]: "",
-    [23295]: "",
+    [23295]: "0x9F44Fd3972f6f4A92C1C9751382E48EB06100b83",
     [19236265]: "",
   },
   debtToken: {
     [23294]: "",
-    [23295]: "0xe8dDD8C301Ad6d8bE911DCdD9449C5E06C764db7",
+    [23295]: "0xDa687433844Dbd7D41a1ECc8bbdD0c1D43112716",
     [19236265]: "",
   },
   stabilityPool: {
     [23294]: "",
-    [23295]: "0xd3635eB468eEf664c463226145C55e6343db4280",
+    [23295]: "0x429fdAab49ee8D140BFB94550717DfEF14aB8098",
     [19236265]: "",
   },
   vault: {
     [23294]: "",
-    [23295]: "0x4f3f1f910Eb870E15aD7E6A52E3E87BDEB7e4EBA",
+    [23295]: "0x615965BD89A5d77b5506c5b0dF1e5eDa96A7932f",
     [19236265]: "",
   },
   boostCalculator: {
     [23294]: "",
-    [23295]: "0xc31eB67934a0b1C3E512EE7A8A5Df4750C0C8884",
+    [23295]: "0xc340f4fDb60F18BB5F7e736E848Eb38849d62b4F",
     [19236265]: "",
   },
   bitGov: {
     [23294]: "",
-    [23295]: "0x9025Adb06bEbf077FC05F6274CF65C78F03Ae0f1",
+    [23295]: "0x104cFDF12eb4c7176f2ec19F7A990cEcB05087dE",
     [19236265]: "",
   },
   tokenLocker: {
     [23294]: "",
-    [23295]: "0x35453BE7681bC0CE2Fc04720EFAA2a61d2D8704d",
+    [23295]: "0x1FeC42bDAf0e3743aa46d3d127fcD880571b8413",
     [19236265]: "",
   },
   incentiveVoting: {
     [23294]: "",
-    [23295]: "0x6E41a8584aa518D2715bDAB1a322cE85e69d9390",
+    [23295]: "0x8D5cA0eFEEB4d7b7CA15634222d182AB1Ac81a66",
     [19236265]: "",
   },
   bitGovLp: {
     [23294]: "",
-    [23295]: "0x1FFdE6D469DAA9Ddb49922357cc2B441DeF4E019",
+    [23295]: "0x15F2b1Dc4c427A8a022ba1Bb457fcbb1172E1855",
     [19236265]: "",
   },
   bitGovDeposit: {
     [23294]: "",
-    [23295]: "0x45aC83368F7E44580653c2327Ef6ff1c72634953",
+    [23295]: "0x2719Adf8D2D03fBE0Cc7506AAc33b213538c5112",
     [19236265]: "",
   },
   bitUsdLp: {
     [23294]: "",
-    [23295]: "0x41bec4E1eD8CAa443Efd208ABe5134B5EC0b4a3a",
+    [23295]: "0xC682Eb99486ACDD5a896bda6bD3198FE26f78Bb6",
     [19236265]: "",
   },
   bitUsdDeposit: {
     [23294]: "",
-    [23295]: "0xf6fF0a495267fAB7a0ce03dae1ce7D579dDE1277",
+    [23295]: "0x4dcd40e74504aAd595A308a33bd73DB39B55815b",
     [19236265]: "",
   },
   multiCollateralHintHelpers: {
     [23294]: "",
-    [23295]: "0xb26E77c803AcCdA1eD4B0CF8CD74dDf4c04E96Ca",
+    [23295]: "0xa8757709049dfBB158E6d02B1Baa4f4FA62B9505",
     [19236265]: "",
   },
   bitUsdTWAP: {
     [23294]: "",
-    [23295]: "0xC73b089972B5a13ff37A7cB4a80FEB29eBC3eF8c",
+    [23295]: "0x793EA3ef890570f6935697CDc61f769a04Ed63C2",
     [19236265]: "",
   },
   bitUsdLpOracle: {
     [23294]: "",
-    [23295]: "0x78fD3ad43E305d2ffC81E7dA8d322eA869aDFaBe",
+    [23295]: "0x6e0DfB9a7159e557273287dD4E46485fCA966C5c",
     [19236265]: "",
   },
   bitGovTWAP: {
     [23294]: "",
-    [23295]: "0xd474453896c2Da138867D6C3164C3202f4fCe5E2",
+    [23295]: "0xD4a5b94EDEa30f9A07BB5270B6bf766aA760615F",
     [19236265]: "",
   },
   bitGovLpOracle: {
     [23294]: "",
-    [23295]: "0x0A078D570bD8DBD1c452ad8e576Fa243eDD67b17",
+    [23295]: "0xB1066f2B3E8fc94051295D9A63330C2bd31C00a5",
     [19236265]: "",
   },
 };
