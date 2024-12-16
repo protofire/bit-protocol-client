@@ -697,8 +697,8 @@ export default function Header(props) {
             </div>
           </div>
         </div>
-      ) : null}{" "}
-      */}
+      ) : null}
+
       {showSignInToken ? (
         <div className="promptSign">
           <div className="firstBox">

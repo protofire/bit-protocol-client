@@ -349,9 +349,9 @@ export default function InitialDeposit({ address }) {
     }
 
     const numDebtAmount = Number(debtAmount);
-    if (numDebtAmount < 10) {
+    if (numDebtAmount < 1) {
       tooltip.error({
-        content: "A Minimum Debt of 10 bitUSD is Required!",
+        content: "A Minimum Debt of 1 bitUSD is Required!",
         duration: 5000,
       });
       return;

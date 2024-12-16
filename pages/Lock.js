@@ -138,7 +138,6 @@ export default function Lock() {
     setPenaltyAmountPaid(
       Number(withdrawWithPenaltyAmounts.penaltyAmountPaid._hex) / 1e18
     );
-    // console.log(Number(withdrawWithPenaltyAmounts.amountWithdrawn._hex) / 1e18, Number(withdrawWithPenaltyAmounts.penaltyAmountPaid._hex) / 1e18);
     if (value < Number(accountLock)) {
       setClaimAmount(value == 0 ? "" : value);
     } else {

@@ -194,7 +194,7 @@ export const BlockchainContextProvider = ({ children }) => {
 
   // USE EFFECTS
   useEffect(() => {
-    console.log("account has changed");
+    // console.log("account has changed");
     if (account.address) {
       getData();
       const intervalId = setInterval(() => {
@@ -250,8 +250,6 @@ export const BlockchainContextProvider = ({ children }) => {
         collaterals[troveAddress].sortedTroves,
         firstRedemptionHint
       );
-
-      console.log({ firstRedemptionHint, next, prev });
 
       const tx = await troveManager.redeemCollateral(
         amount,
@@ -509,14 +507,6 @@ export const BlockchainContextProvider = ({ children }) => {
       const prev = await getPrev(collaterals[address].sortedTroves);
       const next = await getNext(collaterals[address].sortedTroves);
 
-      console.log("ADD COLL", {
-        address,
-        collAmount,
-        prev,
-        next,
-        borrowerOps,
-      });
-
       const tx = await borrowerOps.addColl(
         address,
         account.address,
@@ -690,7 +680,7 @@ export const BlockchainContextProvider = ({ children }) => {
     ) {
       if (lock) return;
       setLock(true);
-      console.log("Getting data");
+      // console.log("Getting data");
       setBalance(fromBigNumber(result.data.value));
       await getSystemInfo();
       await getCollaterals();
