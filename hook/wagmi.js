@@ -5,62 +5,65 @@ import { sapphireHttpTransport } from "@oasisprotocol/sapphire-wagmi-v2";
 
 export const CHAIN_ID = {
   SAPPHIRE: sapphire.id,
-  SAPPHIRE_TESTNET: sapphireTestnet.id
+  SAPPHIRE_TESTNET: sapphireTestnet.id,
 };
 
 const createTransport = (url) => {
   return http(url, {
-    timeout: 15000
+    timeout: 15000,
   });
 };
 
 export const config = createConfig({
-  chains: [sapphireTestnet, sapphire],
+  chains: [sapphire],
+  // chains: [sapphireTestnet, sapphire],
 
   connectors: [
     metaMask({
       shimDisconnect: true,
-      chains: [sapphire, sapphireTestnet],
+      chains: [sapphire],
+      // chains: [sapphire, sapphireTestnet],
       options: {
         shimDisconnect: true,
         UNSTABLE_shimOnConnectSelectAccount: true,
-        name: 'MetaMask',
-      }
+        name: "MetaMask",
+      },
     }),
     coinbaseWallet({
-      appName: 'Bit Protocol',
-      chains: [sapphire, sapphireTestnet],
+      appName: "Bit Protocol",
+      chains: [sapphire],
+      // chains: [sapphire, sapphireTestnet],
       options: {
         darkMode: false,
         headlessMode: false,
         enableMobileWalletLink: true,
-        preferredNetwork: CHAIN_ID.SAPPHIRE_TESTNET.toString(),
+        preferredNetwork: CHAIN_ID.SAPPHIRE.toString(),
         chainParameters: {
-          [CHAIN_ID.SAPPHIRE_TESTNET]: {
-            chainId: `0x${CHAIN_ID.SAPPHIRE_TESTNET.toString(16)}`,
-            chainName: 'Oasis Sapphire Testnet',
+          [CHAIN_ID.SAPPHIRE]: {
+            chainId: `0x${CHAIN_ID.SAPPHIRE.toString(16)}`,
+            chainName: "Oasis Sapphire",
             nativeCurrency: {
-              name: 'TEST',
-              symbol: 'TEST',
-              decimals: 18
+              name: "ROSE",
+              symbol: "ROSE",
+              decimals: 18,
             },
-            rpcUrls: ['https://testnet.sapphire.oasis.dev'],
-            blockExplorerUrls: ['https://testnet.explorer.sapphire.oasis.dev']
-          }
+            rpcUrls: ["https://sapphire.oasis.dev"],
+            blockExplorerUrls: ["https://explorer.sapphire.oasis.dev"],
+          },
         },
         reloadOnDisconnect: true,
-        shimDisconnect: true
-      }
-    })
+        shimDisconnect: true,
+      },
+    }),
   ],
 
   transports: {
     [sapphire.id]: sapphireHttpTransport({
-      transport: createTransport(sapphire.rpcUrls.default.http[0])
+      transport: createTransport(sapphire.rpcUrls.default.http[0]),
     }),
-    [sapphireTestnet.id]: sapphireHttpTransport({
-      transport: createTransport(sapphireTestnet.rpcUrls.default.http[0])
-    })
+    // [sapphireTestnet.id]: sapphireHttpTransport({
+    //   transport: createTransport(sapphireTestnet.rpcUrls.default.http[0]),
+    // }),
   },
 
   syncConnectedChain: true,

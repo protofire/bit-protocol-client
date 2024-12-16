@@ -32,7 +32,7 @@ export default function Earn() {
     bitGovLpData,
     bitUsdLpData,
     collaterals,
-    userTotalDebt,
+    // userTotalDebt,
     claimableRewards,
     approveBitGovLp,
     stakeBitGovLP,
@@ -156,30 +156,34 @@ export default function Earn() {
       setAccountDeposits(stabilityPool.accountDeposits);
       setDepositorCollateralGain(stabilityPool.depositorCollateralGain);
       setStabilityPoolBalance(stabilityPool.deposits);
-      const bitGovLp = await bitGovLpData();
-      const bitUsdLp = await bitUsdLpData();
-      setStakeLpBalance(bitGovLp.balance);
-      setAllowance(bitGovLp.allowance);
-      setUnStakeLpBalance(bitGovLp.depositBalance);
-      setMockLpBalance(bitGovLp.depositLpBalance);
-      setStakeLpBalance2(bitUsdLp.balance);
-      setAllowance2(bitUsdLp.allowance);
-      setUnStakeLpBalance2(bitUsdLp.depositBalance);
+      // COMMENTED OUT UNLESS WE HAVE REWARDS
+      // const bitGovLp = await bitGovLpData();
+      // const bitUsdLp = await bitUsdLpData();
+      // setStakeLpBalance(bitGovLp.balance);
+      // setAllowance(bitGovLp.allowance);
+      // setUnStakeLpBalance(bitGovLp.depositBalance);
+      // setMockLpBalance(bitGovLp.depositLpBalance);
+      // setStakeLpBalance2(bitUsdLp.balance);
+      // setAllowance2(bitUsdLp.allowance);
+      // setUnStakeLpBalance2(bitUsdLp.depositBalance);
+
       // FIGURE IT OUT HOW TO GET DEBT TOKEN BALANCE OF THE POOL
       // const usdcBalance = await getTokenBalance()
-      setVUSDLpBalance(bitUsdLp.depositLpBalance);
-      setBitUsdLPPrice(await getLpTokenPrice("bitUSD"));
-      setBitGovbitGovLPPrice(await getLpTokenPrice("bitGOV"));
-      setBitGovPrice(await getBitGovPrice());
+      // COMMENTED OUT UNLESS WE HAVE REWARDS
+      // setVUSDLpBalance(bitUsdLp.depositLpBalance);
+      // setBitUsdLPPrice(await getLpTokenPrice("bitUSD"));
+      // setBitGovbitGovLPPrice(await getLpTokenPrice("bitGOV"));
+      // setBitGovPrice(await getBitGovPrice());
 
       //bitUSD Minting
       setBaseAPR1(
         collaterals[addresses.troveManager[account.chainId]].rewardRate
       );
-      setBaseAPR2(bitGovLp.rewardRate);
       setBaseAPR3(stabilityPool.rewardRate);
-      setBaseAPR4(bitUsdLp.rewardRate);
-      setUSDCtotalSupply(bitUsdLp.totalSupply);
+      // COMMENTED OUT UNLESS WE HAVE REWARDS
+      // setBaseAPR2(bitGovLp.rewardRate);
+      // setBaseAPR4(bitUsdLp.rewardRate);
+      // setUSDCtotalSupply(bitUsdLp.totalSupply);
     }
   };
 
@@ -191,7 +195,13 @@ export default function Earn() {
       queryData();
     }, 30000);
     return () => clearInterval(timerLoading.current);
-  }, [account.status, account.address, stabilityPool, collaterals, depositorCollateralGain]);
+  }, [
+    account.status,
+    account.address,
+    stabilityPool,
+    collaterals,
+    depositorCollateralGain,
+  ]);
 
   useEffect(() => {
     const vUSDBaseApr1 =
@@ -662,7 +672,7 @@ export default function Earn() {
         {!showEarnMain && account.status === "connected" ? (
           <div className={`${styles.Earn} ${"dappMain2"}`}>
             <div className={styles.earnMain}>
-              <div className={styles.earnInfo}>
+              {/* <div className={styles.earnInfo}>
                 <p className={styles.earnTip}>
                   Lock $bitGOV to boost your APR to {boost}x.
                 </p>
@@ -704,7 +714,7 @@ export default function Earn() {
                 >
                   <div className="button rightAngle height">Manage</div>
                 </div>
-              </div>
+              </div> */}
               <div className={styles.earnInfo}>
                 <p className={styles.earnTip}>
                   Lock $bitGOV to boost your APR to {boost}x.
@@ -726,7 +736,7 @@ export default function Earn() {
                       $
                       {formatNumber(
                         Number(stabilityPoolBalance) +
-                        Number(stabilityPool.balance) * rosePrice
+                          Number(stabilityPool.balance) * rosePrice
                       )}
                     </span>
                   </div>
@@ -754,7 +764,7 @@ export default function Earn() {
                   <div className="button rightAngle height">Manage</div>
                 </div>
               </div>
-              <div className={styles.earnInfo}>
+              {/* <div className={styles.earnInfo}>
                 <p className={styles.earnTip}>
                   Lock $bitGOV to boost your APR to {boost}x.
                 </p>
@@ -798,8 +808,8 @@ export default function Earn() {
                 >
                   <div className="button rightAngle height">Manage</div>
                 </div>
-              </div>
-              <div className={styles.earnInfo}>
+              </div> */}
+              {/* <div className={styles.earnInfo}>
                 <p className={styles.earnTip}>
                   Lock $bitGOV to boost your APR to {boost}x.
                 </p>
@@ -843,7 +853,7 @@ export default function Earn() {
                 >
                   <div className="button rightAngle height">Manage</div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         ) : null}
@@ -867,8 +877,8 @@ export default function Earn() {
                       {typeName == "bitGOV/ROSE LP"
                         ? formatNumber(vUSDBaseApr2 * boost)
                         : typeName == "bitUSD/USDC LP"
-                          ? formatNumber(vUSDBaseApr4 * boost)
-                          : formatNumber(vUSDBaseApr3 * boost)}{" "}
+                        ? formatNumber(vUSDBaseApr4 * boost)
+                        : formatNumber(vUSDBaseApr3 * boost)}{" "}
                       ({boost}x)
                     </p>
                   </div>
@@ -886,8 +896,8 @@ export default function Earn() {
                       {typeName == "bitGOV/ROSE LP"
                         ? "Stake bitGOV/ROSE LP to earn bitGOV rewards."
                         : typeName == "bitUSD/USDC LP"
-                          ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
-                          : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
+                        ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
+                        : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
                       {typeName == "Stability Pool" ? (
                         <Link
                           target="_blank"
@@ -921,7 +931,7 @@ export default function Earn() {
                       </>
                     ) : null}
                     {typeName == "bitGOV/ROSE LP" ||
-                      typeName == "bitUSD/USDC LP" ? (
+                    typeName == "bitUSD/USDC LP" ? (
                       <>
                         <span
                           className={
@@ -1025,10 +1035,10 @@ export default function Earn() {
                             {typeName == "bitGOV/ROSE LP"
                               ? formatNumber(Number(amount) * bitGovLPPrice)
                               : typeName == "bitUSD/USDC LP"
-                                ? formatNumber(
+                              ? formatNumber(
                                   Number(amount) * (tvl / USDCtotalSupply)
                                 )
-                                : formatNumber(Number(amount))}
+                              : formatNumber(Number(amount))}
                           </span>
                         </div>
                         <span className="font_14 gray">{coin}</span>
@@ -1082,9 +1092,9 @@ export default function Earn() {
       </div>
 
       {!Object.keys(stabilityPool).length > 0 &&
-        account.status === "connected" &&
-        signatureToken?.user &&
-        signatureTrove?.user ? (
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
 

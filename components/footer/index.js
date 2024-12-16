@@ -50,7 +50,7 @@ export default function Footer(props) {
               >
                 <Link
                   target="_blank"
-                  href="https://twitter.com/Vine_Money"
+                  href="https://x.com/BitProtocol_"
                   rel="nofollow noopener noreferrer"
                 >
                   Twitter/X
@@ -71,7 +71,7 @@ export default function Footer(props) {
                 </Link>
                 <Link
                   target="_blank"
-                  href="https://medium.com/@vine_money"
+                  href="https://medium.com/@bitusdprotocol"
                   rel="nofollow noopener noreferrer"
                 >
                   Medium

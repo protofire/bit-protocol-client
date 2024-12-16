@@ -85,11 +85,11 @@ export default function InitialDeposit({ address }) {
     if (collAmount) {
       if (collateralRatio && ratioType == "Auto") {
         const max =
-          ((Number(deposits + collAmount) * price) / (collateralRatio / 100)) -
+          (Number(deposits + collAmount) * price) / (collateralRatio / 100) -
           debt;
         setDebtAmount(Number(max.toFixed(3)));
       } else {
-        const max = ((Number(deposits + collAmount) * price) / 1.55) - debt;
+        const max = (Number(deposits + collAmount) * price) / 1.55 - debt;
         setDebtAmount(Number(max.toFixed(3)));
       }
     }
@@ -157,9 +157,9 @@ export default function InitialDeposit({ address }) {
   };
 
   const enforceThreeDecimals = (value) => {
-    if (value === '' || !value.includes('.')) return value;
-    const parts = value.split('.');
-    return parts[0] + '.' + parts[1].slice(0, 3);
+    if (value === "" || !value.includes(".")) return value;
+    const parts = value.split(".");
+    return parts[0] + "." + parts[1].slice(0, 3);
   };
 
   const changeCollAmount = async (e) => {
@@ -279,7 +279,7 @@ export default function InitialDeposit({ address }) {
     if (!numberHelpers.isValidNumber(collAmount)) {
       tooltip.error({
         content: "Please enter a valid collateral amount",
-        duration: 5000
+        duration: 5000,
       });
       return;
     }
@@ -287,20 +287,18 @@ export default function InitialDeposit({ address }) {
     try {
       const collateralWei = numberHelpers.toWei(collAmount);
 
-      const tx = await approve(
-        collateralAddr,
-        collateralWei
-      );
+      const tx = await approve(collateralAddr, collateralWei);
 
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount).toLocaleString()} $${collateral?.collateral?.name
-          }`,
+        info: `Approving ${Number(collAmount).toLocaleString()} $${
+          collateral?.collateral?.name
+        }`,
       });
 
       setApproved({
         hash: tx,
-        status: false
+        status: false,
       });
 
       setCurrentState(true);
@@ -312,13 +310,13 @@ export default function InitialDeposit({ address }) {
       let errorMessage = "Approval failed. Please try again.";
       if (error.error && error.error.message) {
         errorMessage = error.error.message
-          .replace('execution reverted: ', '')
-          .replace('VM Exception while processing transaction: revert ', '');
+          .replace("execution reverted: ", "")
+          .replace("VM Exception while processing transaction: revert ", "");
       }
 
       tooltip.error({
         content: errorMessage,
-        duration: 5000
+        duration: 5000,
       });
     }
   };
@@ -326,22 +324,22 @@ export default function InitialDeposit({ address }) {
   const numberHelpers = {
     toWei: (value) => {
       try {
-        if (!value || value === '') return '0';
+        if (!value || value === "") return "0";
         // Remove commas and ensure string
-        const cleanValue = value.toString().replace(/,/g, '');
+        const cleanValue = value.toString().replace(/,/g, "");
         // Use ethers to parse ether to wei
         return ethers.utils.parseEther(cleanValue).toString();
       } catch (error) {
-        console.error('Error converting to Wei:', error);
-        return '0';
+        console.error("Error converting to Wei:", error);
+        return "0";
       }
     },
 
     isValidNumber: (value) => {
-      if (value === '' || value === undefined) return false;
+      if (value === "" || value === undefined) return false;
       const num = Number(value);
       return !isNaN(num) && num > 0;
-    }
+    },
   };
 
   const mint = async () => {
@@ -351,10 +349,10 @@ export default function InitialDeposit({ address }) {
     }
 
     const numDebtAmount = Number(debtAmount);
-    if (numDebtAmount < 1) {
+    if (numDebtAmount < 10) {
       tooltip.error({
-        content: "A Minimum Debt of 1 bitUSD is Required!",
-        duration: 5000
+        content: "A Minimum Debt of 10 bitUSD is Required!",
+        duration: 5000,
       });
       return;
     }
@@ -366,7 +364,7 @@ export default function InitialDeposit({ address }) {
       // Set loading state
       setCurrentWaitInfo({
         type: "loading",
-        info: `Mint ${Number(debtAmount).toLocaleString()} $bitUSD`
+        info: `Mint ${Number(debtAmount).toLocaleString()} $bitUSD`,
       });
       setCurrentState(true);
 
@@ -376,9 +374,11 @@ export default function InitialDeposit({ address }) {
         collateralWei,
         debtWei,
         isPayable,
-        isPayable ? {
-          value: collateralWei
-        } : {}
+        isPayable
+          ? {
+              value: collateralWei,
+            }
+          : {}
       );
 
       const result = await tx.wait();
@@ -386,11 +386,15 @@ export default function InitialDeposit({ address }) {
 
       if (result.status === 0) {
         tooltip.error({
-          content: "Transaction failed. Please verify collateral ratio and try again.",
-          duration: 5000
+          content:
+            "Transaction failed. Please verify collateral ratio and try again.",
+          duration: 5000,
         });
       } else {
-        tooltip.success({ content: "Successfully minted bitUSD", duration: 5000 });
+        tooltip.success({
+          content: "Successfully minted bitUSD",
+          duration: 5000,
+        });
         // Clear inputs
         setCollAmount("");
         setDebtAmount("");
@@ -405,9 +409,12 @@ export default function InitialDeposit({ address }) {
 
       if (error.error && error.error.message) {
         errorMessage = error.error.message
-          .replace('execution reverted: ', '')
-          .replace('VM Exception while processing transaction: revert ', '');
-      } else if (error.message && error.message.includes('insufficient funds')) {
+          .replace("execution reverted: ", "")
+          .replace("VM Exception while processing transaction: revert ", "");
+      } else if (
+        error.message &&
+        error.message.includes("insufficient funds")
+      ) {
         errorMessage = "Insufficient funds for transaction.";
       }
 
@@ -418,7 +425,6 @@ export default function InitialDeposit({ address }) {
       });
     }
   };
-
 
   return (
     <>
@@ -542,7 +548,7 @@ export default function InitialDeposit({ address }) {
                   step="any" // Allow decimal values
                   onKeyDown={onKeyDown}
                   onChange={changeDebtAmount}
-                  value={debtAmount === '' ? '' : debtAmount}
+                  value={debtAmount === "" ? "" : debtAmount}
                 />
                 <span>$bitUSD</span>
               </div>
@@ -618,9 +624,10 @@ export default function InitialDeposit({ address }) {
                   <span>
                     {collateral?.collateral?.name} = $
                     {deposits > 0
-                      ? Number(((debt || 0) * 1.5) / deposits).toFixed(3).toLocaleString()
-                      : 0
-                    }
+                      ? Number(((debt || 0) * 1.5) / deposits)
+                          .toFixed(3)
+                          .toLocaleString()
+                      : 0}
                   </span>
                 </div>
               </div>

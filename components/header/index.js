@@ -6,26 +6,31 @@ import { BlockchainContext } from "../../hook/blockchain";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { formatNumber } from "../../utils/helpers";
-import { CHAIN_ID } from '../../hook/wagmi'
+import { CHAIN_ID } from "../../hook/wagmi";
 
 export default function Header(props) {
   const { menu, type, dappMenu } = props;
   const router = useRouter();
   const account = useAccount();
 
-  const { connectors, connect, error: connectError } = useConnect({
+  const {
+    connectors,
+    connect,
+    error: connectError,
+  } = useConnect({
     onError(error) {
-      console.error('Connect error:', error);
+      console.error("Connect error:", error);
     },
     onSuccess(data) {
       setOpenConnect(false);
-    }
+    },
   });
   useEffect(() => {
     const checkConnectors = async () => {
       for (const connector of connectors) {
         try {
-          const isReady = await connector.getProvider()
+          const isReady = await connector
+            .getProvider()
             .then(() => true)
             .catch(() => false);
           console.log(`Connector ${connector.name} ready status:`, isReady);
@@ -67,9 +72,9 @@ export default function Header(props) {
 
   useEffect(() => {
     if (account.status === "connected" && menu !== "Home") {
-      // FOR STAGING ONLY / FOR PRODUCTION SHOULD BE OASIS SAPPHIRE MAINNET
-      if (account.chainId !== 23295) {
-        switchChain({ chainId: 23295 });
+      // FOR STAGING ONLY / FOR PRODUCTION SHOULD BE OASIS SAPPHIRE MAINNET 23294
+      if (account.chainId !== 23294) {
+        switchChain({ chainId: 23294 });
       }
       setShowSignIn(!checkAuth());
       setShowSignInToken(!checkAuthToken());
@@ -97,38 +102,40 @@ export default function Header(props) {
       // Check if chain is already added
       try {
         const chain = await provider.request({
-          method: 'eth_chainId',
+          method: "eth_chainId",
           params: [],
         });
 
-        if (chain === `0x${CHAIN_ID.SAPPHIRE_TESTNET.toString(16)}`) {
+        if (chain === `0x${CHAIN_ID.SAPPHIRE.toString(16)}`) {
           return true;
         }
       } catch (error) {
-        console.error('Error checking chain:', error);
+        console.error("Error checking chain:", error);
       }
 
       // Add the network
       await provider.request({
-        method: 'wallet_addEthereumChain',
-        params: [{
-          chainId: `0x${CHAIN_ID.SAPPHIRE_TESTNET.toString(16)}`,
-          chainName: 'Oasis Sapphire Testnet',
-          nativeCurrency: {
-            name: 'TEST',
-            symbol: 'TEST',
-            decimals: 18
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: `0x${CHAIN_ID.SAPPHIRE.toString(16)}`,
+            chainName: "Oasis Sapphire",
+            nativeCurrency: {
+              name: "ROSE",
+              symbol: "ROSE",
+              decimals: 18,
+            },
+            rpcUrls: ["https://sapphire.oasis.dev"],
+            blockExplorerUrls: ["https://explorer.sapphire.oasis.dev"],
           },
-          rpcUrls: ['https://testnet.sapphire.oasis.dev'],
-          blockExplorerUrls: ['https://testnet.explorer.sapphire.oasis.dev']
-        }]
+        ],
       });
 
       return true;
     } catch (error) {
-      console.error('Error adding chain:', error);
+      console.error("Error adding chain:", error);
       if (error.code === 4001) {
-        throw new Error('User rejected adding the network');
+        throw new Error("User rejected adding the network");
       }
       throw error;
     }
@@ -146,7 +153,7 @@ export default function Header(props) {
           const provider = await connector.getProvider();
 
           if (!provider) {
-            throw new Error('Unable to get Coinbase Wallet provider');
+            throw new Error("Unable to get Coinbase Wallet provider");
           }
 
           // Try to add the chain first, but don't fail if it errors
@@ -154,7 +161,7 @@ export default function Header(props) {
             await handleChainAddition(provider);
           } catch (error) {
             // Log but don't throw for chain addition errors
-            console.warn('Chain addition warning:', error.message);
+            console.warn("Chain addition warning:", error.message);
             // Only throw if it's a user rejection
             if (error.code === 4001) {
               throw error;
@@ -162,49 +169,54 @@ export default function Header(props) {
           }
 
           // Request accounts first
-          const accounts = await provider.request({ method: 'eth_requestAccounts' });
+          const accounts = await provider.request({
+            method: "eth_requestAccounts",
+          });
 
           if (!accounts || accounts.length === 0) {
-            throw new Error('No accounts received');
+            throw new Error("No accounts received");
           }
 
           // Then attempt the wagmi connection
           await connect({
             connector,
-            chainId: CHAIN_ID.SAPPHIRE_TESTNET
+            chainId: CHAIN_ID.SAPPHIRE,
           });
 
           // Wait a bit for the connection to be established
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
           // Try switching to the correct chain
           try {
             await provider.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: `0x${CHAIN_ID.SAPPHIRE_TESTNET.toString(16)}` }],
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: `0x${CHAIN_ID.SAPPHIRE.toString(16)}` }],
             });
           } catch (switchError) {
             // Ignore switch errors - the chain might already be added
-            console.warn('Chain switch warning:', switchError.message);
+            console.warn("Chain switch warning:", switchError.message);
           }
 
           setOpenConnect(false);
-
         } catch (error) {
-          console.error('Coinbase connection error:', error);
+          console.error("Coinbase connection error:", error);
 
           // Only throw for actual connection errors
           if (error.code === 4001) {
-            throw new Error('Connection rejected by user');
-          } else if (error.message?.includes('provider is undefined') ||
-            error.message?.includes('Unable to get Coinbase Wallet provider')) {
-            throw new Error('Please install the Coinbase Wallet extension or open in Coinbase Wallet browser');
-          } else if (!error.message?.includes('chain')) {
+            throw new Error("Connection rejected by user");
+          } else if (
+            error.message?.includes("provider is undefined") ||
+            error.message?.includes("Unable to get Coinbase Wallet provider")
+          ) {
+            throw new Error(
+              "Please install the Coinbase Wallet extension or open in Coinbase Wallet browser"
+            );
+          } else if (!error.message?.includes("chain")) {
             // Don't throw for chain-related errors
             throw error;
           }
 
-          if (error.message?.includes('chain')) {
+          if (error.message?.includes("chain")) {
             setOpenConnect(false);
           }
         }
@@ -212,28 +224,27 @@ export default function Header(props) {
         // Handle other wallets
         await connect({
           connector,
-          chainId: CHAIN_ID.SAPPHIRE_TESTNET
+          chainId: CHAIN_ID.SAPPHIRE,
         });
         setOpenConnect(false);
       }
-
     } catch (error) {
-      console.error('Connection error:', error);
-      let errorMessage = 'Failed to connect wallet. ';
+      console.error("Connection error:", error);
+      let errorMessage = "Failed to connect wallet. ";
 
       if (error.code === 4001) {
-        errorMessage += 'User rejected the connection.';
-      } else if (error.message?.includes('provider')) {
-        errorMessage += 'Please install the Coinbase Wallet extension or open in Coinbase Wallet browser.';
+        errorMessage += "User rejected the connection.";
+      } else if (error.message?.includes("provider")) {
+        errorMessage +=
+          "Please install the Coinbase Wallet extension or open in Coinbase Wallet browser.";
       } else {
-        errorMessage += error.message || 'Please try again.';
+        errorMessage += error.message || "Please try again.";
       }
 
       // Only show alert for non-chain-related errors
-      if (!error.message?.includes('chain')) {
+      if (!error.message?.includes("chain")) {
         alert(errorMessage);
       }
-
     } finally {
       setIsConnecting(false);
     }
@@ -242,12 +253,12 @@ export default function Header(props) {
   useEffect(() => {
     if (account.status === "connected" && !hasAttemptedSwitch) {
       const switchChainIfNeeded = async () => {
-        if (account.chainId !== CHAIN_ID.SAPPHIRE_TESTNET) {
+        if (account.chainId !== CHAIN_ID.SAPPHIRE) {
           try {
             setHasAttemptedSwitch(true);
-            await switchChain({ chainId: CHAIN_ID.SAPPHIRE_TESTNET });
+            await switchChain({ chainId: CHAIN_ID.SAPPHIRE });
           } catch (error) {
-            console.error('Chain switch error:', error);
+            console.error("Chain switch error:", error);
             // Don't throw, just log the error
           }
         }
@@ -291,8 +302,8 @@ export default function Header(props) {
         window.location.reload();
       }, 100);
     } catch (error) {
-      console.error('Disconnect error:', error);
-      alert('Error disconnecting. Please try again.');
+      console.error("Disconnect error:", error);
+      alert("Error disconnecting. Please try again.");
     }
   };
 
@@ -361,20 +372,20 @@ export default function Header(props) {
               >
                 <span>Earn</span>
               </Link>
-              <Link
+              {/* <Link
                 className={dappMenu == "Reward" ? `${styles.active}` : null}
                 href="/Reward"
                 rel="nofollow noopener noreferrer"
               >
                 <span>Reward</span>
-              </Link>
-              <Link
+              </Link> */}
+              {/* <Link
                 className={dappMenu == "Lock" ? `${styles.active}` : null}
                 href="/Lock"
                 rel="nofollow noopener noreferrer"
               >
                 <span>Lock</span>
-              </Link>
+              </Link> */}
               <Link
                 className={dappMenu == "Redeem" ? `${styles.active}` : null}
                 href="/Redeem"
@@ -382,13 +393,13 @@ export default function Header(props) {
               >
                 <span>Redeem</span>
               </Link>
-              <Link
+              {/* <Link
                 className={dappMenu == "Vote" ? `${styles.active}` : null}
                 href="/Vote"
                 rel="nofollow noopener noreferrer"
               >
                 <span>Vote</span>
-              </Link>
+              </Link> */}
             </div>
           ) : (
             <div className={styles.list}>
@@ -498,7 +509,7 @@ export default function Header(props) {
                         <div
                           className="button h5None"
                           style={{ minWidth: "auto" }}
-                            onClick={handleDisconnect}
+                          onClick={handleDisconnect}
                         >
                           Disconnect
                         </div>
@@ -507,13 +518,13 @@ export default function Header(props) {
                   ) : (
                     <div
                       className="button"
-                          style={{
-                            minWidth: "auto",
-                            opacity: isConnecting ? 0.7 : 1
-                          }}
-                          onClick={() => !isConnecting && setOpenConnect(true)}
+                      style={{
+                        minWidth: "auto",
+                        opacity: isConnecting ? 0.7 : 1,
+                      }}
+                      onClick={() => !isConnecting && setOpenConnect(true)}
                     >
-                          {isConnecting ? "Connecting..." : "Connect Wallet"}
+                      {isConnecting ? "Connecting..." : "Connect Wallet"}
                     </div>
                   )}
                 </div>
@@ -555,15 +566,17 @@ export default function Header(props) {
                 id={"connect-" + connector.id}
                 style={{
                   opacity: isConnecting ? 0.5 : 1,
-                  cursor: isConnecting ? 'not-allowed' : 'pointer'
+                  cursor: isConnecting ? "not-allowed" : "pointer",
                 }}
               >
                 {connector.name === "Injected (Sapphire)"
                   ? "Browser wallet (Sapphire)"
                   : connector.name === "Injected"
-                    ? "Browser wallet"
-                    : connector.name}
-                {isConnecting && connector.name === "Coinbase Wallet" && " (Connecting...)"}
+                  ? "Browser wallet"
+                  : connector.name}
+                {isConnecting &&
+                  connector.name === "Coinbase Wallet" &&
+                  " (Connecting...)"}
 
                 {connector.name === "Coinbase Wallet" ? (
                   <img
@@ -576,13 +589,15 @@ export default function Header(props) {
                     className={styles.close}
                     src="/icon/browserWallet.svg"
                     alt="close"
-                    />
+                  />
                 )}
               </div>
             ))}
 
             {connectError && (
-              <div style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
+              <div
+                style={{ color: "red", marginTop: "10px", textAlign: "center" }}
+              >
                 {connectError.message}
               </div>
             )}
@@ -709,7 +724,7 @@ export default function Header(props) {
                 try {
                   await signDebtToken();
                 } catch (error) {
-                  console.error('Failed to sign:', error);
+                  console.error("Failed to sign:", error);
                 }
               }}
             >

@@ -698,12 +698,12 @@ export const BlockchainContextProvider = ({ children }) => {
       await getBitGovBalance();
       await getBitUSDCirculation();
       await getStabilityPoolData();
-      await getBoostAmount();
+      // await getBoostAmount();
       // COMMENTED OUT UNTIL WE HAVE BITGOV AND REWARDS
-      await getClaimableRewards();
-      await getAccountWeight();
-      await getAccountBalances();
-      await getTotalWeight();
+      // await getClaimableRewards();
+      // await getAccountWeight();
+      // await getAccountBalances();
+      // await getTotalWeight();
     }
   }, [
     account.address,
@@ -965,17 +965,17 @@ export const BlockchainContextProvider = ({ children }) => {
       args: [account.address],
     });
     // COMMENTED OUT UNLESS WE HAVE REWARDS
-    const earned = await publicClient.readContract({
-      abi: VaultABI,
-      address: addresses.vault[account.chainId],
-      functionName: "claimableRewardAfterBoost",
-      args: [
-        account.address,
-        account.address,
-        "0x0000000000000000000000000000000000000000",
-        addresses.stabilityPool[account.chainId],
-      ],
-    });
+    // const earned = await publicClient.readContract({
+    //   abi: VaultABI,
+    //   address: addresses.vault[account.chainId],
+    //   functionName: "claimableRewardAfterBoost",
+    //   args: [
+    //     account.address,
+    //     account.address,
+    //     "0x0000000000000000000000000000000000000000",
+    //     addresses.stabilityPool[account.chainId],
+    //   ],
+    // });
 
     const collateralGainsByDepositor = await publicClient.readContract({
       abi: StabilityPoolABI,
@@ -989,7 +989,8 @@ export const BlockchainContextProvider = ({ children }) => {
       balance: fromBigNumber(stabilityPoolBalance?.data?.value),
       rewardRate: fromBigNumber(rewardRate),
       accountDeposits: fromBigNumber(accountDeposits[0]),
-      earned: fromBigNumber(earned[0]), // COMMENTED OUT UNLESS WE HAVE REWARDS
+      // earned: fromBigNumber(earned[0]), // COMMENTED OUT UNLESS WE HAVE REWARDS
+      earned: 0, // COMMENTED OUT UNLESS WE HAVE REWARDS
       depositorCollateralGain: collateralGainsByDepositor,
     });
   };
