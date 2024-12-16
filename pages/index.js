@@ -26,7 +26,7 @@ export default function Home() {
     {
       questions: "What is Bit Protocol?",
       answer:
-        "<p>Bit Protocol is a decentralized borrowing protocol that allows you to borrow against zkBTC Network’s native token wBTC, which is used as collateral. Loans are taken out in bitUSD - a $1 pegged private and confidential decentralized stablecoin.</p>",
+        "<p>Bit Protocol is a decentralized borrowing protocol that allows you to borrow against Oasis Network’s native token ROSE, which is used as collateral. Loans are taken out in bitUSD - a $1 pegged private and confidential decentralized stablecoin.</p>",
       hide: true,
     },
     {
@@ -38,19 +38,19 @@ export default function Home() {
     {
       questions: "How does Bit Protocol work?",
       answer:
-        "<p>Bit Protocol is a private and confidential decentralized borrowing protocol. Bit Protocol smart contracts define a standard way to deposit collateral, mint bitUSD, and liquidate positions. A vault is where you take out and maintain your loans against your collateral (i.e. wBTC).</p><p>For a more in-depth description, see the Bit Protocol documentation available on Github and via the Bit Protocol website.</p> ",
+        "<p>Bit Protocol is a private and confidential decentralized borrowing protocol. Bit Protocol smart contracts define a standard way to deposit collateral, mint bitUSD, and liquidate positions. A vault is where you take out and maintain your loans against your collateral (i.e. ROSE).</p><p>For a more in-depth description, see the Bit Protocol documentation available on Github and via the Bit Protocol website.</p> ",
       hide: true,
     },
     {
       questions: "What are the key benefits of using Bit Protocol?",
       answer:
-        "<p>Bit Protocol offers a way to borrow bitUSD privately, confidentiality and in a fully decentrazied capital-efficient borrowing manner.</p><p>- A collateral ratio of just 120%<br/>- Directly redeemable - bitUSD can be redeemed at face value for the underlying collateral, wBTC always and at any time<br/>- Censorship resistant</p><p>Bit Protocol introduces the new era of stablecoins. bitUSD is the first privacy-focused digital currency built on the innovative zkBTC confidential EVM. Merging the stability of traditional stablecoins with unparalleled transactional confidentiality, bitUSD addresses the critical market need for privacy in DeFi. </p>",
+        "<p>Bit Protocol offers a way to borrow bitUSD privately, confidentiality and in a fully decentrazied capital-efficient borrowing manner.</p><p>- A collateral ratio of just 120%<br/>- Directly redeemable - bitUSD can be redeemed at face value for the underlying collateral, ROSE always and at any time<br/>- Censorship resistant</p><p>Bit Protocol introduces the new era of stablecoins. bitUSD is the first privacy-focused digital currency built on the innovative Oasis Sapphire confidential EVM. Merging the stability of traditional stablecoins with unparalleled transactional confidentiality, bitUSD addresses the critical market need for privacy in DeFi. </p>",
       hide: true,
     },
     {
       questions: "How can I earn money on Bit Protocol?",
       answer:
-        "<p>There are a number of different ways to generate revenue using Bit Protocol:<p/><p>1. Deposit bitUSD into the Stability Pool and earn liquidation fees, a share of liquidated collateral and bitGOV rewards.<br/>2. Stake bitGOV and earn the revenue from protocol generated fees.<br/>3. Mint bitUSD and maintain a debt position and meet dLP requirements to earn bitGOV rewards.<br/>4. Provide Liquidity to the bitGOV/wBTC LP and meet dLP thresholds to earn bitGOV rewards.</p>",
+        "<p>There are a number of different ways to generate revenue using Bit Protocol:<p/><p>1. Deposit bitUSD into the Stability Pool and earn liquidation fees, a share of liquidated collateral and bitGOV rewards.<br/>2. Stake bitGOV and earn the revenue from protocol generated fees.<br/>3. Mint bitUSD and maintain a debt position and meet dLP requirements to earn bitGOV rewards.<br/>4. Provide Liquidity to the bitGOV/ROSE LP and meet dLP thresholds to earn bitGOV rewards.</p>",
       hide: true,
     },
   ]);
@@ -98,7 +98,7 @@ export default function Home() {
             <div className={styles.bannerTxt}>
               <h2>bitUSD Privacy Focused Omnichain Stablecoin</h2>
               <p>
-                The first privacy-focused stablecoin built on zkBTC
+                The first privacy-focused stablecoin built on Oasis Sapphire EVM
                 Decentralised, Confidential and Democratized
               </p>
 
@@ -127,11 +127,11 @@ export default function Home() {
             <div className={styles.worksItem}>
               {/* <img src='/home/mint.svg' alt='mint' />  data-aos="fade-right"*/}
               <div className={styles.mintDiv}>
-                {/* <img
+                <img
                   src="/home/mint02.svg"
                   alt="mint"
                   className={styles.img01}
-                /> */}
+                />
                 <img
                   src="/home/mint01.svg"
                   alt="mint"
@@ -140,7 +140,7 @@ export default function Home() {
               </div>
               <p>Mint bitUSD</p>
               <span>
-                Deposit wBTC as your collateral and effortlessly mint bitUSD.
+                Deposit ROSE as your collateral and effortlessly mint bitUSD.
                 More collateral assets will be supported by Bit Protocol in the
                 future
               </span>
@@ -174,13 +174,13 @@ export default function Home() {
                 <br />
                 Stablecoin <span>bitUSD</span>
                 <br />
-                Revolution on zkBTC
+                Revolution on Oasis Sapphire
               </h2>
               <div className={styles.redBorder}>
                 <p style={{ marginBottom: "30px" }}>
-                  bitUSD, built on zkBTC EVM, is the first privacy-focused
-                  stablecoin, bridging the gap between privacy and stability in
-                  DeFi.{" "}
+                  bitUSD, built on Oasis Sapphire EVM, is the first
+                  privacy-focused stablecoin, bridging the gap between privacy
+                  and stability in DeFi.{" "}
                 </p>
                 <p>
                   Set to revolutionize the $3 trillion stablecoin market, bitUSD

@@ -86,13 +86,13 @@ export default function Footer(props) {
                                 <Link href="/ido-raffle" rel="nofollow noopener noreferrer" style={{ "width": "135px" }}>Whitelist Raffle</Link>
                             </div>
                         </div> */}
-            <Link
+            {/* <Link
               target="_blank"
               href="/Vine_Money_Disclaimer.pdf"
               rel="nofollow noopener noreferrer"
             >
               <span>Disclaimer</span>
-            </Link>
+            </Link> */}
           </div>
         </div>
         {/* <div className={styles.iconList}>

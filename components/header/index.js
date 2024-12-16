@@ -441,7 +441,7 @@ export default function Header(props) {
                 </div>
               </div>
               <span onClick={() => goMenu("faq")}>FAQ</span>
-              <div className="menu-container">
+              {/* <div className="menu-container">
                 <span>IDO</span>
                 <div className="dropdown-menu">
                   <Link
@@ -459,10 +459,10 @@ export default function Header(props) {
                     Whitelist Raffle
                   </Link>
                 </div>
-              </div>
-              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
+              </div> */}
+              {/* <Link target="_blank" href="" rel="nofollow noopener noreferrer">
                 <span>Disclaimer</span>
-              </Link>
+              </Link> */}
             </div>
           )}
 
