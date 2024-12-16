@@ -1,9 +1,8 @@
 import { createContext, useState, useEffect, useRef } from "react";
 import { ethers } from "ethers";
-import * as sapphire from "@oasisprotocol/sapphire-paratime";
 import BigNumber from "bignumber.js";
 import { useConnectWallet } from "@web3-onboard/react";
-import idoHook from "../abi/ido";
+// import idoHook from "../abi/ido";
 import tokenHook from "../abi/token";
 import BorrowerOperationsHook from "../abi/BorrowerOperations";
 import SortedTrovesHook from "../abi/SortedTroves";
@@ -27,7 +26,7 @@ export const UserContext = createContext({
   setEthersProvider: () => {},
   idoAddr: "",
   usdcAddr: "",
-  idoAbi: "",
+  // idoAbi: "",
   tokenAbi: "",
   tokenLockerAbi: "",
   signer: undefined,
@@ -44,18 +43,17 @@ export const UserContext = createContext({
   troveManagerGetters: "",
   priceFeed: "",
   debtToken: "",
-  vineToken: "",
+  bitToken: "",
   tokenLocker: "",
   BoostCalculator: "",
-  VineLpTokenPool: "",
-  mockLp: "",
+  BitLpTokenPool: "",
   LPPriceOracle: "",
   stabilityPool: "",
   MultiCollateralHintHelpers: "",
   incentiveVoting: "",
   idovesting: "",
-  vineVault: "",
-  VUSDUSDCLP: "",
+  bitVault: "",
+  BITUSDUSDCLP: "",
   usdcPool: "",
 
   BorrowerOperationsAbi: "",
@@ -64,21 +62,21 @@ export const UserContext = createContext({
   PriceFeedAbi: "",
   TroveManagerGettersAbi: "",
   BoostCalculatorAbi: "",
-  VineLpTokenPoolAbi: "",
+  BitLpTokenPoolAbi: "",
   LPPriceOracleAbi: "",
   StabilityPoolAbi: "",
   MultiCollateralHintHelpersAbi: "",
   IncentiveVotingAbi: "",
   idovestingAbi: "",
-  vineVaultAbi: "",
+  bitVaultAbi: "",
 
-  sapphireProvider: undefined,
-  setSapphireProvider: () => {},
-  sapphireProviderSigner: undefined,
-  setSapphireProviderSigner: () => {},
+  ethProvider: undefined,
+  setEthProvider: () => {},
+  ethProviderSigner: undefined,
+  setEthProviderSigner: () => {},
 
   balance: 0,
-  totalRose: 0,
+  totalWbtc: 0,
 
   signInAuth: {},
   setSignInAuth: () => {},
@@ -90,15 +88,16 @@ export const UserContext = createContext({
   borrowerOperationsMint: "",
   priceFeedToken: "",
   debtTokenQuery: "",
-  vineTokenQuery: "",
+  bitTokenQuery: "",
   tokenLockerMain: "",
   tokenLockerQuery: "",
   boostCalculatorQuery: "",
-  vineLpTokenPoolMain: "",
+  bitLpTokenPoolMain: "",
   troveManagerMain: "",
+  wrappedCoin: "",
   incentiveVotingMain: "",
   mockLpQuery: "",
-  vineLpTokenPoolQuery: "",
+  bitLpTokenPoolQuery: "",
   lPPriceOracleQuery: "",
   mockLpMain: "",
   stabilityPoolMain: "",
@@ -108,11 +107,11 @@ export const UserContext = createContext({
   incentiveVotingQuery: "",
   idovestingQuery: "",
   idovestingMain: "",
-  vineVaultMain: "",
-  vineVaultQuery: "",
-  VUSDUSDCLPQuery: "",
+  bitVaultMain: "",
+  bitVaultQuery: "",
+  BITUSDUSDCLPQuery: "",
   usdcPoolQuery: "",
-  VUSDUSDCLPMain: "",
+  BITUSDUSDCLPMain: "",
   usdcPoolMain: "",
 
   status: 0,
@@ -120,17 +119,17 @@ export const UserContext = createContext({
   debt: 0,
   pre: 0,
   next: 0,
-  rosePrice: 0,
-  vUSDbalance: 0,
+  wBtcPrice: 0,
+  bitUSDbalance: 0,
   lpPrice: 0,
-  vinePrice: 0,
+  bitPrice: 0,
   boost: 0,
   totalTvl: 0,
 
   vaultEarned: 0,
-  vineRoseEarned: 0,
+  bitWbtcEarned: 0,
   stabilityEarned: 0,
-  vusdUsdcEarned: 0,
+  bitusdUsdcEarned: 0,
 
   formatNum: (num) => {},
 });
@@ -153,35 +152,33 @@ export const UserContextProvider = ({ children }) => {
   };
 
   const [signer, setSigner] = useState(undefined);
-  const infuraRPC = "https://sapphire.oasis.io";
-  // const infuraRPC = "https://testnet.sapphire.oasis.dev/";
+  const infuraRPC = "https://devilmorallyelephant-rpc.eu-north-2.gateway.fm/";
 
-  const idoAddr = "0xfc340b4bAA34Ce98c312d4b6B739CCD56f5359c5";
-  const usdcAddr = "0x5A80eA8e945312D24a85d1F1C684f092aD43B566";
-  const idoAbi = idoHook;
+  const idoAddr = "0x0000000000000000000000000000000000000000";
+  const usdcAddr = "0x0000000000000000000000000000000000000000";
+  // const idoAbi = idoHook;
   const tokenAbi = tokenHook;
 
-  const troveManager = "0x06eBC049Fa9d394Aa660E79b94c0278C677ba773";
-  const sortedTroves = "0xfAc36524Eb744fDc7cE6Ac52608D88aA4E90a7fA";
-  const borrowerOperations = "0x942432ad0F0D55AC01C8661619be93d8940A1820";
-  const troveManagerGetters = "0xBf2fe64DCaA032b33e4412798a5DbF9BDafcC05E";
-  const priceFeed = "0xee6A971FECE446AFD6181bACFb1F8Ae5fCa787fc";
-  const debtToken = "0xB0159B1f625d83539D6db40CB2bc3DC4309038Ac";
-  const vineToken = "0xf7E952095be89627e77c85633F7567CfB30f07c1";
-  const tokenLocker = "0x3A2c1D25c2F97E144d43d6B421022F976FcB3D09";
-  const BoostCalculator = "0xCd2327F3631d220972aEdb4d07Ed42efe157CF71";
-  const mockLp = "0xf1E00B2B98d9c796963C4251738f5f6e2b31453d"; //VinelpToken
-  const VineLpTokenPool = "0xE4F88f60f3C3262Be66FDfca40FA9Fbd64Cf7aD9";
-  const LPPriceOracle = "0x6b7BC9dD2b851587863fa5c77636869fe1206d9a";
-  const stabilityPool = "0x6D920d36A6D1948c1d911aCB457b2545c4012ccf";
+  const troveManager = "0x5A0f84EBCeCa7cf943879CBB0A584979eFd0Ab11";
+  const sortedTroves = "0x2A7D69a47f3a3d87F29A008d2047Ce6031151e6F";
+  const borrowerOperations = "0x2a776A5463Dc3d1d7FA86d740e662ab4154Fb5A1";
+  const troveManagerGetters = "0xA9Ae7A9Ae35836aA0A194cf203a0D4e8FA32fd38";
+  const priceFeed = "0x652eF55bB290eb2a0A3CE3C28920F2065907f9b0";
+  const debtToken = "0xFB03F2562ae339ae387e795A6D4E057b93FE6bC4";
+  const bitToken = "0x73a154FC038215A617793C47044A599B0ea9941e";
+  const tokenLocker = "0x9B3a40A6d7d7E85AFBe74cA8eF3e49d0b9E00580";
+  const BoostCalculator = "0xB85912752B1fc97E4c631e57caB1DEa0643D2416";
+  const BitLpTokenPool = "0x0000000000000000000000000000000000000000";
+  const LPPriceOracle = "0x19a454C8A316383652dB5A720dec03B2AC4D1c17";
+  const stabilityPool = "0xb888845bCfDFeaf8e27A63aCEA63833Ed73cC3c7";
   const MultiCollateralHintHelpers =
-    "0x195C411887ef06119Efe3DF523D75930863C4172";
-  const incentiveVoting = "0x0f4F2E81eA524a0bEA415187Cf5c98eAfAACF45c";
-  const idovesting = "0xAA854f386fe35983ac5bA8d9998224cdBd89c72c"; //iDOTokenVesting
-  const vineVault = "0xc5cEdeF3c75Bb5b5Ca653A5E937995E29350FadE";
-  const VUSDUSDCLP = "0x2BCD9a9Cc2a49E00cB58b9EE3855dF5bC80dfFee";
-  const usdcPool = "0x7EAAB9F7C992eE3cD1D9F055511Af5741B372124";
-  const wRose = "0x8Bc2B030b299964eEfb5e1e0b36991352E56D2D3";
+    "0x4922878266Aff87Fc3962cc85Cf92E0602861a41";
+  const incentiveVoting = "0x213EeedC618388AbBd9bb79F660e88607D3067a4";
+  const idovesting = "0x1E659F0704b2BC354b4CF1D21A2638C9795FcaA6"; //iDOTokenVesting
+  const bitVault = "0xF6d761207c13c2aD546682650a8B383E73f2A57E";
+  const BITUSDUSDCLP = "0x0000000000000000000000000000000000000000";
+  const usdcPool = "0x0000000000000000000000000000000000000000";
+  const wBtc = "0xB5EA3151e1edED183CC9571916B435b6B188D508";
 
   const BorrowerOperationsAbi = BorrowerOperationsHook;
   const SortedTrovesAbi = SortedTrovesHook;
@@ -190,49 +187,42 @@ export const UserContextProvider = ({ children }) => {
   const TroveManagerGettersAbi = TroveManagerGettersHook;
   const tokenLockerAbi = tokenLockerHook;
   const BoostCalculatorAbi = BoostCalculatorHook;
-  const VineLpTokenPoolAbi = VineLpTokenPoolHook;
+  const BitLpTokenPoolAbi = BitLpTokenPoolHook;
   const LPPriceOracleAbi = LPPriceOracleHook;
   const StabilityPoolAbi = StabilityPoolHook;
   const MultiCollateralHintHelpersAbi = MultiCollateralHintHelpersHook;
   const IncentiveVotingAbi = IncentiveVotingHook;
   const idovestingAbi = idovestingHook;
-  const vineVaultAbi = vineVaultHook;
+  const bitVaultAbi = bitVaultHook;
 
-  const [sapphireProvider, setSapphireProvider] = useState(undefined);
-  const [sapphireProviderSigner, setSapphireProviderSigner] =
-    useState(undefined);
+  const [ethProvider, setEthProvider] = useState(undefined);
+  const [ethProviderSigner, setEthProviderSigner] = useState(undefined);
 
   const [balance, setBalance] = useState(0);
-  const [vUSDbalance, setvUSDbalance] = useState(0);
+  const [bitUSDbalance, setbitUSDbalance] = useState(0);
 
   useEffect(() => {
     if (account) {
-      setSapphireProvider(
-        sapphire.wrap(new ethers.providers.Web3Provider(wallet.provider))
-      );
-      setSapphireProviderSigner(
-        sapphire.wrap(
-          new ethers.providers.Web3Provider(wallet.provider).getSigner()
-        )
+      setEthProvider(new ethers.providers.Web3Provider(wallet.provider));
+      setEthProviderSigner(
+        new ethers.providers.Web3Provider(wallet.provider).getSigner()
       );
     } else {
-      setSapphireProvider(
-        sapphire.wrap(new ethers.providers.JsonRpcProvider(infuraRPC))
-      );
-      setSapphireProviderSigner(
-        sapphire.wrap(
-          new ethers.providers.JsonRpcProvider(infuraRPC).getSigner()
-        )
+      setEthProvider(new ethers.providers.JsonRpcProvider(infuraRPC));
+      setEthProviderSigner(
+        new ethers.providers.JsonRpcProvider(infuraRPC).getSigner()
       );
     }
   }, [account]);
 
-  const [totalRose, setTotalRose] = useState(0);
+  const [totalWbtc, setTotalWbtc] = useState(0);
   const getBalance = async () => {
-    const user = await ethersProvider.getBalance(account);
+    // const user = await ethersProvider.getBalance(account);
+    const user = await await wBtcQuery.balanceOf(account);
     setBalance(new BigNumber(user._hex).div(1e18).toFixed());
-    const totalRose = await ethersProvider.getBalance(stabilityPool);
-    setTotalRose(new BigNumber(totalRose._hex).div(1e18).toFixed());
+    // const totalWbtc = await ethersProvider.getBalance(stabilityPool);
+    const totalWbtc = await wBtcQuery.balanceOf(stabilityPool);
+    setTotalWbtc(new BigNumber(totalWbtc._hex).div(1e18).toFixed());
   };
 
   const [currentState, setCurrentState] = useState(false);
@@ -248,11 +238,11 @@ export const UserContextProvider = ({ children }) => {
   const [priceFeedToken, setPriceFeedToken] = useState(null);
   const [debtTokenQuery, setDebtTokenQuery] = useState(null);
 
-  const [vineTokenQuery, setVineTokenQuery] = useState(null);
+  const [bitTokenQuery, setBitTokenQuery] = useState(null);
   const [tokenLockerQuery, setTokenLockerQuery] = useState(null);
   const [boostCalculatorQuery, setBoostCalculatorQuery] = useState(null);
   const [mockLpQuery, setMockLpQuery] = useState(null);
-  const [vineLpTokenPoolQuery, setVineLpTokenPoolQuery] = useState(null);
+  const [bitLpTokenPoolQuery, setBitLpTokenPoolQuery] = useState(null);
   const [lPPriceOracleQuery, setLPPriceOracleQuery] = useState(null);
   const [stabilityPoolMain, setStabilityPoolMain] = useState(null);
   const [stabilityPoolQuery, setStabilityPoolQuery] = useState(null);
@@ -261,203 +251,161 @@ export const UserContextProvider = ({ children }) => {
   const [troveManagerQuery, setTroveManagerQuery] = useState(null);
   const [incentiveVotingQuery, setIncentiveVotingQuery] = useState(null);
   const [idovestingQuery, setIdovestingQuery] = useState(null);
-  const [vineVaultQuery, setVineVaultQuery] = useState(null);
+  const [bitVaultQuery, setBitVaultQuery] = useState(null);
 
-  const [VUSDUSDCLPQuery, setVUSDUSDCLPQuery] = useState(null);
+  const [BITUSDUSDCLPQuery, setBITUSDUSDCLPQuery] = useState(null);
   const [usdcPoolQuery, setusdcPoolQuery] = useState(null);
-  const [wRoseQuery, setwRoseQuery] = useState(null);
+  const [wBtcQuery, setWbtcQuery] = useState(null);
   // const [borrowerOperationsQuery, setBorrowerOperationsQuery] = useState(null);
 
   useEffect(() => {
-    if (sapphireProvider) {
+    if (ethProvider) {
       setSortedTrovesToken(
-        new ethers.Contract(sortedTroves, SortedTrovesAbi, sapphireProvider)
+        new ethers.Contract(sortedTroves, SortedTrovesAbi, ethProvider)
       );
       setPriceFeedToken(
-        new ethers.Contract(priceFeed, PriceFeedAbi, sapphireProvider)
+        new ethers.Contract(priceFeed, PriceFeedAbi, ethProvider)
       );
-      setVineTokenQuery(
-        new ethers.Contract(vineToken, tokenAbi, sapphireProvider)
-      );
+      setBitTokenQuery(new ethers.Contract(bitToken, tokenAbi, ethProvider));
       setTokenLockerQuery(
-        new ethers.Contract(tokenLocker, tokenLockerAbi, sapphireProvider)
+        new ethers.Contract(tokenLocker, tokenLockerAbi, ethProvider)
       );
       setBoostCalculatorQuery(
-        new ethers.Contract(
-          BoostCalculator,
-          BoostCalculatorAbi,
-          sapphireProvider
-        )
+        new ethers.Contract(BoostCalculator, BoostCalculatorAbi, ethProvider)
       );
 
-      setMockLpQuery(new ethers.Contract(mockLp, tokenAbi, sapphireProvider));
-      setVineLpTokenPoolQuery(
-        new ethers.Contract(
-          VineLpTokenPool,
-          VineLpTokenPoolAbi,
-          sapphireProvider
-        )
+      setBitLpTokenPoolQuery(
+        new ethers.Contract(BitLpTokenPool, BitLpTokenPoolAbi, ethProvider)
       );
       setLPPriceOracleQuery(
-        new ethers.Contract(LPPriceOracle, LPPriceOracleAbi, sapphireProvider)
+        new ethers.Contract(LPPriceOracle, LPPriceOracleAbi, ethProvider)
       );
       setStabilityPoolQuery(
-        new ethers.Contract(stabilityPool, StabilityPoolAbi, sapphireProvider)
+        new ethers.Contract(stabilityPool, StabilityPoolAbi, ethProvider)
       );
       setMultiCollateralHintHelpersQuery(
         new ethers.Contract(
           MultiCollateralHintHelpers,
           MultiCollateralHintHelpersAbi,
-          sapphireProvider
+          ethProvider
         )
       );
       setTroveManagerQuery(
-        new ethers.Contract(troveManager, TroveManagerAbi, sapphireProvider)
+        new ethers.Contract(troveManager, TroveManagerAbi, ethProvider)
       );
 
       setIncentiveVotingQuery(
-        new ethers.Contract(
-          incentiveVoting,
-          IncentiveVotingAbi,
-          sapphireProvider
-        )
+        new ethers.Contract(incentiveVoting, IncentiveVotingAbi, ethProvider)
       );
       setIdovestingQuery(
-        new ethers.Contract(idovesting, idovestingAbi, sapphireProvider)
+        new ethers.Contract(idovesting, idovestingAbi, ethProvider)
       );
-      setVineVaultQuery(
-        new ethers.Contract(vineVault, vineVaultAbi, sapphireProvider)
-      );
+      setBitVaultQuery(new ethers.Contract(bitVault, bitVaultAbi, ethProvider));
 
-      setVUSDUSDCLPQuery(
-        new ethers.Contract(VUSDUSDCLP, tokenAbi, sapphireProvider)
+      setBITUSDUSDCLPQuery(
+        new ethers.Contract(BITUSDUSDCLP, tokenAbi, ethProvider)
       );
       setusdcPoolQuery(
-        new ethers.Contract(usdcPool, VineLpTokenPoolAbi, sapphireProvider)
+        new ethers.Contract(usdcPool, BitLpTokenPoolAbi, ethProvider)
       );
-      setwRoseQuery(
-        new ethers.Contract(wRose, VineLpTokenPoolAbi, sapphireProvider)
+      setWbtcQuery(new ethers.Contract(wBtc, BitLpTokenPoolAbi, ethProvider));
+
+      setTroveManagerGettersSigner(
+        new ethers.Contract(
+          troveManagerGetters,
+          TroveManagerGettersAbi,
+          ethProvider
+        )
       );
 
-      // setBorrowerOperationsQuery(new ethers.Contract(borrowerOperations, BorrowerOperationsAbi, sapphireProvider));
+      setTroveManagerSigner(
+        new ethers.Contract(troveManager, TroveManagerAbi, ethProvider)
+      );
 
-      if (signInAuth) {
-        setTroveManagerGettersSigner(
-          new ethers.Contract(
-            troveManagerGetters,
-            TroveManagerGettersAbi,
-            sapphireProvider
-          )
-        );
-
-        setTroveManagerSigner(
-          new ethers.Contract(troveManager, TroveManagerAbi, sapphireProvider)
-        );
-      }
-      if (signInAuthToken) {
-        setDebtTokenQuery(
-          new ethers.Contract(debtToken, tokenAbi, sapphireProvider)
-        );
-      }
+      setDebtTokenQuery(new ethers.Contract(debtToken, tokenAbi, ethProvider));
     }
-  }, [sapphireProvider, signInAuth, signInAuthToken]);
+  }, [ethProvider]);
 
   const [borrowerOperationsMint, setBorrowerOperationsMint] = useState(null);
   const [tokenLockerMain, setTokenLockerMain] = useState(null);
   const [mockLpMain, setMockLpMain] = useState(null);
-  const [vineLpTokenPoolMain, setVineLpTokenPoolMain] = useState(null);
+  const [bitLpTokenPoolMain, setBitLpTokenPoolMain] = useState(null);
   const [troveManagerMain, setTroveManagerMain] = useState(null);
   const [incentiveVotingMain, setIncentiveVotingMain] = useState(null);
   const [idovestingMain, setIdovestingMain] = useState(null);
-  const [vineVaultMain, setVineVaultMain] = useState(null);
+  const [bitVaultMain, setBitVaultMain] = useState(null);
+  const [wrappedCoin, setWrappedCoin] = useState(null);
 
-  const [VUSDUSDCLPMain, setVUSDUSDCLPMain] = useState(null);
+  const [BITUSDUSDCLPMain, setBITUSDUSDCLPMain] = useState(null);
   const [usdcPoolMain, setusdcPoolMain] = useState(null);
 
   useEffect(() => {
-    if (sapphireProviderSigner) {
+    if (ethProviderSigner) {
       setBorrowerOperationsMint(
         new ethers.Contract(
           borrowerOperations,
           BorrowerOperationsAbi,
-          sapphireProviderSigner
+          ethProviderSigner
         )
       );
       setTokenLockerMain(
-        new ethers.Contract(tokenLocker, tokenLockerAbi, sapphireProviderSigner)
+        new ethers.Contract(tokenLocker, tokenLockerAbi, ethProviderSigner)
       );
-      setMockLpMain(
-        new ethers.Contract(mockLp, tokenAbi, sapphireProviderSigner)
-      );
-      setVineLpTokenPoolMain(
+      setBitLpTokenPoolMain(
         new ethers.Contract(
-          VineLpTokenPool,
-          VineLpTokenPoolAbi,
-          sapphireProviderSigner
+          BitLpTokenPool,
+          BitLpTokenPoolAbi,
+          ethProviderSigner
         )
       );
       setStabilityPoolMain(
-        new ethers.Contract(
-          stabilityPool,
-          StabilityPoolAbi,
-          sapphireProviderSigner
-        )
+        new ethers.Contract(stabilityPool, StabilityPoolAbi, ethProviderSigner)
       );
       setTroveManagerMain(
-        new ethers.Contract(
-          troveManager,
-          TroveManagerAbi,
-          sapphireProviderSigner
-        )
+        new ethers.Contract(troveManager, TroveManagerAbi, ethProviderSigner)
       );
+      setWrappedCoin(new ethers.Contract(wBtc, tokenAbi, ethProviderSigner));
       setIncentiveVotingMain(
         new ethers.Contract(
           incentiveVoting,
           IncentiveVotingAbi,
-          sapphireProviderSigner
+          ethProviderSigner
         )
       );
       setIdovestingMain(
-        new ethers.Contract(idovesting, idovestingAbi, sapphireProviderSigner)
+        new ethers.Contract(idovesting, idovestingAbi, ethProviderSigner)
       );
-      setVineVaultMain(
-        new ethers.Contract(vineVault, vineVaultAbi, sapphireProviderSigner)
+      setBitVaultMain(
+        new ethers.Contract(bitVault, bitVaultAbi, ethProviderSigner)
       );
-      setVUSDUSDCLPMain(
-        new ethers.Contract(VUSDUSDCLP, tokenAbi, sapphireProviderSigner)
+      setBITUSDUSDCLPMain(
+        new ethers.Contract(BITUSDUSDCLP, tokenAbi, ethProviderSigner)
       );
       setusdcPoolMain(
-        new ethers.Contract(
-          usdcPool,
-          VineLpTokenPoolAbi,
-          sapphireProviderSigner
-        )
+        new ethers.Contract(usdcPool, BitLpTokenPoolAbi, ethProviderSigner)
       );
     }
-  }, [sapphireProviderSigner]);
+  }, [ethProviderSigner]);
 
   const [status, setStatus] = useState(0);
   const [deposits, setDeposits] = useState(0);
   const [debt, setDebt] = useState(0);
   const [pre, setPre] = useState(0);
   const [next, setNext] = useState(0);
-  const [rosePrice, setRosePrice] = useState(0);
+  const [wBtcPrice, setWbtcPrice] = useState(0);
   const [lpPrice, setLpPrice] = useState(0);
-  const [vinePrice, setVinePrice] = useState(0);
+  const [bitPrice, setBitPrice] = useState(0);
   const [boost, setBoost] = useState(0);
   const [totalTvl, setTotalTvl] = useState(0);
 
   const [vaultEarned, setvaultEarned] = useState(0);
-  const [vineRoseEarned, setvineRoseEarned] = useState(0);
+  const [bitWbtcEarned, setBitWbtcEarned] = useState(0);
   const [stabilityEarned, setstabilityEarned] = useState(0);
-  const [vusdUsdcEarned, setvusdUsdcEarned] = useState(0);
+  const [bitusdUsdcEarned, setbitusdUsdcEarned] = useState(0);
   const getData = async () => {
-    if (account && signInAuth.user && signInAuthToken.user) {
+    if (account) {
       getBalance();
-      const trove = await troveManagerGettersSigner.getTrove(
-        signInAuth,
-        troveManager
-      );
+      const trove = await troveManagerMain.getTrove(account);
       setDeposits(Number(new BigNumber(trove.coll._hex).div(1e18).toFixed()));
       setDebt(Number(new BigNumber(trove.debt._hex).div(1e18).toFixed()));
       setStatus(trove.status);
@@ -466,9 +414,9 @@ export const UserContextProvider = ({ children }) => {
       const next = await sortedTrovesToken.getNext(account);
       setPre(pre);
       setNext(next);
-      const balanceOf = await debtTokenQuery.checkBalanceOf(signInAuthToken);
-      // const balanceOf = await debtTokenQuery.balanceOf(account);
-      setvUSDbalance(new BigNumber(balanceOf._hex).div(1e18).toFixed());
+      // const balanceOf = await debtTokenQuery.checkBalanceOf(signInAuthToken);
+      const balanceOf = await debtTokenQuery.balanceOf(account);
+      setbitUSDbalance(new BigNumber(balanceOf._hex).div(1e18).toFixed());
 
       const boost = await boostCalculatorQuery.getBoostedAmount(
         account,
@@ -487,17 +435,8 @@ export const UserContextProvider = ({ children }) => {
       );
       setvaultEarned(Number(vaultEarned.adjustedAmount._hex) / 1e18);
 
-      //VINE/ROSE LP
-      // const vineRoseEarned = await vineVaultQuery.claimableRewardAfterBoost(
-      //   account,
-      //   account,
-      //   "0x0000000000000000000000000000000000000000",
-      //   VineLpTokenPool
-      // );
-      // setvineRoseEarned(Number(vineRoseEarned.adjustedAmount._hex) / 1e18);
-
       //Stability Pool
-      const stabilityEarned = await vineVaultQuery.claimableRewardAfterBoost(
+      const stabilityEarned = await bitVaultQuery.claimableRewardAfterBoost(
         account,
         account,
         "0x0000000000000000000000000000000000000000",
@@ -514,31 +453,17 @@ export const UserContextProvider = ({ children }) => {
       // );
       // setvusdUsdcEarned(Number(vusdUsdcEarned.adjustedAmount._hex) / 1e18);
     }
-    const rosePrice = await priceFeedToken.loadPrice(
-      "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    const wBtcPrice = await priceFeedToken.loadPrice(
+      "0xB5EA3151e1edED183CC9571916B435b6B188D508"
     );
-    setRosePrice(Number(rosePrice) / 1e18);
-    // const lpPrice = await lPPriceOracleQuery.getReferenceData("LP", "USD");
-    // setLpPrice(Number(lpPrice[0]._hex) / 1e18);
+    setWbtcPrice(Number(wBtcPrice) / 1e18);
+
     // TODO: MOCK FOR NOW
     setLpPrice(1);
+    setBitPrice(1);
 
-    const wRosebalance = await wRoseQuery.balanceOf(mockLp);
-    const wRosebalance2 = await vineTokenQuery.balanceOf(mockLp);
-    const vPrice =
-      (Number(wRosebalance._hex) * Number(rosePrice)) /
-        1e18 /
-        Number(wRosebalance2._hex) || 1;
-    // console.log("vine price", {
-    //   vPrice,
-    //   wROse: Number(wRosebalance._hex),
-    //   rosePrice: Number(rosePrice),
-    //   wRose2: Number(wRosebalance2._hex),
-    // });
-    setVinePrice(vPrice);
-
-    const totalTvl = await ethersProvider.getBalance(borrowerOperations);
-    setTotalTvl((Number(totalTvl) / 1e18) * (Number(rosePrice) / 1e18));
+    const totalTvl = await wBtcQuery.balanceOf(troveManager);
+    setTotalTvl((Number(totalTvl) / 1e18) * (Number(wBtcPrice) / 1e18));
   };
 
   let timerLoading = useRef(null);
@@ -589,7 +514,7 @@ export const UserContextProvider = ({ children }) => {
         setEthersProvider,
         idoAddr,
         usdcAddr,
-        idoAbi,
+        // idoAbi,
         tokenAbi,
         signer,
         setSigner,
@@ -604,38 +529,37 @@ export const UserContextProvider = ({ children }) => {
         troveManagerGetters,
         priceFeed,
         debtToken,
-        vineToken,
+        bitToken,
         tokenLocker,
         BoostCalculator,
-        VineLpTokenPool,
+        BitLpTokenPool,
         LPPriceOracle,
         stabilityPool,
         MultiCollateralHintHelpers,
         incentiveVoting,
         idovesting,
-        vineVault,
-        VUSDUSDCLP,
+        bitVault,
+        BITUSDUSDCLP,
         usdcPool,
-        mockLp,
-        sapphireProvider,
-        setSapphireProvider,
+        ethProvider,
+        setEthProvider,
         BorrowerOperationsAbi,
         SortedTrovesAbi,
         TroveManagerAbi,
         PriceFeedAbi,
         TroveManagerGettersAbi,
         BoostCalculatorAbi,
-        VineLpTokenPoolAbi,
+        BitLpTokenPoolAbi,
         LPPriceOracleAbi,
         StabilityPoolAbi,
         MultiCollateralHintHelpersAbi,
         IncentiveVotingAbi,
         idovestingAbi,
-        vineVaultAbi,
-        sapphireProviderSigner,
-        setSapphireProviderSigner,
+        bitVaultAbi,
+        ethProviderSigner,
+        setEthProviderSigner,
         balance,
-        totalRose,
+        totalWbtc,
         signInAuth,
         setSignInAuth,
         signInAuthToken,
@@ -649,20 +573,21 @@ export const UserContextProvider = ({ children }) => {
         debt,
         pre,
         next,
-        rosePrice,
-        vUSDbalance,
+        wBtcPrice,
+        bitUSDbalance,
         lpPrice,
-        vinePrice,
+        bitPrice,
         boost,
         totalTvl,
         debtTokenQuery,
-        vineTokenQuery,
+        bitTokenQuery,
         tokenLockerMain,
-        vineLpTokenPoolMain,
+        bitLpTokenPoolMain,
         troveManagerMain,
+        wrappedCoin,
         incentiveVotingMain,
         mockLpQuery,
-        vineLpTokenPoolQuery,
+        bitLpTokenPoolQuery,
         lPPriceOracleQuery,
         stabilityPoolMain,
         stabilityPoolQuery,
@@ -672,19 +597,19 @@ export const UserContextProvider = ({ children }) => {
         tokenLockerQuery,
         boostCalculatorQuery,
         idovestingQuery,
-        vineVaultQuery,
+        bitVaultQuery,
         idovestingMain,
         mockLpMain,
-        vineVaultMain,
-        VUSDUSDCLPQuery,
+        bitVaultMain,
+        BITUSDUSDCLPQuery,
         usdcPoolQuery,
-        VUSDUSDCLPMain,
+        BITUSDUSDCLPMain,
         usdcPoolMain,
         formatNum,
         vaultEarned,
-        vineRoseEarned,
+        bitWbtcEarned,
         stabilityEarned,
-        vusdUsdcEarned,
+        bitusdUsdcEarned,
       }}
     >
       {children}

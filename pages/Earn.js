@@ -94,7 +94,7 @@ export default function Earn() {
 
   const changeManage = (value) => {
     setTypeName(value);
-    if (value == "bitGOV/ROSE LP") {
+    if (value == "bitGOV/wBTC LP") {
       changeTypeCoin("Stake", "LP");
     } else if (value == "bitUSD/USDC LP") {
       changeTypeCoin("Stake", "LP");
@@ -234,7 +234,7 @@ export default function Earn() {
   ]);
 
   useEffect(() => {
-    if (typeName == "bitGOV/ROSE LP") {
+    if (typeName == "bitGOV/wBTC LP") {
       if (changeType == "Stake") {
         setMaxBalance(Number(stakeLpBalance));
       } else {
@@ -270,7 +270,7 @@ export default function Earn() {
 
   useEffect(() => {
     if (changeType == "Stake") {
-      if (typeName == "bitGOV/ROSE LP") {
+      if (typeName == "bitGOV/wBTC LP") {
         if (Number(amount) > Number(allowance)) {
           setButtonName("Approve");
         } else {
@@ -893,15 +893,15 @@ export default function Earn() {
                   <div className={styles.manageDesc}>
                     <p>{"Manage " + typeName}</p>
                     <div>
-                      {typeName == "bitGOV/ROSE LP"
-                        ? "Stake bitGOV/ROSE LP to earn bitGOV rewards."
+                      {typeName == "bitGOV/wBTC LP"
+                        ? "Stake bitGOV/wBTC LP to earn bitGOV rewards."
                         : typeName == "bitUSD/USDC LP"
                         ? "Stake bitUSD/USDC LP to earn bitGOV rewards."
                         : "Stake bitUSD to earn bitGOV rewards. During liquidations, your deposit will be used to purchase discounted collaterals."}
                       {typeName == "Stability Pool" ? (
                         <Link
                           target="_blank"
-                          href="https://vine-money.gitbook.io/vine-money/protocol/stability-pool-and-liquidations"
+                          href=""
                           rel="nofollow noopener noreferrer"
                         >
                           <span style={{ color: "#00D7CA" }}> Read more.</span>
@@ -930,7 +930,7 @@ export default function Earn() {
                         </span>
                       </>
                     ) : null}
-                    {typeName == "bitGOV/ROSE LP" ||
+                    {typeName == "bitGOV/wBTC LP" ||
                     typeName == "bitUSD/USDC LP" ? (
                       <>
                         <span
@@ -973,7 +973,7 @@ export default function Earn() {
                           className={
                             changeType == "Claim" ? `${styles.active}` : null
                           }
-                          onClick={() => changeTypeCoin("Claim", "$ROSE")}
+                          onClick={() => changeTypeCoin("Claim", "$wBTC")}
                         >
                           Reward
                         </span>

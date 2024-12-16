@@ -404,11 +404,7 @@ export default function Header(props) {
           ) : (
             <div className={styles.list}>
               <span onClick={() => goMenu("works")}>How it works</span>
-              <Link
-                target="_blank"
-                href="https://vine-money.gitbook.io/vine-money/"
-                rel="nofollow noopener noreferrer"
-              >
+              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
                 <span>Docs</span>
               </Link>
               <div className="menu-container">
@@ -416,28 +412,28 @@ export default function Header(props) {
                 <div className="dropdown-menu">
                   <Link
                     target="_blank"
-                    href="https://twitter.com/Vine_Money"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Twitter/X
                   </Link>
                   <Link
                     target="_blank"
-                    href="https://t.me/vinemoneyofficial"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Community
                   </Link>
                   <Link
                     target="_blank"
-                    href="https://t.me/vinemoneyann"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Announcements
                   </Link>
                   <Link
                     target="_blank"
-                    href="https://medium.com/@vine_money"
+                    href=""
                     rel="nofollow noopener noreferrer"
                   >
                     Medium
@@ -464,11 +460,7 @@ export default function Header(props) {
                   </Link>
                 </div>
               </div>
-              <Link
-                target="_blank"
-                href="/Vine_Money_Disclaimer.pdf"
-                rel="nofollow noopener noreferrer"
-              >
+              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
                 <span>Disclaimer</span>
               </Link>
             </div>
@@ -541,7 +533,6 @@ export default function Header(props) {
           </div>
         </div>
       </div>
-
       {openConnect ? (
         <div className="promptBox">
           <div className="boxMain">
@@ -604,7 +595,6 @@ export default function Header(props) {
           </div>
         </div>
       ) : null}
-
       {openNetworks ? (
         <div className="promptBox">
           <div className="boxMain">
@@ -647,7 +637,6 @@ export default function Header(props) {
           </div>
         </div>
       ) : null}
-
       {openHealth ? (
         <div className="promptBox">
           <div className="boxMain">
@@ -693,7 +682,6 @@ export default function Header(props) {
           </div>
         </div>
       ) : null}
-
       {showSignIn ? (
         <div className="promptSign">
           <div className="firstBox">
@@ -709,8 +697,8 @@ export default function Header(props) {
             </div>
           </div>
         </div>
-      ) : null}
-
+      ) : null}{" "}
+      */}
       {showSignInToken ? (
         <div className="promptSign">
           <div className="firstBox">
@@ -733,7 +721,6 @@ export default function Header(props) {
           </div>
         </div>
       ) : null}
-
       {/* {status === "pending" ? <Wait></Wait> : null} */}
     </>
   );

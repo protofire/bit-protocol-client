@@ -21,7 +21,7 @@ export default function Redeem() {
   const [rosePrice, setRosePrice] = useState(0);
   const [selectCollateral, setSelectedCollateral] = useState("");
   const [canRedeem, setCanRedeem] = useState(false);
-  const initializedRef = useRef(false)
+  const initializedRef = useRef(false);
 
   const account = useAccount();
 
@@ -58,20 +58,16 @@ export default function Redeem() {
 
   const onKeyDown = (e) => {
     // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
+    if (["-", "+", "e", "E"].includes(e.key)) {
       e.preventDefault();
     }
 
     // Allow: backspace, delete, tab, escape, enter, decimal point
-    if ([
-      'Backspace',
-      'Delete',
-      'Tab',
-      'Escape',
-      'Enter',
-      '.',
-      ','
-    ].includes(e.key)) {
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", ","].includes(
+        e.key
+      )
+    ) {
       return;
     }
 
@@ -88,8 +84,8 @@ export default function Redeem() {
     const numValue = Number(value);
 
     // Handle empty string case
-    if (value === '') {
-      setAmount('');
+    if (value === "") {
+      setAmount("");
       setFeeAmount(0);
       setExpectedCollateralReceived(0);
       return;
@@ -97,9 +93,9 @@ export default function Redeem() {
 
     // Enforce 3 decimal places if there's a decimal point
     let formattedValue = value;
-    if (value.includes('.')) {
-      const parts = value.split('.');
-      formattedValue = parts[0] + '.' + parts[1].slice(0, 3);
+    if (value.includes(".")) {
+      const parts = value.split(".");
+      formattedValue = parts[0] + "." + parts[1].slice(0, 3);
     }
 
     // Check if the value is within valid range
@@ -112,16 +108,14 @@ export default function Redeem() {
       } else {
         const feeAmountCalc = (numValue / rosePrice) * fee;
         setFeeAmount(feeAmountCalc);
-        setExpectedCollateralReceived(
-          (numValue / rosePrice) - feeAmountCalc
-        );
+        setExpectedCollateralReceived(numValue / rosePrice - feeAmountCalc);
       }
     } else if (numValue > Number(bitUSDBalance)) {
       setAmount(bitUSDBalance.toString());
       const feeAmountCalc = (Number(bitUSDBalance) / rosePrice) * fee;
       setFeeAmount(feeAmountCalc);
       setExpectedCollateralReceived(
-        (Number(bitUSDBalance) / rosePrice) - feeAmountCalc
+        Number(bitUSDBalance) / rosePrice - feeAmountCalc
       );
     }
   };
@@ -130,16 +124,14 @@ export default function Redeem() {
     const newAmount = (Number(bitUSDBalance) * value).toFixed(3);
     setAmount(newAmount);
 
-    if (newAmount === '0' || newAmount === '0.000') {
+    if (newAmount === "0" || newAmount === "0.000") {
       setFeeAmount(0);
       setExpectedCollateralReceived(0);
     } else {
       const numAmount = Number(newAmount);
       const feeAmountCalc = (numAmount / rosePrice) * fee;
       setFeeAmount(feeAmountCalc);
-      setExpectedCollateralReceived(
-        (numAmount / rosePrice) - feeAmountCalc
-      );
+      setExpectedCollateralReceived(numAmount / rosePrice - feeAmountCalc);
     }
   };
 
@@ -222,7 +214,8 @@ export default function Redeem() {
 
       if (result.status === 0) {
         tooltip.error({
-          content: "Transaction failed due to a network error. Please refresh the page and try again.",
+          content:
+            "Transaction failed due to a network error. Please refresh the page and try again.",
           duration: 5000,
         });
       } else {
@@ -234,7 +227,8 @@ export default function Redeem() {
       console.log(error);
       setCurrentState(false);
       tooltip.error({
-        content: "Transaction failed due to a network error. Please refresh the page and try again.",
+        content:
+          "Transaction failed due to a network error. Please refresh the page and try again.",
         duration: 5000,
       });
     }
@@ -249,7 +243,7 @@ export default function Redeem() {
       return;
     }
 
-    if (amount === '' || amount === undefined) {
+    if (amount === "" || amount === undefined) {
       return;
     }
 
@@ -267,7 +261,8 @@ export default function Redeem() {
 
   const renderCollateralInfo = () => {
     const selectedCollateralInfo = collaterals[selectCollateral]?.collateral;
-    const collateralSymbol = selectedCollateralInfo?.symbol || selectedCollateralInfo?.name || 'ROSE';
+    const collateralSymbol =
+      selectedCollateralInfo?.symbol || selectedCollateralInfo?.name || "ROSE";
 
     return (
       <div className={styles.data} style={{ borderTop: "none" }}>
@@ -281,11 +276,15 @@ export default function Redeem() {
         </div>
         <div className={styles.dataItem}>
           <p>Redemption Fee Amount</p>
-          <span>{formatNumber(feeAmount)} {collateralSymbol}</span>
+          <span>
+            {formatNumber(feeAmount)} {collateralSymbol}
+          </span>
         </div>
         <div className={styles.dataItem}>
           <p>Expected Collateral Received</p>
-          <span>{formatNumber(expectedCollateralReceived)} {collateralSymbol}</span>
+          <span>
+            {formatNumber(expectedCollateralReceived)} {collateralSymbol}
+          </span>
         </div>
         <div className={styles.dataItem}>
           <p>Value of Collateral Received</p>
@@ -298,7 +297,6 @@ export default function Redeem() {
       </div>
     );
   };
-
 
   return (
     <>
@@ -387,11 +385,11 @@ export default function Redeem() {
                             placeholder="0"
                             onWheel={(e) => e.target.blur()}
                             id="amount"
-                              min="0"
-                              step="any"
-                              onKeyDown={onKeyDown}
-                              onChange={changeAmount}
-                              value={amount === 0 ? "0" : amount || ""}
+                            min="0"
+                            step="any"
+                            onKeyDown={onKeyDown}
+                            onChange={changeAmount}
+                            value={amount === 0 ? "0" : amount || ""}
                           />
                         </div>
                         <span className="font_14 gray">bitUSD</span>
@@ -400,11 +398,11 @@ export default function Redeem() {
                         className="changeBalance"
                         style={{ marginTop: "12px" }}
                       >
-                          <span onClick={() => changeAmountValue(0.25)}>25%</span>
-                          <span onClick={() => changeAmountValue(0.5)}>50%</span>
-                          <span onClick={() => changeAmountValue(0.75)}>75%</span>
+                        <span onClick={() => changeAmountValue(0.25)}>25%</span>
+                        <span onClick={() => changeAmountValue(0.5)}>50%</span>
+                        <span onClick={() => changeAmountValue(0.75)}>75%</span>
                         <span
-                            onClick={() => changeAmountValue(1)}
+                          onClick={() => changeAmountValue(1)}
                           style={{ border: "none" }}
                         >
                           Max
@@ -431,7 +429,7 @@ export default function Redeem() {
                     >
                       Redeem
                     </div> */}
-                      {renderCollateralInfo()}
+                    {renderCollateralInfo()}
                   </div>
                 )}
               </div>
@@ -441,9 +439,9 @@ export default function Redeem() {
       </div>
       {currentState ? <Wait></Wait> : null}
       {Object.keys(collaterals).length === 0 &&
-        account.status === "connected" &&
-        signatureToken?.user &&
-        signatureTrove?.user ? (
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
         <Loading></Loading>
       ) : null}
       <Footer></Footer>
