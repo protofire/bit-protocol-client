@@ -145,19 +145,6 @@ const abi = [
   },
   {
     inputs: [],
-    name: "BIT_CORE",
-    outputs: [
-      {
-        internalType: "contract IBitCore",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "MAX_PRICE_DEVIATION_FROM_PREVIOUS_ROUND",
     outputs: [
       {
@@ -177,6 +164,19 @@ const abi = [
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "bit_CORE",
+    outputs: [
+      {
+        internalType: "contract IBitCore",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",

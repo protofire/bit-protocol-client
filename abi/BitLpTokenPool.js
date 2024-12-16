@@ -187,32 +187,6 @@ const abi = [
     type: "event",
   },
   {
-    inputs: [],
-    name: "BIT",
-    outputs: [
-      {
-        internalType: "contract IERC20",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "BIT_CORE",
-    outputs: [
-      {
-        internalType: "contract IBitCore",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -274,6 +248,32 @@ const abi = [
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "bit",
+    outputs: [
+      {
+        internalType: "contract IERC20",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "bit_CORE",
+    outputs: [
+      {
+        internalType: "contract IBitCore",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",

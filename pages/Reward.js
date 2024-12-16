@@ -95,7 +95,6 @@ export default function Reward() {
       claimArr.push(usdcPool);
     }
     try {
-      // console.log(account, "0x0000000000000000000000000000000000000000", claimArr, 10)
       const tx = await bitVaultMain.batchClaimRewards(
         account,
         "0x0000000000000000000000000000000000000000",

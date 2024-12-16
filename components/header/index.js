@@ -1,107 +1,66 @@
 import Head from "next/head";
 import styles from "./index.module.scss";
-import { useConnectWallet } from "@web3-onboard/react";
-import { ethers } from "ethers";
-import { useEffect, useState, useContext, useRef } from "react";
-import { UserContext } from "../../hook/user";
+import { useEffect, useState, useContext } from "react";
+import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
+import { BlockchainContext } from "../../hook/blockchain";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import BigNumber from "bignumber.js";
-import Wait from "../tooltip/wait";
-import tooltip from "../tooltip";
+import { formatNumber } from "../../utils/helpers";
+import { CHAIN_ID } from "../../hook/wagmi";
 
 export default function Header(props) {
   const { menu, type, dappMenu } = props;
   const router = useRouter();
+  const account = useAccount();
 
   const {
-    account,
-    setAccount,
-    ethersProvider,
-    setEthersProvider,
-    setSigner,
-    setSignInAuth,
-    setSignInAuthToken,
-    infuraRPC,
-    idovestingQuery,
-    idovestingMain,
-    ethProviderSigner,
-    troveManagerGetters,
-    debtToken,
-    signInAuth,
-    currentState,
-    setCurrentState,
-    setCurrentWaitInfo,
-    formatNum,
-    totalTvl,
-  } = useContext(UserContext);
-
-  // const [chainId, setchainId] = useState(0);
-  // ethersProvider.send('eth_chainId').then(chainId => {
-  //     setchainId(chainId)
-  //     console.log(chainId)
-  // })
-
-  const [{ wallet, connecting }, connect, disconnect] = useConnectWallet();
-
-  const changeNetWork = async () => {
-    if (window.ethereum) {
-      try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [
-            {
-              chainId: "0x12585A9",
-            },
-          ],
-        });
-        // console.log('wallet_switchEthereumChain');
-      } catch (e) {
-        if (e.code === 4902) {
-          try {
-            await window.ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [
-                {
-                  chainId: "0x12585A9",
-                  chainName: "ZkBTC Testnet",
-                  nativeCurrency: {
-                    name: "Bitcoin",
-                    symbol: "BTC",
-                    decimals: 18,
-                  },
-                  rpcUrls: [
-                    "https://devilmorallyelephant-rpc.eu-north-2.gateway.fm/",
-                  ],
-                },
-              ],
-            });
-          } catch (addError) {
-            console.error(addError);
-          }
-        } else if (e.code === 4001) return;
+    connectors,
+    connect,
+    error: connectError,
+  } = useConnect({
+    onError(error) {
+      console.error("Connect error:", error);
+    },
+    onSuccess(data) {
+      setOpenConnect(false);
+    },
+  });
+  useEffect(() => {
+    const checkConnectors = async () => {
+      for (const connector of connectors) {
+        try {
+          const isReady = await connector
+            .getProvider()
+            .then(() => true)
+            .catch(() => false);
+          console.log(`Connector ${connector.name} ready status:`, isReady);
+        } catch (error) {
+          console.log(`Connector ${connector.name} check failed:`, error);
+        }
       }
-    }
-  };
-  useEffect(() => {
-    changeNetWork();
-  }, []);
+    };
 
-  useEffect(() => {
-    if (wallet) {
-      setEthersProvider(new ethers.providers.Web3Provider(wallet.provider));
-      setAccount(wallet.accounts[0].address);
-    } else {
-      setEthersProvider(new ethers.providers.JsonRpcProvider(infuraRPC));
-      setAccount("");
-    }
-  }, [wallet]);
+    checkConnectors();
+  }, [connectors]);
+  const { disconnect } = useDisconnect();
+  const { chains, switchChain } = useSwitchChain();
+  const [openHealth, setOpenHealth] = useState(false);
 
-  useEffect(() => {
-    if (ethersProvider) {
-      setSigner(ethersProvider.getSigner());
-    }
-  }, [ethersProvider, wallet]);
+  const {
+    signTrove,
+    checkAuth,
+    signDebtToken,
+    checkAuthToken,
+    tcr,
+    totalPricedCollateral,
+    totalSystemDebt,
+  } = useContext(BlockchainContext);
+
+  const [open, setOpen] = useState(true);
+  const [openConnect, setOpenConnect] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignInToken, setShowSignInToken] = useState(false);
+  const [openNetworks, setOpenNetworks] = useState(false);
 
   const goMenu = (id) => {
     if (menu == "Home") {
@@ -111,7 +70,17 @@ export default function Header(props) {
     }
   };
 
-  const [open, setOpen] = useState(true);
+  useEffect(() => {
+    if (account.status === "connected" && menu !== "Home") {
+      // FOR STAGING ONLY / FOR PRODUCTION SHOULD BE OASIS SAPPHIRE MAINNET 23294
+      if (account.chainId !== 23294) {
+        switchChain({ chainId: 23294 });
+      }
+      setShowSignIn(!checkAuth());
+      setShowSignInToken(!checkAuthToken());
+    }
+  }, [account, menu]);
+
   const openH5Menu = async () => {
     setOpen(!open);
   };
@@ -125,157 +94,230 @@ export default function Header(props) {
     }
   };
 
-  const [showSignIn, setShowSignIn] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [hasAttemptedSwitch, setHasAttemptedSwitch] = useState(false);
 
-  const [showSignInToken, setShowSignInToken] = useState(false);
-
-  useEffect(() => {
-    if (account && menu !== "Home") {
-      const auth = JSON.parse(localStorage.getItem("signInAuth"));
-      const authToken = JSON.parse(localStorage.getItem("signInAuthToken"));
-      if (!auth) {
-        setShowSignIn(true);
-      } else {
-        const time = Math.floor(new Date().getTime() / 1000);
-        if (account !== auth.user || time - auth.time >= 86400) {
-          setShowSignIn(true);
-        } else {
-          setSignInAuth(auth);
-          setSignInAuthToken(authToken);
-        }
-      }
-    }
-  }, [account, menu]);
-
-  const [showClaim, setShowClaim] = useState(false);
-  const [showClaim2, setshowClaim2] = useState(false);
-  const [airDrop, setAirDrop] = useState(0);
-  const [unlockableAmount, setUnlockableAmount] = useState(0);
-  const [totalLocked, setTotalLocked] = useState(0);
-  const [lastUnlockingTime, setLastUnlockingTime] = useState(0);
-  const [unlockingStartTime, setUnlockingStartTime] = useState(0);
-  const queryData = async () => {
-    if (idovestingQuery && account) {
-      const unlockingInfo = await idovestingQuery.UnlockingInfo(account);
-      setTotalLocked(Number(unlockingInfo.totalLocked._hex) / 1e18);
-      const airDrop = new BigNumber(unlockingInfo.airdrop._hex)
-        .div(1e18)
-        .toFixed();
-      setAirDrop(Number(airDrop));
-      const unlockingStartTime = await idovestingQuery.unlockingStartTime();
-      var timestamp = Date.parse(new Date()) / 1000;
-      if (
-        Number(airDrop) > 1 &&
-        unlockingInfo.isClaimed == false &&
-        timestamp > Number(unlockingStartTime._hex)
-      ) {
-        setShowClaim(true);
-      } else {
-        setShowClaim(false);
-      }
-
-      setLastUnlockingTime(Number(unlockingInfo.lastUnlockingTime._hex));
-      setUnlockingStartTime(Number(unlockingStartTime._hex));
-
-      const unlockableAmount = await idovestingQuery.getUnlockableAmount(
-        account
-      );
-      setUnlockableAmount(Number(unlockableAmount._hex) / 1e18);
-    }
-  };
-
-  let timerLoading = useRef(null);
-  // useEffect(() => {
-  //   queryData();
-  //   timerLoading.current = setInterval(() => {
-  //     queryData();
-  //   }, 2000);
-  //   return () => clearInterval(timerLoading.current);
-  // }, [account]);
-
-  const [Claimed, setClaimed] = useState(0);
-  const [Remaining, setRemaining] = useState(0);
-  useEffect(() => {
-    if (lastUnlockingTime <= 0) {
-      setClaimed(0);
-      setRemaining(totalLocked);
-    } else {
-      const claimed =
-        ((Number(lastUnlockingTime) - Number(unlockingStartTime)) /
-          (180 * 86400)) *
-        Number(totalLocked);
-      setClaimed(claimed);
-      setRemaining(totalLocked - claimed);
-    }
-  }, [lastUnlockingTime, unlockingStartTime, totalLocked]);
-
-  const ClaimIdo = async () => {
-    if (showClaim) {
+  const handleChainAddition = async (provider) => {
+    try {
+      // Check if chain is already added
       try {
-        const idoTx = await idovestingMain.claimAirdrop();
-        setCurrentWaitInfo({
-          type: "loading",
-          info:
-            "Claim " + Number(airDrop.toFixed(4)).toLocaleString() + " $bitGOV",
+        const chain = await provider.request({
+          method: "eth_chainId",
+          params: [],
         });
-        setCurrentState(true);
-        const result = await idoTx.wait();
-        setCurrentState(false);
-        if (result.status === 0) {
-          tooltip.error({
-            content:
-              "Transaction failed due to a network error. Please refresh the page and try again.",
-            duration: 5000,
-          });
-        } else {
-          tooltip.success({ content: "Successful", duration: 5000 });
+
+        if (chain === `0x${CHAIN_ID.SAPPHIRE.toString(16)}`) {
+          return true;
         }
       } catch (error) {
-        console.log(error);
-        setCurrentState(false);
-        tooltip.error({
-          content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
-          duration: 5000,
-        });
+        console.error("Error checking chain:", error);
       }
-    } else if (unlockableAmount) {
-      setshowClaim2(true);
+
+      // Add the network
+      await provider.request({
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: `0x${CHAIN_ID.SAPPHIRE.toString(16)}`,
+            chainName: "Oasis Sapphire",
+            nativeCurrency: {
+              name: "ROSE",
+              symbol: "ROSE",
+              decimals: 18,
+            },
+            rpcUrls: ["https://sapphire.oasis.dev"],
+            blockExplorerUrls: ["https://explorer.sapphire.oasis.dev"],
+          },
+        ],
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error adding chain:", error);
+      if (error.code === 4001) {
+        throw new Error("User rejected adding the network");
+      }
+      throw error;
     }
   };
 
-  const Claim = async () => {
-    if (unlockableAmount <= 0.001) {
-      return;
-    }
+  const handleConnect = async (connector) => {
+    if (isConnecting) return;
+
     try {
-      const idoTx = await idovestingMain.vest(account);
-      setCurrentWaitInfo({
-        type: "loading",
-        info: "Claim " + formatNum(unlockableAmount) + " $bitGOV",
-      });
-      setCurrentState(true);
-      const result = await idoTx.wait();
-      setCurrentState(false);
-      if (result.status === 0) {
-        tooltip.error({
-          content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
-          duration: 5000,
-        });
+      setIsConnecting(true);
+
+      if (connector.name === "Coinbase Wallet") {
+        try {
+          // Get the provider
+          const provider = await connector.getProvider();
+
+          if (!provider) {
+            throw new Error("Unable to get Coinbase Wallet provider");
+          }
+
+          // Try to add the chain first, but don't fail if it errors
+          try {
+            await handleChainAddition(provider);
+          } catch (error) {
+            // Log but don't throw for chain addition errors
+            console.warn("Chain addition warning:", error.message);
+            // Only throw if it's a user rejection
+            if (error.code === 4001) {
+              throw error;
+            }
+          }
+
+          // Request accounts first
+          const accounts = await provider.request({
+            method: "eth_requestAccounts",
+          });
+
+          if (!accounts || accounts.length === 0) {
+            throw new Error("No accounts received");
+          }
+
+          // Then attempt the wagmi connection
+          await connect({
+            connector,
+            chainId: CHAIN_ID.SAPPHIRE,
+          });
+
+          // Wait a bit for the connection to be established
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // Try switching to the correct chain
+          try {
+            await provider.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: `0x${CHAIN_ID.SAPPHIRE.toString(16)}` }],
+            });
+          } catch (switchError) {
+            // Ignore switch errors - the chain might already be added
+            console.warn("Chain switch warning:", switchError.message);
+          }
+
+          setOpenConnect(false);
+        } catch (error) {
+          console.error("Coinbase connection error:", error);
+
+          // Only throw for actual connection errors
+          if (error.code === 4001) {
+            throw new Error("Connection rejected by user");
+          } else if (
+            error.message?.includes("provider is undefined") ||
+            error.message?.includes("Unable to get Coinbase Wallet provider")
+          ) {
+            throw new Error(
+              "Please install the Coinbase Wallet extension or open in Coinbase Wallet browser"
+            );
+          } else if (!error.message?.includes("chain")) {
+            // Don't throw for chain-related errors
+            throw error;
+          }
+
+          if (error.message?.includes("chain")) {
+            setOpenConnect(false);
+          }
+        }
       } else {
-        tooltip.success({ content: "Successful", duration: 5000 });
+        // Handle other wallets
+        await connect({
+          connector,
+          chainId: CHAIN_ID.SAPPHIRE,
+        });
+        setOpenConnect(false);
       }
     } catch (error) {
-      console.log(error);
-      setCurrentState(false);
-      tooltip.error({
-        content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
-        duration: 5000,
-      });
+      console.error("Connection error:", error);
+      let errorMessage = "Failed to connect wallet. ";
+
+      if (error.code === 4001) {
+        errorMessage += "User rejected the connection.";
+      } else if (error.message?.includes("provider")) {
+        errorMessage +=
+          "Please install the Coinbase Wallet extension or open in Coinbase Wallet browser.";
+      } else {
+        errorMessage += error.message || "Please try again.";
+      }
+
+      // Only show alert for non-chain-related errors
+      if (!error.message?.includes("chain")) {
+        alert(errorMessage);
+      }
+    } finally {
+      setIsConnecting(false);
     }
   };
+
+  useEffect(() => {
+    if (account.status === "connected" && !hasAttemptedSwitch) {
+      const switchChainIfNeeded = async () => {
+        if (account.chainId !== CHAIN_ID.SAPPHIRE) {
+          try {
+            setHasAttemptedSwitch(true);
+            await switchChain({ chainId: CHAIN_ID.SAPPHIRE });
+          } catch (error) {
+            console.error("Chain switch error:", error);
+            // Don't throw, just log the error
+          }
+        }
+      };
+
+      switchChainIfNeeded();
+    }
+  }, [account.status, account.chainId, hasAttemptedSwitch]);
+
+  // Reset switch attempt flag on disconnect
+  useEffect(() => {
+    if (account.status === "disconnected") {
+      setHasAttemptedSwitch(false);
+    }
+  }, [account.status]);
+
+  useEffect(() => {
+    if (account.isConnected) {
+      setOpenConnect(false);
+    }
+  }, [account.isConnected]);
+
+  const handleDisconnect = async () => {
+    try {
+      // Clear local storage
+      localStorage.removeItem(`signInAuth-${account.chainId}`);
+      localStorage.removeItem(`signInToken-${account.chainId}`);
+
+      // Reset all relevant states
+      setShowSignIn(false);
+      setShowSignInToken(false);
+      setOpenConnect(false);
+      setOpenNetworks(false);
+      setHasAttemptedSwitch(false);
+
+      // Perform the disconnect
+      await disconnect();
+
+      // Force a page reload after a short delay to ensure clean state
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    } catch (error) {
+      console.error("Disconnect error:", error);
+      alert("Error disconnecting. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    if (account.status === "disconnected") {
+      setHasAttemptedSwitch(false);
+      setShowSignIn(false);
+      setShowSignInToken(false);
+
+      // Clear auth storage
+      localStorage.removeItem(`signInAuth-${account.chainId}`);
+      localStorage.removeItem(`signInToken-${account.chainId}`);
+    }
+  }, [account.status, account.chainId]);
 
   return (
     <>
@@ -289,12 +331,31 @@ export default function Header(props) {
       </Head>
       <div className={styles.head}>
         <div className={styles.headMain} id="vine">
-          <Link href="/" className={styles.logo}>
-            <img src="/bitusd-logo.svg" alt="logo" />
+          <div className={styles.logo}>
+            <Link href="/" className={styles.logo}>
+              <img
+                src="/bitusd-logo.svg"
+                alt="logo"
+                className={styles.logoImg}
+              />
+            </Link>
             {type == "dapp" ? (
-              <span className="tvl">TVL:${formatNum(totalTvl)}</span>
+              <div className={styles.main}>
+                <div
+                  className={styles.health}
+                  onClick={() => setOpenHealth(true)}
+                >
+                  <img src="/icon/heart.svg" alt="heart"></img>
+                  {account.status === "connected"
+                    ? tcr >= 1.1579208923731621e61
+                      ? "∞"
+                      : `${formatNumber(tcr)}%`
+                    : 0}
+                </div>
+              </div>
             ) : null}
-          </Link>
+          </div>
+
           {type == "dapp" ? (
             <div className={styles.dappList}>
               <Link
@@ -302,14 +363,7 @@ export default function Header(props) {
                 href="/Vault"
                 rel="nofollow noopener noreferrer"
               >
-                <span>Vault</span>
-              </Link>
-              <Link
-                className={dappMenu == "Mint" ? `${styles.active}` : null}
-                href="/Mint"
-                rel="nofollow noopener noreferrer"
-              >
-                <span>Mint bitUSD</span>
+                <span>Vaults</span>
               </Link>
               <Link
                 className={dappMenu == "Earn" ? `${styles.active}` : null}
@@ -387,7 +441,7 @@ export default function Header(props) {
                 </div>
               </div>
               <span onClick={() => goMenu("faq")}>FAQ</span>
-              <div className="menu-container">
+              {/* <div className="menu-container">
                 <span>IDO</span>
                 <div className="dropdown-menu">
                   <Link
@@ -405,69 +459,69 @@ export default function Header(props) {
                     Whitelist Raffle
                   </Link>
                 </div>
-              </div>
-              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
+              </div> */}
+              {/* <Link target="_blank" href="" rel="nofollow noopener noreferrer">
                 <span>Disclaimer</span>
-              </Link>
+              </Link> */}
             </div>
           )}
 
           <div className={styles.menuList}>
-            {menu == "Home" ? (
-              parseInt(new Date().getTime() / 1000) < 1709730000 ? (
-                <div div className="button soon">
-                  <span className="show">Launch App</span>
-                  <span className="hide">Launching Soon</span>
-                </div>
-              ) : (
-                <div div className="button">
-                  <Link href="/Vault">
-                    <span>Launch App</span>
-                  </Link>
-                </div>
-              )
-            ) : null}
-            <>
-              <div className="h5None">
-                {wallet ? (
-                  <div style={{ display: "flex", gap: "5px" }}>
-                    <div style={{ display: "flex", gap: "5px" }}>
-                      <div className="account">
-                        {account.slice(0, 5) + ".." + account.slice(-5)}
-                      </div>
-                      <div
-                        className="button h5None"
-                        style={{ minWidth: "auto" }}
-                        onClick={() => disconnect(wallet)}
-                      >
-                        Disconnect
-                      </div>
-                    </div>
-                    {showClaim || unlockableAmount ? (
-                      <div
-                        className={`${"button"} ${styles.faucet}`}
-                        style={{ minWidth: "auto" }}
-                      >
-                        <span onClick={() => ClaimIdo()}>Claim</span>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : (
+            {type != "dapp" ? (
+              <div div className="button">
+                <Link href="/Vault">
+                  <span>Launch App</span>
+                </Link>
+              </div>
+            ) : (
+              <>
+                {account.status === "connected" && (
                   <div
-                    className="button"
-                    disabled={connecting}
-                    style={{ minWidth: "auto" }}
-                    onClick={() => (wallet ? disconnect(wallet) : connect())}
+                    className={styles.network}
+                    onClick={() => setOpenNetworks(true)}
                   >
-                    {connecting
-                      ? "Connecting"
-                      : wallet
-                      ? "Disconnect"
-                      : "Connect Wallet"}
+                    {account.chainId === 19236265 ? (
+                      <img src="/dapp/btc-logo.svg" alt="chainLogo" />
+                    ) : (
+                      <img src="/dapp/rose.svg" alt="chainLogo" />
+                    )}
+                    {account?.chain?.name}
                   </div>
                 )}
-              </div>
-            </>
+
+                <div className="h5None">
+                  {account.status === "connected" ? (
+                    <div style={{ display: "flex", gap: "5px" }}>
+                      <div style={{ display: "flex", gap: "5px" }}>
+                        <div className="account">
+                          {account.address.slice(0, 5) +
+                            ".." +
+                            account.address.slice(-5)}
+                        </div>
+                        <div
+                          className="button h5None"
+                          style={{ minWidth: "auto" }}
+                          onClick={handleDisconnect}
+                        >
+                          Disconnect
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="button"
+                      style={{
+                        minWidth: "auto",
+                        opacity: isConnecting ? 0.7 : 1,
+                      }}
+                      onClick={() => !isConnecting && setOpenConnect(true)}
+                    >
+                      {isConnecting ? "Connecting..." : "Connect Wallet"}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             <div className={styles.h5Menu} onClick={openH5Menu}>
               {open ? (
@@ -479,269 +533,195 @@ export default function Header(props) {
           </div>
         </div>
       </div>
-
-      {!open ? (
-        type == "dapp" ? (
-          <div className={styles.h5Block}>
-            <div className={styles.h5Item}>
-              <Link href="/Vault" rel="nofollow noopener noreferrer">
-                <span>Vault</span>
-              </Link>
-            </div>
-            <div className={styles.h5Item}>
-              <Link href="/Mint" rel="nofollow noopener noreferrer">
-                <span>Mint bitUSD</span>
-              </Link>
-            </div>
-            <div className={styles.h5Item}>
-              <Link href="/Earn" rel="nofollow noopener noreferrer">
-                <span>Earn</span>
-              </Link>
-            </div>
-            {/* <div className={styles.h5Item}>
-              <Link href="/Reward" rel="nofollow noopener noreferrer">
-                <span>Reward</span>
-              </Link>
-            </div> */}
-            {/* <div className={styles.h5Item}>
-              <Link href="/Lock" rel="nofollow noopener noreferrer">
-                <span>Lock</span>
-              </Link>
-            </div> */}
-            <div className={styles.h5Item}>
-              <Link href="/Redeem" rel="nofollow noopener noreferrer">
-                <span>Redeem</span>
-              </Link>
-            </div>
-            {/* <div className={styles.h5Item}>
-              <Link href="/Vote" rel="nofollow noopener noreferrer">
-                <span>Vote</span>
-              </Link>
-            </div> */}
-            <div className="h5user">
-              {wallet ? (
-                <>
-                  <div style={{ display: "flex", gap: "5px" }}>
-                    <div className="account">
-                      {account.slice(0, 5) + ".." + account.slice(-5)}
-                    </div>
-                    <div
-                      className="button"
-                      style={{ minWidth: "auto" }}
-                      onClick={() => disconnect(wallet)}
-                    >
-                      Disconnect
-                    </div>
-                    {showClaim || unlockableAmount ? (
-                      <div
-                        className={`${"button"} ${styles.claim}`}
-                        style={{ minWidth: "auto" }}
-                      >
-                        <span onClick={() => ClaimIdo()}>Claim</span>
-                      </div>
-                    ) : null}
-                  </div>
-                </>
-              ) : (
-                <div
-                  className="button"
-                  disabled={connecting}
-                  style={{ minWidth: "auto" }}
-                  onClick={() => (wallet ? disconnect(wallet) : connect())}
-                >
-                  {connecting
-                    ? "Connecting"
-                    : wallet
-                    ? "Disconnect"
-                    : "Connect Wallet"}
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className={styles.h5Block}>
-            <div className={styles.h5Item} onClick={() => goMenu_h5("works")}>
-              How it works
-            </div>
-            <div className={styles.h5Item}>
-              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
-                <span>Docs</span>
-              </Link>
-            </div>
-            <div className={`${styles.h5Item}`}>
-              <div>Socials</div>
-              <div className={styles.socials}>
-                <div>
-                  <Link
-                    target="_blank"
-                    href=""
-                    rel="nofollow noopener noreferrer"
-                  >
-                    Twitter/X
-                  </Link>
-                </div>
-                <div>
-                  <Link
-                    target="_blank"
-                    href=""
-                    rel="nofollow noopener noreferrer"
-                  >
-                    Telegram Community
-                  </Link>
-                </div>
-                <div>
-                  <Link
-                    target="_blank"
-                    href=""
-                    rel="nofollow noopener noreferrer"
-                  >
-                    Telegram Announcements
-                  </Link>
-                </div>
-                <div>
-                  <Link
-                    target="_blank"
-                    href=""
-                    rel="nofollow noopener noreferrer"
-                  >
-                    Medium
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className={styles.h5Item} onClick={() => goMenu_h5("faq")}>
-              FAQ
-            </div>
-            <div className={styles.h5Item}>
-              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
-                <span>Disclaimer</span>
-              </Link>
-            </div>
-
-            <div className="h5user">
-              {wallet ? (
-                <>
-                  <div style={{ display: "flex", gap: "5px" }}>
-                    <div className="account">
-                      {account.slice(0, 5) + ".." + account.slice(-5)}
-                    </div>
-                    <div
-                      className="button"
-                      style={{ minWidth: "auto" }}
-                      onClick={() => disconnect(wallet)}
-                    >
-                      Disconnect
-                    </div>
-                    {showClaim || unlockableAmount ? (
-                      <div
-                        className={`${"button"} ${styles.claim}`}
-                        style={{ minWidth: "auto" }}
-                      >
-                        <span onClick={() => ClaimIdo()}>Claim</span>
-                      </div>
-                    ) : null}
-                  </div>
-                </>
-              ) : (
-                <div
-                  className="button"
-                  disabled={connecting}
-                  style={{ minWidth: "auto" }}
-                  onClick={() => (wallet ? disconnect(wallet) : connect())}
-                >
-                  {connecting
-                    ? "Connecting"
-                    : wallet
-                    ? "Disconnect"
-                    : "Connect Wallet"}
-                </div>
-              )}
-            </div>
-          </div>
-        )
-      ) : null}
-
-      {/* {showSignIn ? (
+      {openConnect ? (
         <div className="promptBox">
           <div className="boxMain">
             <div className="boxInfo">
+              <h2>Connect a wallet</h2>
+              <img
+                className={styles.close}
+                onClick={() => setOpenConnect(false)}
+                src="/icon/close.svg"
+                alt="close"
+              />
+            </div>
+            {connectors.map((connector) => (
+              <div
+                className="divBtn"
+                key={connector.uid}
+                onClick={() => {
+                  if (!isConnecting) {
+                    handleConnect(connector);
+                  }
+                }}
+                id={"connect-" + connector.id}
+                style={{
+                  opacity: isConnecting ? 0.5 : 1,
+                  cursor: isConnecting ? "not-allowed" : "pointer",
+                }}
+              >
+                {connector.name === "Injected (Sapphire)"
+                  ? "Browser wallet (Sapphire)"
+                  : connector.name === "Injected"
+                  ? "Browser wallet"
+                  : connector.name}
+                {isConnecting &&
+                  connector.name === "Coinbase Wallet" &&
+                  " (Connecting...)"}
+
+                {connector.name === "Coinbase Wallet" ? (
+                  <img
+                    className={styles.close}
+                    src="/icon/coinbase.svg"
+                    alt="close"
+                  />
+                ) : (
+                  <img
+                    className={styles.close}
+                    src="/icon/browserWallet.svg"
+                    alt="close"
+                  />
+                )}
+              </div>
+            ))}
+
+            {connectError && (
+              <div
+                style={{ color: "red", marginTop: "10px", textAlign: "center" }}
+              >
+                {connectError.message}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+      {openNetworks ? (
+        <div className="promptBox">
+          <div className="boxMain">
+            <div className="boxInfo">
+              <h2>Switch network</h2>
+              <img
+                className={styles.close}
+                onClick={() => setOpenNetworks(false)}
+                src="/icon/close.svg"
+                alt="close"
+              ></img>
+            </div>
+            {chains.map((chain) => (
+              <div
+                className="divBtn"
+                key={chain.id}
+                onClick={() => {
+                  switchChain({ chainId: chain.id });
+                  setOpenNetworks(false);
+                }}
+                id={"switch-" + chain.id}
+              >
+                {chain.name}
+
+                {chain.id === 23294 || 23295 ? (
+                  <img
+                    className={styles.close}
+                    src="/dapp/rose.svg"
+                    alt="close"
+                  ></img>
+                ) : (
+                  <img
+                    className={styles.close}
+                    src="/dapp/btc-logo.svg"
+                    alt="close"
+                  ></img>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {openHealth ? (
+        <div className="promptBox">
+          <div className="boxMain">
+            <div className="boxInfo">
+              <h2>Protocol Statistics</h2>
+              <img
+                className={styles.close}
+                onClick={() => setOpenHealth(false)}
+                src="/icon/close.svg"
+                alt="close"
+              ></img>
+            </div>
+            <div className="infoMain">
+              <div className="data" style={{ borderTop: "none" }}>
+                <div className="dataItem">
+                  <p>Total Collateral Value</p>
+                  <span>
+                    {account.status === "connected"
+                      ? `$${formatNumber(totalPricedCollateral)}`
+                      : 0}
+                  </span>
+                </div>
+                <div className="dataItem">
+                  <p>Total Debt Value</p>
+                  <span>
+                    {account.status === "connected"
+                      ? `$${formatNumber(totalSystemDebt)}`
+                      : 0}
+                  </span>
+                </div>
+                <div className="dataItem">
+                  <p>TCR</p>
+                  <span>
+                    {account.status === "connected"
+                      ? tcr >= 1.1579208923731621e61
+                        ? "∞"
+                        : `${formatNumber(tcr)}%`
+                      : 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {showSignIn ? (
+        <div className="promptSign">
+          <div className="firstBox">
+            <div className="infoBox">
               Bit Protocol is the first and only encrypted DeFi protocol for
               Web3 that provides intelligent privacy features. Only your
               personal signature grants access to individual data. To streamline
               the signing process and enhance user experience, you are required
               to use EIP-712 to "sign in" once per day.
             </div>
-            <div className="button rightAngle" onClick={() => signIn()}>
-              sign in
-            </div>
-          </div>
-        </div>
-      ) : null} */}
-
-      {/* {showSignInToken ? (
-        <div className="promptBox">
-          <div className="boxMain">
-            <div className="boxInfo">
-              Please sign in your wallet's pop-up to allow Bit Protocol to
-              access your bitUSD balance.
-            </div>
-            <div className="button rightAngle" onClick={() => signInToken()}>
-              sign in
-            </div>
-          </div>
-        </div>
-      ) : null} */}
-
-      {showClaim2 ? (
-        <div className="infoTip">
-          <div className="info infoNoPadding">
-            <div className="infoTitle">
-              <div>
-                <img className="bitUSD" src="/dapp/bitUSD.svg" alt="bitUSD" />
-                <p>Claim $bitGOV</p>
-              </div>
-              <div className="close">
-                <img
-                  src="/icon/close.svg"
-                  alt="icon"
-                  onClick={() => setshowClaim2(false)}
-                />
-              </div>
-            </div>
-            <div className="data">
-              <div className="dataItem">
-                <p>Total available</p>
-                <span>{formatNum(totalLocked)} $bitGOV</span>
-              </div>
-              <div className="dataItem">
-                <p>Claimed</p>
-                <span>{formatNum(Claimed)} $bitGOV</span>
-              </div>
-              <div className="dataItem">
-                <p>Remaining</p>
-                <span>{formatNum(Remaining)} $bitGOV</span>
-              </div>
-              <div className="dataItem">
-                <p>Claimable</p>
-                <span>{formatNum(unlockableAmount)} $bitGOV</span>
-              </div>
-              <div
-                className={
-                  unlockableAmount > 0.001
-                    ? "button rightAngle height"
-                    : "button rightAngle height disable noactive"
-                }
-                style={{ marginTop: "10px" }}
-                onClick={() => Claim()}
-              >
-                Claim
-              </div>
+            <div className="button" onClick={() => signTrove()}>
+              Sign in
             </div>
           </div>
         </div>
       ) : null}
 
-      {currentState ? <Wait></Wait> : null}
+      {showSignInToken ? (
+        <div className="promptSign">
+          <div className="firstBox">
+            <div className="infoBox">
+              Please sign in your wallet's pop-up to allow Bit Protocol to
+              access your bitUSD balance.
+            </div>
+            <div
+              className="button"
+              onClick={async () => {
+                try {
+                  await signDebtToken();
+                } catch (error) {
+                  console.error("Failed to sign:", error);
+                }
+              }}
+            >
+              Sign in
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {/* {status === "pending" ? <Wait></Wait> : null} */}
     </>
   );
 }

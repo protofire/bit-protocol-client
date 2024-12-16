@@ -2,50 +2,89 @@ import styles from "../styles/dapp.module.scss";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import { useState, useContext, useRef, useEffect } from "react";
-import DepositsAndDebt from "../components/dapp/depositsAndDebt";
-import { UserContext } from "../hook/user";
-import { useRouter } from "next/router";
-import BigNumber from "bignumber.js";
+import { BlockchainContext } from "../hook/blockchain";
 import Wait from "../components/tooltip/wait";
+import Loading from "../components/tooltip/loading";
 import tooltip from "../components/tooltip";
 import Link from "next/link";
+import { formatNumber, fromBigNumber } from "../utils/helpers";
+import BigNumber from "bignumber.js";
+import { addresses } from "../utils/addresses";
+import { useAccount } from "wagmi";
+import { useRouter } from "next/router";
 
 export default function Earn() {
   const router = useRouter();
 
+  const account = useAccount();
   const {
-    currentState,
+    bitUSDCirculation,
+    stabilityPool,
+    boost,
+    getRosePrice,
+    bitUSDBalance,
+    provideToSP,
     setCurrentState,
     setCurrentWaitInfo,
-    account,
-    bitLpTokenPoolMain,
-    mockLpMain,
-    BitLpTokenPool,
-    lpPrice,
-    stabilityPoolMain,
-    stabilityPoolQuery,
-    bitUSDbalance,
-    wBtcPrice,
-    totalWbtc,
-    debtTokenQuery,
-    debt,
-    troveManagerQuery,
-    bitPrice,
-    boost,
-    formatNum,
-    BITUSDUSDCLPMain,
-    usdcPoolMain,
-    usdcPool,
-    vaultEarned,
-    stabilityEarned,
-  } = useContext(UserContext);
+    currentState,
+    withdrawFromSP,
+    claimCollateralGains,
+    bitGovLpData,
+    bitUsdLpData,
+    collaterals,
+    // userTotalDebt,
+    claimableRewards,
+    approveBitGovLp,
+    stakeBitGovLP,
+    withdrawBitGovLP,
+    approveBitUsdLp,
+    stakeBitUsdLP,
+    withdrawBitUsdLP,
+    signatureTrove,
+    signatureToken,
+    getLpTokenPrice,
+    getBitGovPrice,
+    // getTokenBalance,
+  } = useContext(BlockchainContext);
 
+  const [tvl, setTvl] = useState(0);
   const [showEarnMain, setShowEarnMain] = useState(false);
   const [changeType, setChangeType] = useState("Mint");
   const [coin, setCoin] = useState("bitUSD");
   const [typeName, setTypeName] = useState("");
   const [maxBalance, setMaxBalance] = useState(0);
   const [buttonName, setButtonName] = useState("Stake");
+  const [amount, setAmount] = useState("");
+  const [stakeLpBalance, setStakeLpBalance] = useState(0);
+  const [unStakeLpBalance, setUnStakeLpBalance] = useState(0);
+  const [allowance, setAllowance] = useState(0);
+  const [accountDeposits, setAccountDeposits] = useState(0);
+  const [stakeLpBalance2, setStakeLpBalance2] = useState(0);
+  const [unStakeLpBalance2, setUnStakeLpBalance2] = useState(0);
+  const [allowance2, setAllowance2] = useState(0);
+  const [mockLpBalance, setMockLpBalance] = useState(0);
+  const [VUSDLpBalance, setVUSDLpBalance] = useState(0);
+  const [stabilityPoolBalance, setStabilityPoolBalance] = useState(0);
+  //bitUSD Minting
+  // const [vUSDCirc, setvUSDCirc] = useState(0);
+  const [baseAPR1, setBaseAPR1] = useState(0);
+  //VINE/ROSE LP
+  const [baseAPR2, setBaseAPR2] = useState(0);
+  //Stability Pool
+  const [baseAPR3, setBaseAPR3] = useState(0);
+  //bitUSD/USDC LP
+  const [baseAPR4, setBaseAPR4] = useState(0);
+  const [USDCtotalSupply, setUSDCtotalSupply] = useState(0);
+  const [depositorCollateralGain, setDepositorCollateralGain] = useState([]);
+  const [vUSDBaseApr1, setvUSDBaseApr1] = useState(0);
+  const [vUSDBaseApr2, setvUSDBaseApr2] = useState(0);
+  const [vUSDBaseApr3, setvUSDBaseApr3] = useState(0);
+  const [vUSDBaseApr4, setvUSDBaseApr4] = useState(0);
+  const [bitGovPrice, setBitGovPrice] = useState(0);
+  const [bitGovLPPrice, setBitGovbitGovLPPrice] = useState(0);
+  const [bitUsdLPPrice, setBitUsdLPPrice] = useState(0);
+
+  const rosePrice = getRosePrice();
 
   const changeTypeCoin = (type, coin) => {
     setAmount("");
@@ -65,157 +104,133 @@ export default function Earn() {
     setShowEarnMain(true);
   };
 
-  const onKeyDown = async (e) => {
-    const invalidChars = ["-", "+", "e", "E"];
-    if (invalidChars.indexOf(e.key) !== -1) {
+  const onKeyDown = (e) => {
+    // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
+    if (["-", "+", "e", "E"].includes(e.key)) {
+      e.preventDefault();
+    }
+
+    // Allow: backspace, delete, tab, escape, enter, decimal point
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", ","].includes(
+        e.key
+      )
+    ) {
+      return;
+    }
+
+    // Prevent if not a number
+    if (isNaN(Number(e.key))) {
       e.preventDefault();
     }
   };
 
-  const [amount, setAmount] = useState("");
   const changeAmount = async (e) => {
-    const value = Number(e.target.value);
-    if (value < maxBalance) {
-      setAmount(value == 0 ? "" : value);
-    } else {
+    const value = e.target.value;
+    const numValue = Number(value);
+
+    if (!/^\d*\.?\d{0,3}$/.test(value)) {
+      return;
+    }
+
+    // Allow empty string or values within range (including zero)
+    if (value === "" || (numValue >= 0 && numValue <= maxBalance)) {
+      setAmount(value === "" ? "" : numValue);
+    } else if (numValue > maxBalance) {
       setAmount(maxBalance);
     }
   };
 
-  const changeAmountVaule = (value) => {
+  const changeAmountValue = (value) => {
     setAmount(maxBalance * value);
   };
 
-  const [stakeLpBalance, setStakeLpBalance] = useState(0);
-  const [unStakeLpBalance, setUnStakeLpBalance] = useState(0);
-  const [allowance, setAllowance] = useState(0);
-  const [accountDeposits, setAccountDeposits] = useState(0);
-
-  const [stakeLpBalance2, setStakeLpBalance2] = useState(0);
-  const [unStakeLpBalance2, setUnStakeLpBalance2] = useState(0);
-  const [allowance2, setAllowance2] = useState(0);
-
-  const [mockLpBanace, setMockLpBanace] = useState(0);
-  const [BITUSDLpBanace, setBITUSDLpBanace] = useState(0);
-  const [stabilityPoolBanace, setStabilityPoolBanace] = useState(0);
-
-  //bitUSD Minting
-  const [bitUSDCirc, setbitUSDCirc] = useState(0);
-  const [baseAPR1, setBaseAPR1] = useState(0);
-
-  //BIT/wBTC LP
-  const [baseAPR2, setBaseAPR2] = useState(0);
-
-  //Stability Pool
-  const [baseAPR3, setBaseAPR3] = useState(0);
-
-  //bitUSD/USDC LP
-  const [baseAPR4, setBaseAPR4] = useState(0);
-  const [USDCtotalSupply, setUSDCtotalSupply] = useState(0);
-
-  const [depositorCollateralGain, setDepositorCollateralGain] = useState(0);
-
   const queryData = async () => {
-    if (account) {
-      //BIT/wBTC LP
-      //stake
-      // const balanceOf1 = await mockLpQuery.balanceOf(account);
-      // setStakeLpBalance((new BigNumber(balanceOf1._hex).div(1e18)).toFixed());
-      // const allowance = await mockLpQuery.allowance(account, BitLpTokenPool);
-      // setAllowance((new BigNumber(allowance._hex).div(1e18)).toFixed());
-      // //unstake
-      // const balanceOf2 = await bitLpTokenPoolQuery.balanceOf(account);
-      // setUnStakeLpBalance((new BigNumber(balanceOf2._hex).div(1e18)).toFixed());
+    if (
+      stabilityPool?.deposits >= 0 &&
+      bitUSDCirculation &&
+      collaterals &&
+      account.status === "connected" &&
+      claimableRewards
+    ) {
+      setAccountDeposits(stabilityPool.accountDeposits);
+      setDepositorCollateralGain(stabilityPool.depositorCollateralGain);
+      setStabilityPoolBalance(stabilityPool.deposits);
+      // COMMENTED OUT UNLESS WE HAVE REWARDS
+      // const bitGovLp = await bitGovLpData();
+      // const bitUsdLp = await bitUsdLpData();
+      // setStakeLpBalance(bitGovLp.balance);
+      // setAllowance(bitGovLp.allowance);
+      // setUnStakeLpBalance(bitGovLp.depositBalance);
+      // setMockLpBalance(bitGovLp.depositLpBalance);
+      // setStakeLpBalance2(bitUsdLp.balance);
+      // setAllowance2(bitUsdLp.allowance);
+      // setUnStakeLpBalance2(bitUsdLp.depositBalance);
 
-      // //bitUSD/USDC LP
-      // //stake
-      // const balanceOf4 = await BITUSDUSDCLPQuery.balanceOf(account);
-      // setStakeLpBalance2((new BigNumber(balanceOf4._hex).div(1e6)).toFixed());
-      // const allowance2 = await BITUSDUSDCLPQuery.allowance(account, usdcPool);
-      // setAllowance2((new BigNumber(allowance2._hex).div(1e18)).toFixed());
-      // //unstake
-      // const balanceOf5 = await usdcPoolQuery.balanceOf(account);
-      // setUnStakeLpBalance2((new BigNumber(balanceOf5._hex).div(1e6)).toFixed());
+      // FIGURE IT OUT HOW TO GET DEBT TOKEN BALANCE OF THE POOL
+      // const usdcBalance = await getTokenBalance()
+      // COMMENTED OUT UNLESS WE HAVE REWARDS
+      // setVUSDLpBalance(bitUsdLp.depositLpBalance);
+      // setBitUsdLPPrice(await getLpTokenPrice("bitUSD"));
+      // setBitGovbitGovLPPrice(await getLpTokenPrice("bitGOV"));
+      // setBitGovPrice(await getBitGovPrice());
 
-      //withdraw
-      const balanceOf3 = await stabilityPoolQuery.accountDeposits(account);
-      setAccountDeposits(new BigNumber(balanceOf3[0]._hex).div(1e18).toFixed());
-
-      //Claim
-      const getDepositorCollateralGain =
-        await stabilityPoolQuery.getDepositorCollateralGain(account);
-      setDepositorCollateralGain(
-        new BigNumber(getDepositorCollateralGain[0]._hex).div(1e18).toFixed()
+      //bitUSD Minting
+      setBaseAPR1(
+        collaterals[addresses.troveManager[account.chainId]].rewardRate
       );
+      setBaseAPR3(stabilityPool.rewardRate);
+      // COMMENTED OUT UNLESS WE HAVE REWARDS
+      // setBaseAPR2(bitGovLp.rewardRate);
+      // setBaseAPR4(bitUsdLp.rewardRate);
+      // setUSDCtotalSupply(bitUsdLp.totalSupply);
     }
-    // if (mockLpQuery) {
-    //     const balanceOf = await mockLpQuery.balanceOf(BitLpTokenPool);
-    //     setMockLpBanace((new BigNumber(balanceOf._hex).div(1e18)).toFixed());
-    // }
-    if (stabilityPoolQuery) {
-      const balanceOf = await stabilityPoolQuery.getTotalDebtTokenDeposits();
-      setStabilityPoolBanace(new BigNumber(balanceOf._hex).div(1e18).toFixed());
-    }
-    // const balanceOf = await debtTokenQuery.balanceOf(BITUSDUSDCLP);
-    // setBITUSDLpBanace(new BigNumber(balanceOf._hex).div(1e18).toFixed());
-
-    //bitUSD Minting
-    const bitUSDCirc = await debtTokenQuery.totalSupply();
-    setbitUSDCirc(Number(bitUSDCirc._hex) / 1e18);
-    const baseAPR1 = await troveManagerQuery.rewardRate();
-    setBaseAPR1(Number(baseAPR1._hex) === 0 ? 0 : Number(baseAPR1._hex) / 1e18);
-    // const baseAPR2 = await bitLpTokenPoolQuery.rewardRate();
-    // setBaseAPR2(Number(baseAPR2._hex) / 1e18);
-    const baseAPR3 = await stabilityPoolQuery.rewardRate();
-    setBaseAPR3(Number(baseAPR3._hex) / 1e18);
-    // const baseAPR4 = await usdcPoolQuery.rewardRate();
-    // setBaseAPR4(Number(baseAPR4._hex) / 1e18);
-
-    // const totalSupply = await BITUSDUSDCLPQuery.totalSupply();
-    // setUSDCtotalSupply(Number(totalSupply._hex) / 1e18);
   };
 
   let timerLoading = useRef(null);
+
   useEffect(() => {
     queryData();
     timerLoading.current = setInterval(() => {
       queryData();
-    }, 3000);
+    }, 30000);
     return () => clearInterval(timerLoading.current);
-  }, [account]);
-
-  const [bitUSDBaseApr1, setbitUSDBaseApr1] = useState(0);
-  const [bitUSDBaseApr2, setbitUSDBaseApr2] = useState(0);
-  const [bitUSDBaseApr3, setbitUSDBaseApr3] = useState(0);
-  const [bitUSDBaseApr4, setbitUSDBaseApr4] = useState(0);
-  useEffect(() => {
-    const bitUSDBaseApr1 =
-      (baseAPR1 * 86400 * 365 * bitPrice * 100) / bitUSDCirc;
-    setbitUSDBaseApr1(bitUSDBaseApr1);
-    const bitUSDBaseApr2 =
-      (baseAPR2 * 86400 * 365 * bitPrice * 100) /
-      (Number(mockLpBanace) * lpPrice);
-    setbitUSDBaseApr2(bitUSDBaseApr2);
-    const bitUSDBaseApr4 =
-      (baseAPR4 * 86400 * 365 * bitPrice * 100) / (Number(BITUSDLpBanace) * 2);
-    setbitUSDBaseApr4(bitUSDBaseApr4);
-    const bitUSDBaseApr3 =
-      (baseAPR3 * 86400 * 365 * bitPrice * 100) /
-      (Number(stabilityPoolBanace) + Number(totalWbtc) * wBtcPrice);
-    setbitUSDBaseApr3(bitUSDBaseApr3);
   }, [
-    bitUSDCirc,
+    account.status,
+    account.address,
+    stabilityPool,
+    collaterals,
+    depositorCollateralGain,
+  ]);
+
+  useEffect(() => {
+    const vUSDBaseApr1 =
+      (baseAPR1 * 86400 * 365 * bitGovPrice * 100) / bitUSDCirculation;
+    setvUSDBaseApr1(vUSDBaseApr1);
+    const vUSDBaseApr2 =
+      (baseAPR2 * 86400 * 365 * bitGovPrice * 100) /
+      (Number(mockLpBalance) * bitGovLPPrice);
+    setvUSDBaseApr2(vUSDBaseApr2);
+    const vUSDBaseApr4 =
+      (baseAPR4 * 86400 * 365 * bitGovPrice * 100) /
+      (Number(VUSDLpBalance) * 2);
+    setvUSDBaseApr4(vUSDBaseApr4);
+    const vUSDBaseApr3 =
+      (baseAPR3 * 86400 * 365 * bitGovPrice * 100) /
+      (Number(stabilityPoolBalance) +
+        Number(stabilityPool.balance) * rosePrice);
+    setvUSDBaseApr3(vUSDBaseApr3);
+  }, [
+    baseAPR3,
+    bitGovPrice,
+    stabilityPoolBalance,
+    stabilityPool.balance,
     baseAPR1,
     baseAPR2,
     baseAPR3,
-    bitPrice,
-    mockLpBanace,
-    lpPrice,
-    stabilityPoolBanace,
-    totalWbtc,
-    wBtcPrice,
-    baseAPR4,
-    BITUSDLpBanace,
+    bitUSDCirculation,
+    rosePrice,
+    bitGovLPPrice,
   ]);
 
   useEffect(() => {
@@ -233,11 +248,13 @@ export default function Earn() {
       }
     } else {
       if (changeType == "Deposit") {
-        setMaxBalance(Number(bitUSDbalance));
+        setMaxBalance(bitUSDBalance);
       } else if (changeType == "Withdraw") {
         setMaxBalance(Number(accountDeposits));
       } else {
-        setMaxBalance(Number(depositorCollateralGain));
+        setMaxBalance(
+          depositorCollateralGain.reduce((acc, value) => acc + Number(value), 0)
+        );
       }
     }
   }, [
@@ -271,31 +288,30 @@ export default function Earn() {
     }
   }, [typeName, changeType, allowance, amount]);
 
-  const [tvl, setTvl] = useState(0);
   useEffect(() => {
     let num = 0;
-    if (typeName == "bitGOV/wBTC LP") {
-      num = Number(mockLpBanace) * lpPrice;
+    if (typeName == "bitGOV/ROSE LP") {
+      num = Number(mockLpBalance) * bitGovLPPrice;
     } else if (typeName == "bitUSD/USDC LP") {
-      num = Number(BITUSDLpBanace) * 2;
+      num = Number(VUSDLpBalance) * 2;
     } else {
-      num = Number(stabilityPoolBanace) + Number(totalWbtc) * wBtcPrice;
+      num =
+        Number(stabilityPoolBalance) +
+        Number(stabilityPool.balance) * rosePrice;
     }
-    setTvl(formatNum(num));
+    setTvl(isNaN(num) ? 0 : formatNumber(num));
   }, [
+    stabilityPoolBalance,
+    rosePrice,
+    stabilityPool.balance,
     typeName,
-    mockLpBanace,
-    lpPrice,
-    stabilityPoolBanace,
-    wBtcPrice,
-    totalWbtc,
-    BITUSDLpBanace,
+    bitGovLPPrice,
+    bitGovLPPrice,
   ]);
 
-  const stakeApprove = async () => {
+  const stakeApproveBitGov = async () => {
     try {
-      const tx = await mockLpMain.approve(
-        BitLpTokenPool,
+      const tx = await approveBitGovLp(
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
       setCurrentWaitInfo({
@@ -313,9 +329,11 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -325,10 +343,9 @@ export default function Earn() {
     }
   };
 
-  const stakeLp = async () => {
+  const stakeLpBitGov = async () => {
     try {
-      const tx = await bitLpTokenPoolMain.deposit(
-        account,
+      const tx = await stakeBitGovLP(
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
       setCurrentWaitInfo({
@@ -346,9 +363,11 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -358,10 +377,9 @@ export default function Earn() {
     }
   };
 
-  const unStakeLp = async () => {
+  const unStakeLpBitGov = async () => {
     try {
-      const tx = await bitLpTokenPoolMain.withdraw(
-        account,
+      const tx = await withdrawBitGovLP(
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
       setCurrentWaitInfo({
@@ -379,9 +397,11 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -391,10 +411,9 @@ export default function Earn() {
     }
   };
 
-  const stakeApprove2 = async () => {
+  const stakeApproveBitUsd = async () => {
     try {
-      const tx = await BITUSDUSDCLPMain.approve(
-        usdcPool,
+      const tx = await approveBitUsdLp(
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
       setCurrentWaitInfo({
@@ -412,9 +431,11 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -424,11 +445,10 @@ export default function Earn() {
     }
   };
 
-  const stakeLp2 = async () => {
+  const stakeLpBitUsd = async () => {
     try {
-      const tx = await usdcPoolMain.deposit(
-        account,
-        new BigNumber(amount).multipliedBy(1e6).toFixed()
+      const tx = await stakeBitUsdLP(
+        new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
@@ -445,9 +465,11 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -457,11 +479,10 @@ export default function Earn() {
     }
   };
 
-  const unStakeLp2 = async () => {
+  const unStakeLpBitUsd = async () => {
     try {
-      const tx = await usdcPoolMain.withdraw(
-        account,
-        new BigNumber(amount).multipliedBy(1e6).toFixed()
+      const tx = await withdrawBitUsdLP(
+        new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
@@ -478,9 +499,11 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -490,9 +513,9 @@ export default function Earn() {
     }
   };
 
-  const Deposit = async () => {
+  const deposit = async () => {
     try {
-      const tx = await stabilityPoolMain.provideToSP(
+      const tx = await provideToSP(
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
       setCurrentWaitInfo({
@@ -511,9 +534,11 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -523,9 +548,9 @@ export default function Earn() {
     }
   };
 
-  const Withdraw = async () => {
+  const withdraw = async () => {
     try {
-      const tx = await stabilityPoolMain.withdrawFromSP(
+      const tx = await withdrawFromSP(
         new BigNumber(amount).multipliedBy(1e18).toFixed()
       );
       setCurrentWaitInfo({
@@ -544,9 +569,11 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -556,12 +583,12 @@ export default function Earn() {
     }
   };
 
-  const Claim = async () => {
+  const claim = async () => {
     try {
-      const tx = await stabilityPoolMain.claimCollateralGains(account, [0]);
+      const tx = await claimCollateralGains();
       setCurrentWaitInfo({
         type: "loading",
-        info: "Claim " + Number(amount.toFixed(4)).toLocaleString() + " bitUSD",
+        info: "Claiming",
       });
       setCurrentState(true);
       const result = await tx.wait();
@@ -574,9 +601,11 @@ export default function Earn() {
         });
       } else {
         tooltip.success({ content: "Successful", duration: 5000 });
+        queryData();
       }
       setAmount("");
     } catch (error) {
+      console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
@@ -587,44 +616,45 @@ export default function Earn() {
   };
 
   const Operate = () => {
-    if (typeName == "bitGOV/wBTC LP") {
-      if (!amount) {
+    if (typeName == "bitGOV/ROSE LP") {
+      // Allow zero amounts for approval and staking operations
+      if (amount === "" || amount === undefined) {
         return;
       }
       if (buttonName == "Approve") {
-        stakeApprove();
+        stakeApproveBitGov();
       } else if (buttonName == "Stake") {
-        stakeLp();
+        stakeLpBitGov();
       } else if (buttonName == "UnStake") {
-        unStakeLp();
+        unStakeLpBitGov();
       }
     } else if (typeName == "bitUSD/USDC LP") {
-      if (!amount) {
+      if (amount === "" || amount === undefined) {
         return;
       }
       if (buttonName == "Approve") {
-        stakeApprove2();
+        stakeApproveBitUsd();
       } else if (buttonName == "Stake") {
-        stakeLp2();
+        stakeLpBitUsd();
       } else if (buttonName == "UnStake") {
-        unStakeLp2();
+        unStakeLpBitUsd();
       }
     } else {
       if (buttonName == "Deposit") {
-        if (!amount) {
+        if (amount === "" || amount === undefined) {
           return;
         }
-        Deposit();
+        deposit();
       } else if (buttonName == "Withdraw") {
-        if (!amount) {
+        if (amount === "" || amount === undefined) {
           return;
         }
-        Withdraw();
+        withdraw();
       } else {
         if (!maxBalance) {
           return;
         }
-        Claim();
+        claim();
       }
     }
   };
@@ -633,20 +663,24 @@ export default function Earn() {
     <>
       <Header type="dapp" dappMenu="Earn"></Header>
       <div className="dappBg">
-        {!showEarnMain ? (
+        {account.status !== "connected" && (
           <div className={`${styles.Earn} ${"dappMain2"}`}>
-            <div className={styles.max480}>
-              <DepositsAndDebt type="Earn"></DepositsAndDebt>
-            </div>
+            <h2 style={{ textAlign: "center" }}>Please connect your wallet</h2>
+          </div>
+        )}
 
+        {!showEarnMain && account.status === "connected" ? (
+          <div className={`${styles.Earn} ${"dappMain2"}`}>
             <div className={styles.earnMain}>
-              <div className={styles.earnInfo}>
+              {/* <div className={styles.earnInfo}>
                 <p className={styles.earnTip}>
                   Lock $bitGOV to boost your APR to {boost}x.
                 </p>
                 <div className={styles.CoinType}>
-                  <img src="/dapp/bitUSD.svg" alt="bitUSD" />
-                  bitUSD Minting
+                  <div className={styles.collateral}>
+                    <img src="/dapp/bitUSD.svg" alt="bitUSD" />
+                    bitUSD Minting
+                  </div>
                 </div>
                 <div className={styles.data}>
                   <div className={styles.dataItem}>
@@ -655,144 +689,41 @@ export default function Earn() {
                   </div>
                   <div className={styles.dataItem}>
                     <p>bitUSD Circ.</p>
-                    <span>${formatNum(bitUSDCirc)}</span>
+                    <span>${formatNumber(bitUSDCirculation)}</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Base APR</p>
-                    <span>{formatNum(bitUSDBaseApr1)}%</span>
+                    <span>{formatNumber(vUSDBaseApr1)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Boosted APR</p>
-                    <span>{formatNum(bitUSDBaseApr1 * boost)}%</span>
+                    <span>{formatNumber(vUSDBaseApr1 * boost)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Your Minted bitUSD</p>
-                    <span>{formatNum(debt)}</span>
+                    <span>{formatNumber(userTotalDebt)}</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Earned</p>
-                    <span>{formatNum(vaultEarned)}</span>
+                    <span>{formatNumber(claimableRewards?.vaultRewards)}</span>
                   </div>
                 </div>
                 <div
                   className={styles.button}
-                  onClick={() => router.push("/Mint")}
+                  onClick={() => router.push("/Vault")}
                 >
                   <div className="button rightAngle height">Manage</div>
                 </div>
-              </div>
-
-              <div className={styles.earnInfo}>
-                <p className={styles.earnTip}>
-                  Lock $bitGOV to boost your APR to {boost}x.
-                </p>
-                <div
-                  className="button rightAngle height disable"
-                  style={{ marginTop: "10px", border: "1px solid #333" }}
-                >
-                  COMING SOON
-                </div>
-                {/* <div className={styles.CoinType}>
-                  <img
-                    style={{ width: "65px" }}
-                    src="/dapp/bitAwbtc.svg"
-                    alt="bitUSD"
-                  />
-                  bitGOV/wBTC LP
-                </div>
-                <div className={styles.data}>
-                  <div className={styles.dataItem}>
-                    <p>Earn</p>
-                    <span>bitGOV</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>TVL</p>
-                    <span>${formatNum(Number(mockLpBanace) * lpPrice)}</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Base APR</p>
-                    <span>{formatNum(bitUSDBaseApr2)}%</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Boosted APR</p>
-                    <span>{formatNum(bitUSDBaseApr2 * boost)}%</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Your Deposits</p>
-                    <span>{formatNum(unStakeLpBalance)}</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Earned</p>
-                    <span>{formatNum(bitWbtcEarned)}</span>
-                  </div>
-                </div>
-                <div
-                  className={styles.button}
-                  onClick={() => changeManage("bitGOV/wBTC LP")}
-                >
-                  <div className="button rightAngle height">Manage</div>
-                </div> */}
-              </div>
-
-              <div className={styles.earnInfo}>
-                <p className={styles.earnTip}>
-                  Lock $bitGOV to boost your APR to {boost}x.
-                </p>
-                <div
-                  className="button rightAngle height disable"
-                  style={{ marginTop: "10px", border: "1px solid #333" }}
-                >
-                  COMING SOON
-                </div>
-                {/* <div className={styles.CoinType}>
-                  <img
-                    style={{ width: "65px" }}
-                    src="/dapp/usdc.svg"
-                    alt="icon"
-                  />
-                  bitUSD/USDC LP
-                </div>
-                <div className={styles.data}>
-                  <div className={styles.dataItem}>
-                    <p>Earn</p>
-                    <span>bitGOV</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>TVL</p>
-                    <span>${formatNum(Number(BITUSDLpBanace) * 2)}</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Base APR</p>
-                    <span>{formatNum(bitUSDBaseApr4)}%</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Boosted APR</p>
-                    <span>{formatNum(bitUSDBaseApr4 * boost)}%</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Your Deposits</p>
-                    <span>{formatNum(unStakeLpBalance2)}</span>
-                  </div>
-                  <div className={styles.dataItem}>
-                    <p>Earned</p>
-                    <span>{formatNum(bitusdUsdcEarned)}</span>
-                  </div>
-                </div>
-                <div
-                  className={styles.button}
-                  onClick={() => changeManage("bitUSD/USDC LP")}
-                >
-                  <div className="button rightAngle height">Manage</div>
-                </div> */}
-              </div>
-
+              </div> */}
               <div className={styles.earnInfo}>
                 <p className={styles.earnTip}>
                   Lock $bitGOV to boost your APR to {boost}x.
                 </p>
                 <div className={styles.CoinType}>
-                  <img src="/dapp/bitUSD.svg" alt="bitUSD" />
-                  Stability Pool
+                  <div className={styles.collateral}>
+                    <img src="/dapp/bitUSD.svg" alt="vUSD" />
+                    Stability Pool
+                  </div>
                 </div>
                 <div className={styles.data}>
                   <div className={styles.dataItem}>
@@ -803,27 +734,27 @@ export default function Earn() {
                     <p>TVL</p>
                     <span>
                       $
-                      {formatNum(
-                        Number(stabilityPoolBanace) +
-                          Number(totalWbtc) * wBtcPrice
+                      {formatNumber(
+                        Number(stabilityPoolBalance) +
+                          Number(stabilityPool.balance) * rosePrice
                       )}
                     </span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Base APR</p>
-                    <span>{formatNum(bitUSDBaseApr3)}%</span>
+                    <span>{formatNumber(vUSDBaseApr3)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Boosted APR</p>
-                    <span>{formatNum(bitUSDBaseApr3 * boost)}%</span>
+                    <span>{formatNumber(vUSDBaseApr3 * boost)}%</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Your Deposits</p>
-                    <span>{formatNum(accountDeposits)}</span>
+                    <span>{formatNumber(accountDeposits)}</span>
                   </div>
                   <div className={styles.dataItem}>
                     <p>Earned</p>
-                    <span>{formatNum(stabilityEarned)}</span>
+                    <span>{formatNumber(stabilityPool?.earned || 0)}</span>
                   </div>
                 </div>
                 <div
@@ -833,11 +764,101 @@ export default function Earn() {
                   <div className="button rightAngle height">Manage</div>
                 </div>
               </div>
+              {/* <div className={styles.earnInfo}>
+                <p className={styles.earnTip}>
+                  Lock $bitGOV to boost your APR to {boost}x.
+                </p>
+                <div className={styles.CoinType}>
+                  <div className={styles.collateral}>
+                    <img src="/dapp/vineArose.svg" alt="vUSD" />
+                    bitGOV/ROSE LP
+                  </div>
+                </div>
+                <div className={styles.data}>
+                  <div className={styles.dataItem}>
+                    <p>Earn</p>
+                    <span>bitGOV</span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>TVL</p>
+                    <span>
+                      ${formatNumber(Number(mockLpBalance) * bitGovLPPrice)}
+                    </span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>Base APR</p>
+                    <span>{formatNumber(vUSDBaseApr2)}%</span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>Boosted APR</p>
+                    <span>{formatNumber(vUSDBaseApr2 * boost)}%</span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>Your Deposits</p>
+                    <span>{formatNumber(unStakeLpBalance)}</span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>Earned</p>
+                    <span>{formatNumber(claimableRewards?.bitGov)}</span>
+                  </div>
+                </div>
+                <div
+                  className={styles.button}
+                  onClick={() => changeManage("bitGOV/ROSE LP")}
+                >
+                  <div className="button rightAngle height">Manage</div>
+                </div>
+              </div> */}
+              {/* <div className={styles.earnInfo}>
+                <p className={styles.earnTip}>
+                  Lock $bitGOV to boost your APR to {boost}x.
+                </p>
+                <div className={styles.CoinType}>
+                  <div className={styles.collateral}>
+                    <img src="/dapp/usdc.svg" alt="icon" />
+                    bitUSD/USDC LP
+                  </div>
+                </div>
+                <div className={styles.data}>
+                  <div className={styles.dataItem}>
+                    <p>Earn</p>
+                    <span>bitGOV</span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>TVL</p>
+                    <span>
+                      ${formatNumber(Number(VUSDLpBalance) * bitUsdLPPrice)}
+                    </span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>Base APR</p>
+                    <span>{formatNumber(vUSDBaseApr4)}%</span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>Boosted APR</p>
+                    <span>{formatNumber(vUSDBaseApr4 * boost)}%</span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>Your Deposits</p>
+                    <span>{formatNumber(unStakeLpBalance2)}</span>
+                  </div>
+                  <div className={styles.dataItem}>
+                    <p>Earned</p>
+                    <span>{formatNumber(claimableRewards?.bitUsd)}</span>
+                  </div>
+                </div>
+                <div
+                  className={styles.button}
+                  onClick={() => changeManage("bitUSD/USDC LP")}
+                >
+                  <div className="button rightAngle height">Manage</div>
+                </div>
+              </div> */}
             </div>
           </div>
         ) : null}
 
-        {showEarnMain ? (
+        {showEarnMain && account.status === "connected" ? (
           <div className={`${styles.Earn2} ${"dappMain"}`}>
             <div className={styles.back} onClick={() => setShowEarnMain(false)}>
               <img src="/dapp/leftArr.svg" alt="icon" />
@@ -845,7 +866,7 @@ export default function Earn() {
             </div>
             <div className={styles.earnMain}>
               <div className={styles.title}>
-                <img src="/dapp/bitUSD.svg" alt="bitUSD" />
+                <img src="/dapp/bitUSD.svg" alt="vUSD" />
                 {typeName}
               </div>
               <div className={styles.dataInfo}>
@@ -853,11 +874,11 @@ export default function Earn() {
                   <span>APR</span>
                   <div>
                     <p>
-                      {typeName == "bitGOV/wBTC LP"
-                        ? formatNum(bitUSDBaseApr2 * boost)
+                      {typeName == "bitGOV/ROSE LP"
+                        ? formatNumber(vUSDBaseApr2 * boost)
                         : typeName == "bitUSD/USDC LP"
-                        ? formatNum(bitUSDBaseApr4 * boost)
-                        : formatNum(bitUSDBaseApr3 * boost)}{" "}
+                        ? formatNumber(vUSDBaseApr4 * boost)
+                        : formatNumber(vUSDBaseApr3 * boost)}{" "}
                       ({boost}x)
                     </p>
                   </div>
@@ -960,13 +981,39 @@ export default function Earn() {
                     ) : null}
                   </div>
                   <div className="balance">
-                    <p>
-                      {changeType} {coin}
-                    </p>
-                    <span>
-                      {changeType == "Claim" ? null : "MAX "}{" "}
-                      {Number(maxBalance.toFixed(4)).toLocaleString()} {coin}
-                    </span>
+                    {typeName == "Stability Pool" && changeType == "Claim" ? (
+                      <>
+                        {depositorCollateralGain.map((item, index) => (
+                          <div key={index} className="value">
+                            <p>
+                              {changeType} $
+                              {
+                                collaterals[Object.keys(collaterals)[index]]
+                                  ?.collateral?.name
+                              }
+                            </p>
+                            <span>
+                              {fromBigNumber(item).toLocaleString()} $
+                              {
+                                collaterals[Object.keys(collaterals)[index]]
+                                  ?.collateral?.name
+                              }
+                            </span>
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <div className="value">
+                        <p>
+                          {changeType} {coin}
+                        </p>
+                        <span>
+                          {changeType == "Claim" ? null : "MAX "}{" "}
+                          {Number(maxBalance.toFixed(4)).toLocaleString()}{" "}
+                          {coin}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   {changeType == "Claim" ? null : (
                     <>
@@ -977,19 +1024,21 @@ export default function Earn() {
                             placeholder="0"
                             onWheel={(e) => e.target.blur()}
                             id="amount"
-                            onKeyDown={onKeyDown.bind(this)}
-                            onChange={changeAmount.bind(this)}
-                            value={amount}
+                            min="0" // Prevent negative values
+                            step="any" // Allow decimal values
+                            onKeyDown={onKeyDown}
+                            onChange={changeAmount}
+                            value={amount === 0 ? "0" : amount || ""}
                           />
                           <span className="font_12_gray">
                             ≈$
-                            {typeName == "bitGOV/wBTC LP"
-                              ? formatNum(Number(amount) * lpPrice)
+                            {typeName == "bitGOV/ROSE LP"
+                              ? formatNumber(Number(amount) * bitGovLPPrice)
                               : typeName == "bitUSD/USDC LP"
-                              ? formatNum(
+                              ? formatNumber(
                                   Number(amount) * (tvl / USDCtotalSupply)
                                 )
-                              : formatNum(Number(amount))}
+                              : formatNumber(Number(amount))}
                           </span>
                         </div>
                         <span className="font_14 gray">{coin}</span>
@@ -998,11 +1047,11 @@ export default function Earn() {
                         className="changeBalance"
                         style={{ marginTop: "12px" }}
                       >
-                        <span onClick={() => changeAmountVaule(0.25)}>25%</span>
-                        <span onClick={() => changeAmountVaule(0.5)}>50%</span>
-                        <span onClick={() => changeAmountVaule(0.75)}>75%</span>
+                        <span onClick={() => changeAmountValue(0.25)}>25%</span>
+                        <span onClick={() => changeAmountValue(0.5)}>50%</span>
+                        <span onClick={() => changeAmountValue(0.75)}>75%</span>
                         <span
-                          onClick={() => changeAmountVaule(1)}
+                          onClick={() => changeAmountValue(1)}
                           style={{ border: "none" }}
                         >
                           Max
@@ -1041,7 +1090,16 @@ export default function Earn() {
           </div>
         ) : null}
       </div>
+
+      {!Object.keys(stabilityPool).length > 0 &&
+      account.status === "connected" &&
+      signatureToken?.user &&
+      signatureTrove?.user ? (
+        <Loading></Loading>
+      ) : null}
+
       {currentState ? <Wait></Wait> : null}
+
       <Footer></Footer>
     </>
   );

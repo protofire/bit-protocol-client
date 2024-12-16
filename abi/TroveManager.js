@@ -312,19 +312,6 @@ const abi = [
   },
   {
     inputs: [],
-    name: "BIT_CORE",
-    outputs: [
-      {
-        internalType: "contract IBitCore",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "BOOTSTRAP_PERIOD",
     outputs: [
       {
@@ -545,6 +532,19 @@ const abi = [
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "bit_CORE",
+    outputs: [
+      {
+        internalType: "contract IBitCore",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -1487,6 +1487,25 @@ const abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "lookers",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "lpChecker",
     outputs: [
@@ -1838,6 +1857,24 @@ const abi = [
       },
     ],
     name: "setAddresses",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address[]",
+        name: "_lookers",
+        type: "address[]",
+      },
+      {
+        internalType: "bool[]",
+        name: "_bools",
+        type: "bool[]",
+      },
+    ],
+    name: "setLookers",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

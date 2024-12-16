@@ -152,19 +152,6 @@ const abi = [
   },
   {
     inputs: [],
-    name: "BIT_CORE",
-    outputs: [
-      {
-        internalType: "contract IBitCore",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "CCR",
     outputs: [
       {
@@ -216,6 +203,19 @@ const abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "ROSE",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "contract ITroveManager",
@@ -245,7 +245,7 @@ const abi = [
     ],
     name: "addColl",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -298,7 +298,20 @@ const abi = [
     ],
     name: "adjustTrove",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "bit_CORE",
+    outputs: [
+      {
+        internalType: "contract IBitCore",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -552,7 +565,7 @@ const abi = [
     ],
     name: "openTrove",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -610,6 +623,24 @@ const abi = [
       },
     ],
     name: "repayDebt",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "sendRose",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

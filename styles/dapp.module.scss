@@ -41,6 +41,33 @@
   }
 }
 
+.pageBack {
+  width: 100%;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 10%;
+  margin-top: 10px;
+  gap: 10px;
+  color: #00d7ca;
+
+  img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
 .dataInfo2 {
   display: flex;
   border: 1px solid #333;
@@ -92,6 +119,7 @@
   padding: 6px 16px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   font-size: 16px;
   font-weight: 600;
@@ -99,13 +127,29 @@
   letter-spacing: -0.4px;
 
   img {
-    width: 56px;
-    height: 56px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .collateral {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .mintBtn {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px;
+    cursor: pointer;
+    background: #00d7ca;
+    border: 1px solid #010101;
   }
 }
 
 .Vault {
-  .wbtc {
+  .rose {
     margin-top: 8px;
     border: 1px solid #333;
     background: #010101;
@@ -220,6 +264,9 @@
 }
 
 .Mint {
+  // override global style
+  padding: 0px 0 0px;
+
   .mintMain {
     color: #bdbdbd;
     margin-top: 8px;
@@ -404,8 +451,8 @@
       font-weight: 600;
 
       img {
-        width: 56px;
-        height: 56px;
+        width: 32px;
+        height: 32px;
       }
     }
 
@@ -515,6 +562,8 @@
         border-radius: 100px;
         border: 1px solid #333;
         background: #000;
+        width: 54px;
+        height: 54px;
       }
 
       div {
@@ -1010,6 +1059,100 @@
   display: flex;
   justify-content: space-between;
   margin: 20px 0;
+}
+
+.dropdown {
+  display: inline-block;
+  position: relative;
+  margin-bottom: 20px;
+  width: 100%;
+
+  .ddButton {
+    display: inline-block;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 10px 30px 10px 20px;
+    background-color: #010101;
+    cursor: pointer;
+    white-space: nowrap;
+    color: #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .ddButton:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    width: 24;
+    height: 24;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #f2f2f2;
+  }
+
+  .ddButton:hover {
+    opacity: 0.5;
+  }
+
+  .ddInput {
+    display: none;
+  }
+
+  .ddMenu {
+    position: absolute;
+    top: 100%;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 0;
+    margin: 2px 0 0 0;
+    box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.1);
+    background-color: #010101;
+    list-style-type: none;
+    color: #f2f2f2;
+    width: 100%;
+  }
+
+  .ddInput + .ddMenu {
+    display: none;
+  }
+
+  .ddInput:checked + .ddMenu {
+    display: block;
+  }
+
+  .ddMenu li {
+    padding: 10px 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .ddMenu li:hover {
+    // background-color: #f6f6f6;
+    opacity: 0.8;
+  }
+
+  .ddMenu li a {
+    display: block;
+    margin: -10px -20px;
+    padding: 10px 20px;
+  }
+
+  .ddMenu li.divider {
+    padding: 0;
+    border-bottom: 1px solid #cccccc;
+  }
+
+  a:hover {
+    color: #222222;
+  }
 }
 
 @media screen and (max-width: 798px) {

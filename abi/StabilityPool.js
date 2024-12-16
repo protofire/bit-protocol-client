@@ -275,19 +275,6 @@ const abi = [
   },
   {
     inputs: [],
-    name: "BIT_CORE",
-    outputs: [
-      {
-        internalType: "contract IBitCore",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "DECIMAL_PRECISION",
     outputs: [
       {
@@ -357,6 +344,19 @@ const abi = [
         internalType: "uint128",
         name: "timestamp",
         type: "uint128",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "bit_CORE",
+    outputs: [
+      {
+        internalType: "contract IBitCore",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",

@@ -95,15 +95,7 @@ export default function Mint() {
         (((deposits + Number(collAmount)) * wBtcPrice) /
           (debt + Number(debtAmount))) *
         100;
-      console.log({
-        valueNew,
-        collAmount: Number(collAmount),
-        value,
-        deposits,
-        wBtcPrice,
-        debt,
-        debtAmount: Number(debtAmount),
-      });
+
       setRatioNew(valueNew);
     }
   }, [collAmount, wBtcPrice, collateralRatio, debtAmount, ratioType]);

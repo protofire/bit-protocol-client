@@ -11,13 +11,13 @@ import PriceFeedHook from "../abi/PriceFeed";
 import TroveManagerGettersHook from "../abi/TroveManagerGetters";
 import tokenLockerHook from "../abi/tokenLocker";
 import BoostCalculatorHook from "../abi/BoostCalculator";
-import BitLpTokenPoolHook from "../abi/BitLpTokenPool";
+import VineLpTokenPoolHook from "../abi/BitLpTokenPool";
 import LPPriceOracleHook from "../abi/LPPriceOracle";
 import StabilityPoolHook from "../abi/StabilityPool";
 import MultiCollateralHintHelpersHook from "../abi/MultiCollateralHintHelpers";
 import IncentiveVotingHook from "../abi/IncentiveVoting";
 import idovestingHook from "../abi/idovesting";
-import bitVaultHook from "../abi/bitVault";
+import vineVaultHook from "../abi/Vault";
 
 export const UserContext = createContext({
   account: "",
@@ -427,7 +427,7 @@ export const UserContextProvider = ({ children }) => {
       setBoost(new BigNumber(boost._hex).multipliedBy(2).div(10000).toFixed());
 
       //bitUSD Minting
-      const vaultEarned = await bitVaultQuery.claimableRewardAfterBoost(
+      const vaultEarned = await vineVaultQuery.claimableRewardAfterBoost(
         account,
         account,
         "0x0000000000000000000000000000000000000000",
@@ -443,6 +443,15 @@ export const UserContextProvider = ({ children }) => {
         stabilityPool
       );
       setstabilityEarned(Number(stabilityEarned.adjustedAmount._hex) / 1e18);
+
+      // // //bitUSD/USDC LP
+      // const vusdUsdcEarned = await vineVaultQuery.claimableRewardAfterBoost(
+      //   account,
+      //   account,
+      //   "0x0000000000000000000000000000000000000000",
+      //   usdcPool
+      // );
+      // setvusdUsdcEarned(Number(vusdUsdcEarned.adjustedAmount._hex) / 1e18);
     }
     const wBtcPrice = await priceFeedToken.loadPrice(
       "0xB5EA3151e1edED183CC9571916B435b6B188D508"
