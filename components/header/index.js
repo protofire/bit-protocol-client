@@ -412,28 +412,28 @@ export default function Header(props) {
                 <div className="dropdown-menu">
                   <Link
                     target="_blank"
-                    href=""
+                    href="https://x.com/BitUSD_finance"
                     rel="nofollow noopener noreferrer"
                   >
                     Twitter/X
                   </Link>
                   <Link
                     target="_blank"
-                    href=""
+                    href="https://t.me/vinemoneyofficial"
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Community
                   </Link>
                   <Link
                     target="_blank"
-                    href=""
+                    href="https://t.me/vinemoneyann"
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Announcements
                   </Link>
                   <Link
                     target="_blank"
-                    href=""
+                    href="https://medium.com/@bitusdprotocol"
                     rel="nofollow noopener noreferrer"
                   >
                     Medium

@@ -50,7 +50,7 @@ export default function Footer(props) {
               >
                 <Link
                   target="_blank"
-                  href="https://x.com/BitProtocol_"
+                  href="https://x.com/BitUSD_finance"
                   rel="nofollow noopener noreferrer"
                 >
                   Twitter/X
