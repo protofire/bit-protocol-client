@@ -30,11 +30,7 @@ export default function Footer(props) {
                             <span>Key features</span>
                             <div className='tooltip'>LAUNCHING SOON</div>
                         </div> */}
-            <Link
-              target="_blank"
-              href="https://vine-money.gitbook.io/vine-money/"
-              rel="nofollow noopener noreferrer"
-            >
+            <Link target="_blank" href="" rel="nofollow noopener noreferrer">
               <span>Docs</span>
             </Link>
             {/* <span>Whitepaper</span> */}

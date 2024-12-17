@@ -246,7 +246,8 @@ export default function Mint() {
       return;
     }
 
-    setCollInputValue(value);
+    // setCollInputValue(value);
+    setCollAmount(value);
   };
 
   const changeCollValue = (value) => {
@@ -389,9 +390,9 @@ export default function Mint() {
     if (!collAmount || !debtAmount) {
       return;
     }
-    if (Number(debtAmount) < 1) {
+    if (Number(debtAmount) < 10) {
       tooltip.error({
-        content: "A Minimum Debt of 1 bitUSD is Required!",
+        content: "A Minimum Debt of 10 bitUSD is Required!",
         duration: 5000,
       });
       return;
@@ -480,7 +481,7 @@ export default function Mint() {
                   id="collAmount"
                   onKeyDown={onKeyDown}
                   onChange={changeCollAmount}
-                  value={collInputValue}
+                  value={collAmount}
                 />
                 <span>${collateral?.collateral?.name}</span>
               </div>
