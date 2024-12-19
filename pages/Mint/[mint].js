@@ -242,19 +242,35 @@ export default function Mint() {
   const changeCollAmount = (e) => {
     const value = e.target.value;
 
-    if (!/^\d*\.?\d{0,3}$/.test(value)) {
+    if (value === "") {
+      setCollAmount("");
       return;
     }
 
-    // setCollInputValue(value);
-    setCollAmount(value);
+    if (!/^\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    const parts = value.split(".");
+    if (parts[1] && parts[1].length > 3) {
+      return;
+    }
+
+    const numValue = Number(value);
+    const balanceValue = isPayable ? balance : collateralBalance;
+    const maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
+
+    if (numValue >= 0 && numValue <= maxBalance) {
+      setCollAmount(value);
+    } else if (numValue > maxBalance) {
+      setCollAmount(maxBalance.toFixed(3));
+    }
   };
 
   const changeCollValue = (value) => {
     const balanceValue = isPayable ? balance : collateralBalance;
     const newAmount = (balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value;
     setCollAmount(newAmount);
-
     if (collateralRatio && ratioType === "Auto") {
       const max =
         (Number(deposits + newAmount) * price) / (collateralRatio / 100) - debt;
@@ -307,11 +323,12 @@ export default function Mint() {
   useEffect(() => {
     if (collateralRatio && ratioType == "Auto") {
       const max =
-        (Number(deposits + collAmount) * price) / (collateralRatio / 100) -
+        (Number(deposits + Number(collAmount)) * price) /
+          (collateralRatio / 100) -
         debt;
       setDebtMax(max);
     } else {
-      const max = (Number(deposits + collAmount) * price) / 1.55 - debt;
+      const max = (Number(deposits + Number(collAmount)) * price) / 1.55 - debt;
       setDebtMax(max);
     }
   }, [collAmount, price, collateralRatio, ratioType]);
@@ -320,6 +337,7 @@ export default function Mint() {
     const value = e.target.value;
     if (!/^\d*\.?\d*$/.test(value)) return;
 
+    const numValue = Number(value);
     // Allow empty string or values within range (including zero)
     if (value === "" || (numValue >= 0 && numValue <= debtMax)) {
       setDebtAmount(value === "" ? "" : numValue);
@@ -352,7 +370,7 @@ export default function Mint() {
 
     if (Number(debtAmount) < 1) {
       tooltip.error({
-        content: "A Minimum Debt of 1 bitUSD is Required!",
+        content: "A Minimum Debt of 10 bitUSD is Required!",
         duration: 5000,
       });
       return;
@@ -544,10 +562,14 @@ export default function Mint() {
               <div className={styles.miniTitle}>
                 <span>Mint bitUSD</span>
                 <span style={{ fontSize: "12px" }}>
-                  max {Number(Number(debtMax).toFixed(2)).toLocaleString()}{" "}
+                  max{" "}
+                  {debtMax > 0
+                    ? Number(Number(debtMax).toFixed(2)).toLocaleString()
+                    : 0}{" "}
                   bitUSD
                 </span>
               </div>
+
               <div className="inputTxt3">
                 <input
                   type="text"
@@ -556,7 +578,13 @@ export default function Mint() {
                   id="debtAmount"
                   onKeyDown={onKeyDown}
                   onChange={changeDebtAmount}
-                  value={debtAmount === 0 ? "0" : debtAmount || ""}
+                  value={
+                    debtAmount === 0
+                      ? "0"
+                      : debtAmount > 0
+                      ? debtAmount
+                      : "0" || ""
+                  }
                 />
                 <span>$bitUSD</span>
               </div>
