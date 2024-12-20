@@ -7,7 +7,6 @@ import {
 } from "react";
 import { ethers } from "ethers";
 import {
-  useSignTypedData,
   useAccount,
   usePublicClient,
   useBalance,
@@ -34,6 +33,7 @@ import MultiCollateralHintHelpersABI from "../abi/MultiCollateralHintHelpers";
 import BitLpOracleABI from "../abi/BitLpOracle";
 import TWAPOracleABI from "../abi/TWAPOracle";
 import { fromBigNumber } from "../utils/helpers";
+import { useSignatureCheck } from "./useSignatureCheck";
 import BigNumber from "bignumber.js";
 import * as sapphire from "@oasisprotocol/sapphire-paratime";
 
@@ -48,8 +48,6 @@ export const BlockchainContext = createContext({
   userTroves: {},
   collateralPrices: {},
   bitUSDBalance: 0,
-  signatureToken: {},
-  signatureTrove: {},
   bitUSDCirculation: 0,
   stabilityPool: {},
   boost: 0,
@@ -69,14 +67,9 @@ export const BlockchainContext = createContext({
   systemWeek: 0,
 
   // FUNCTIONS
-  signTrove: async () => {},
-  setSignatureTrove: async () => {},
-  checkAuth: async () => {},
-  checkAuthToken: async () => {},
   getData: async () => {},
   getTrove: async () => {},
   openTrove: async () => {},
-  signDebtToken: async () => {},
   getRosePrice: async () => {},
   getWithdrawWithPenaltyAmounts: async () => {},
   setCurrentState: async () => {},
@@ -121,7 +114,6 @@ export const BlockchainContext = createContext({
 
 export const BlockchainContextProvider = ({ children }) => {
   // WALLET HOOKS
-  const { signTypedDataAsync } = useSignTypedData();
   const account = useAccount();
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
@@ -129,10 +121,9 @@ export const BlockchainContextProvider = ({ children }) => {
   const stabilityPoolBalance = useBalance({
     address: addresses.stabilityPool[account.chainId],
   });
+  const { getSignatures } = useSignatureCheck();
 
   // STATES
-  const [signatureTrove, setSignatureTrove] = useState({});
-  const [signatureToken, setSignatureToken] = useState({});
   const [deposits, setDeposits] = useState(0.0);
   const [debt, setDebt] = useState(0.0);
   const [troveStatus, setTroveStatus] = useState("");
@@ -151,7 +142,6 @@ export const BlockchainContextProvider = ({ children }) => {
   const [userAccountWeight, setAccountWeight] = useState(0);
   const [accountLockAmount, setAccountLockAmount] = useState(0);
   const [accountUnlockAmount, setAccountUnlockAmount] = useState(0);
-  // const [hasLocks, setHasLocks] = useState(false);
   const [lockTotalWeight, setTotalWeight] = useState(0);
   const [tcr, setTCR] = useState(0);
   const [totalPricedCollateral, setTotalPricedCollateral] = useState(0);
@@ -164,7 +154,6 @@ export const BlockchainContextProvider = ({ children }) => {
   const [systemWeek, setWeek] = useState(0);
   // GET DATA LOCK TO AVOID TOO MANY CALLS
   const [lock, setLock] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   // HELPER FUNCTIONS
   const clientToSigner = (client, query) => {
@@ -205,17 +194,6 @@ export const BlockchainContextProvider = ({ children }) => {
       return () => clearInterval(intervalId);
     }
   }, [account]);
-
-  useEffect(() => {
-    const auth = JSON.parse(
-      localStorage.getItem(`signInAuth-${account.chainId}`)
-    );
-    const tokenAuth = JSON.parse(
-      localStorage.getItem(`signInToken-${account.chainId}`)
-    );
-    checkAuth() ? setSignatureTrove(auth) : setSignatureTrove({});
-    checkAuthToken() ? setSignatureToken(tokenAuth) : setSignatureToken({});
-  }, []);
 
   useEffect(() => {
     if (Object.keys(userTroves).length > 0) {
@@ -674,12 +652,9 @@ export const BlockchainContextProvider = ({ children }) => {
   const getData = useCallback(async () => {
     if (typeof window === "undefined") return;
 
-    if (
-      account.address &&
-      signatureTrove?.user &&
-      result?.data &&
-      signatureToken?.user
-    ) {
+    const { dataTrove, dataDebt } = await getSignatures();
+
+    if (account.address && result?.data && dataTrove && dataDebt) {
       if (lock) return;
       setLock(true);
       // console.log("Getting data");
@@ -697,13 +672,7 @@ export const BlockchainContextProvider = ({ children }) => {
       // await getAccountBalances();
       // await getTotalWeight();
     }
-  }, [
-    account.address,
-    signatureTrove?.user,
-    signatureToken?.user,
-    lock,
-    result?.data?.value,
-  ]);
+  }, [account.address, lock, result?.data?.value]);
 
   const getRedemptionHints = async (troveManager, amount) => {
     const price = collateralPrices[troveManager];
@@ -988,11 +957,13 @@ export const BlockchainContextProvider = ({ children }) => {
   };
 
   const getBitUSDBalance = async () => {
+    const { dataDebt } = await getSignatures();
     const balance = await publicClient.readContract({
       abi: DebtTokenABI,
       address: addresses.debtToken[account.chainId],
       functionName: "checkBalanceOf",
-      args: [signatureToken],
+      // args: [signatureToken],
+      args: [dataDebt],
     });
     setBitUSDBalance(fromBigNumber(balance));
   };
@@ -1127,11 +1098,12 @@ export const BlockchainContextProvider = ({ children }) => {
           status: trove[5],
         };
       } else {
+        const { dataTrove } = await getSignatures();
         const trove = await publicClient.readContract({
           abi: TroveManagerGettersABI,
           address: addresses.troveManagerGetter[account.chainId],
           functionName: "getTrove",
-          args: [signatureTrove, troveManagerAddr],
+          args: [dataTrove, troveManagerAddr],
         });
 
         const debt = fromBigNumber(trove[0]);
@@ -1368,133 +1340,6 @@ export const BlockchainContextProvider = ({ children }) => {
     return true;
   };
 
-  const signTrove = async () => {
-    try {
-      const user = account.address;
-      const time = Math.floor(new Date().getTime() / 1000);
-      const signature = await signTypedDataAsync({
-        types: {
-          SignIn: [
-            { name: "user", type: "address" },
-            { name: "time", type: "uint32" },
-          ],
-        },
-        primaryType: "SignIn",
-        message: {
-          time,
-          user,
-        },
-        domain: {
-          // name: "VineSignature.SignIn",
-          name: "BitSignature.SignIn",
-          version: "1",
-          chainId: account.chainId,
-          verifyingContract: addresses.troveManagerGetter[account.chainId],
-        },
-      });
-
-      const rsv = ethers.utils.splitSignature(signature);
-      const auth = { user, time, rsv };
-      localStorage.setItem(
-        `signInAuth-${account.chainId}`,
-        JSON.stringify(auth)
-      );
-      setSignatureTrove(auth);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const signDebtToken = async () => {
-    try {
-      const user = account.address;
-      const time = Math.floor(new Date().getTime() / 1000);
-
-      const domain = {
-        name: "BitSignature.SignIn",
-        version: "1",
-        chainId: account.chainId,
-        verifyingContract: addresses.debtToken[account.chainId],
-      };
-
-      const types = {
-        SignIn: [
-          { name: "user", type: "address" },
-          { name: "time", type: "uint32" },
-        ],
-      };
-
-      const message = {
-        time,
-        user,
-      };
-
-      let signature;
-
-      try {
-        // First attempt - Standard EIP-712
-        signature = await signTypedDataAsync({
-          domain,
-          types,
-          primaryType: "SignIn",
-          message,
-        });
-      } catch (err) {
-        // Second attempt - Try Coinbase Wallet specific format
-        const typedData = {
-          domain,
-          types,
-          primaryType: "SignIn",
-          message,
-        };
-
-        // Try using eth_signTypedData_v4 directly if available
-        if (walletClient?.request) {
-          try {
-            signature = await walletClient.request({
-              method: "eth_signTypedData_v4",
-              params: [user, JSON.stringify(typedData)],
-            });
-          } catch (innerErr) {
-            console.error("Direct eth_signTypedData_v4 failed:", innerErr);
-            throw innerErr;
-          }
-        } else {
-          throw new Error("Wallet client request method not available");
-        }
-      }
-
-      if (!signature) {
-        throw new Error("No signature received from wallet");
-      }
-
-      const rsv = ethers.utils.splitSignature(signature);
-      const auth = { user, time, rsv };
-
-      localStorage.setItem(
-        `signInToken-${account.chainId}`,
-        JSON.stringify(auth)
-      );
-
-      setSignatureToken(auth);
-
-      return true;
-    } catch (error) {
-      // Enhanced error reporting
-      let errorMessage = "Failed to sign message. ";
-      if (error.code === "ACTION_REJECTED") {
-        errorMessage += "You rejected the signature request.";
-      } else if (error.code === -32603) {
-        errorMessage +=
-          "There was an issue with the network connection. Please verify your network settings.";
-      } else if (error.message) {
-        errorMessage += error.message;
-      }
-
-      throw new Error(errorMessage);
-    }
-  };
-
   const calcMaxFeePercentage = async (troveAddr, debt) => {
     const borrowingFee = await publicClient.readContract({
       abi: TroveManagerABI,
@@ -1511,9 +1356,6 @@ export const BlockchainContextProvider = ({ children }) => {
   return (
     <BlockchainContext.Provider
       value={{
-        signTrove,
-        setSignatureTrove,
-        checkAuth,
         getData,
         deposits,
         debt,
@@ -1526,10 +1368,6 @@ export const BlockchainContextProvider = ({ children }) => {
         collateralPrices,
         openTrove,
         bitUSDBalance,
-        signDebtToken,
-        checkAuthToken,
-        signatureTrove,
-        signatureToken,
         bitUSDCirculation,
         stabilityPool,
         boost,

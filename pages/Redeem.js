@@ -439,9 +439,7 @@ export default function Redeem() {
       </div>
       {currentState ? <Wait></Wait> : null}
       {Object.keys(collaterals).length === 0 &&
-      account.status === "connected" &&
-      signatureToken?.user &&
-      signatureTrove?.user ? (
+      account.status === "connected" ? (
         <Loading></Loading>
       ) : null}
       <Footer></Footer>

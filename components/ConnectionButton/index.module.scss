@@ -1,0 +1,67 @@
+.main {
+  button {
+    background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 6px;
+    background: #00d7ca;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
+    color: #001c1b;
+    cursor: pointer;
+    min-width: 198px;
+    border: 0.5px solid #fffefe00;
+
+    &.height {
+      height: 53px;
+    }
+
+    .show {
+      display: block;
+    }
+
+    .hide {
+      display: none;
+    }
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &.soon {
+      &:hover {
+        background: gray;
+
+        .show {
+          display: none;
+        }
+
+        .hide {
+          display: block;
+        }
+      }
+    }
+
+    &.disable {
+      background: #0c0c0c;
+      color: gray;
+    }
+
+    &.rightAngle {
+      border-radius: 0;
+    }
+
+    &.noactive {
+      color: #bdbdbd;
+      border: 0.5px solid #333;
+      background: none;
+    }
+  }
+}
