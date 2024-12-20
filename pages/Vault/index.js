@@ -8,8 +8,7 @@ import { BlockchainContext } from "../../hook/blockchain";
 import { useAccount } from "wagmi";
 
 export default function Vault() {
-  const { collaterals, signatureTrove, signatureToken } =
-    useContext(BlockchainContext);
+  const { collaterals } = useContext(BlockchainContext);
   const account = useAccount();
 
   return (
@@ -34,9 +33,7 @@ export default function Vault() {
       </div>
 
       {Object.keys(collaterals).length === 0 &&
-      account.status === "connected" &&
-      signatureToken?.user &&
-      signatureTrove?.user ? (
+      account.status === "connected" ? (
         <Loading></Loading>
       ) : null}
 

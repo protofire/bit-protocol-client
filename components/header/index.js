@@ -1,17 +1,21 @@
 import Head from "next/head";
 import styles from "./index.module.scss";
 import { useEffect, useState, useContext } from "react";
-import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
+import { useAccount, useConnect, useSwitchChain } from "wagmi";
 import { BlockchainContext } from "../../hook/blockchain";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { formatNumber } from "../../utils/helpers";
 import { CHAIN_ID } from "../../hook/wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useSignatureCheck } from "../../hook/useSignatureCheck";
 
 export default function Header(props) {
   const { menu, type, dappMenu } = props;
   const router = useRouter();
   const account = useAccount();
+
+  const { needsSignature, isChecking } = useSignatureCheck();
 
   const {
     connectors,
@@ -42,24 +46,15 @@ export default function Header(props) {
 
     checkConnectors();
   }, [connectors]);
-  const { disconnect } = useDisconnect();
+
   const { chains, switchChain } = useSwitchChain();
   const [openHealth, setOpenHealth] = useState(false);
 
-  const {
-    signTrove,
-    checkAuth,
-    signDebtToken,
-    checkAuthToken,
-    tcr,
-    totalPricedCollateral,
-    totalSystemDebt,
-  } = useContext(BlockchainContext);
+  const { tcr, totalPricedCollateral, totalSystemDebt } =
+    useContext(BlockchainContext);
 
   const [open, setOpen] = useState(true);
   const [openConnect, setOpenConnect] = useState(false);
-  const [showSignIn, setShowSignIn] = useState(false);
-  const [showSignInToken, setShowSignInToken] = useState(false);
   const [openNetworks, setOpenNetworks] = useState(false);
 
   const goMenu = (id) => {
@@ -76,8 +71,6 @@ export default function Header(props) {
       if (account.chainId !== 23294) {
         switchChain({ chainId: 23294 });
       }
-      setShowSignIn(!checkAuth());
-      setShowSignInToken(!checkAuthToken());
     }
   }, [account, menu]);
 
@@ -141,115 +134,6 @@ export default function Header(props) {
     }
   };
 
-  const handleConnect = async (connector) => {
-    if (isConnecting) return;
-
-    try {
-      setIsConnecting(true);
-
-      if (connector.name === "Coinbase Wallet") {
-        try {
-          // Get the provider
-          const provider = await connector.getProvider();
-
-          if (!provider) {
-            throw new Error("Unable to get Coinbase Wallet provider");
-          }
-
-          // Try to add the chain first, but don't fail if it errors
-          try {
-            await handleChainAddition(provider);
-          } catch (error) {
-            // Log but don't throw for chain addition errors
-            console.warn("Chain addition warning:", error.message);
-            // Only throw if it's a user rejection
-            if (error.code === 4001) {
-              throw error;
-            }
-          }
-
-          // Request accounts first
-          const accounts = await provider.request({
-            method: "eth_requestAccounts",
-          });
-
-          if (!accounts || accounts.length === 0) {
-            throw new Error("No accounts received");
-          }
-
-          // Then attempt the wagmi connection
-          await connect({
-            connector,
-            chainId: CHAIN_ID.SAPPHIRE,
-          });
-
-          // Wait a bit for the connection to be established
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // Try switching to the correct chain
-          try {
-            await provider.request({
-              method: "wallet_switchEthereumChain",
-              params: [{ chainId: `0x${CHAIN_ID.SAPPHIRE.toString(16)}` }],
-            });
-          } catch (switchError) {
-            // Ignore switch errors - the chain might already be added
-            console.warn("Chain switch warning:", switchError.message);
-          }
-
-          setOpenConnect(false);
-        } catch (error) {
-          console.error("Coinbase connection error:", error);
-
-          // Only throw for actual connection errors
-          if (error.code === 4001) {
-            throw new Error("Connection rejected by user");
-          } else if (
-            error.message?.includes("provider is undefined") ||
-            error.message?.includes("Unable to get Coinbase Wallet provider")
-          ) {
-            throw new Error(
-              "Please install the Coinbase Wallet extension or open in Coinbase Wallet browser"
-            );
-          } else if (!error.message?.includes("chain")) {
-            // Don't throw for chain-related errors
-            throw error;
-          }
-
-          if (error.message?.includes("chain")) {
-            setOpenConnect(false);
-          }
-        }
-      } else {
-        // Handle other wallets
-        await connect({
-          connector,
-          chainId: CHAIN_ID.SAPPHIRE,
-        });
-        setOpenConnect(false);
-      }
-    } catch (error) {
-      console.error("Connection error:", error);
-      let errorMessage = "Failed to connect wallet. ";
-
-      if (error.code === 4001) {
-        errorMessage += "User rejected the connection.";
-      } else if (error.message?.includes("provider")) {
-        errorMessage +=
-          "Please install the Coinbase Wallet extension or open in Coinbase Wallet browser.";
-      } else {
-        errorMessage += error.message || "Please try again.";
-      }
-
-      // Only show alert for non-chain-related errors
-      if (!error.message?.includes("chain")) {
-        alert(errorMessage);
-      }
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
   useEffect(() => {
     if (account.status === "connected" && !hasAttemptedSwitch) {
       const switchChainIfNeeded = async () => {
@@ -281,41 +165,9 @@ export default function Header(props) {
     }
   }, [account.isConnected]);
 
-  const handleDisconnect = async () => {
-    try {
-      // Clear local storage
-      localStorage.removeItem(`signInAuth-${account.chainId}`);
-      localStorage.removeItem(`signInToken-${account.chainId}`);
-
-      // Reset all relevant states
-      setShowSignIn(false);
-      setShowSignInToken(false);
-      setOpenConnect(false);
-      setOpenNetworks(false);
-      setHasAttemptedSwitch(false);
-
-      // Perform the disconnect
-      await disconnect();
-
-      // Force a page reload after a short delay to ensure clean state
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
-    } catch (error) {
-      console.error("Disconnect error:", error);
-      alert("Error disconnecting. Please try again.");
-    }
-  };
-
   useEffect(() => {
     if (account.status === "disconnected") {
       setHasAttemptedSwitch(false);
-      setShowSignIn(false);
-      setShowSignInToken(false);
-
-      // Clear auth storage
-      localStorage.removeItem(`signInAuth-${account.chainId}`);
-      localStorage.removeItem(`signInToken-${account.chainId}`);
     }
   }, [account.status, account.chainId]);
 
@@ -468,7 +320,7 @@ export default function Header(props) {
 
           <div className={styles.menuList}>
             {type != "dapp" ? (
-              <div div className="button">
+              <div className="button">
                 <Link href="/Vault">
                   <span>Launch App</span>
                 </Link>
@@ -490,35 +342,11 @@ export default function Header(props) {
                 )}
 
                 <div className="h5None">
-                  {account.status === "connected" ? (
-                    <div style={{ display: "flex", gap: "5px" }}>
-                      <div style={{ display: "flex", gap: "5px" }}>
-                        <div className="account">
-                          {account.address.slice(0, 5) +
-                            ".." +
-                            account.address.slice(-5)}
-                        </div>
-                        <div
-                          className="button h5None"
-                          style={{ minWidth: "auto" }}
-                          onClick={handleDisconnect}
-                        >
-                          Disconnect
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      className="button"
-                      style={{
-                        minWidth: "auto",
-                        opacity: isConnecting ? 0.7 : 1,
-                      }}
-                      onClick={() => !isConnecting && setOpenConnect(true)}
-                    >
-                      {isConnecting ? "Connecting..." : "Connect Wallet"}
-                    </div>
-                  )}
+                  <ConnectButton
+                    accountStatus="avatar"
+                    chainStatus="name"
+                    showBalance={true}
+                  />
                 </div>
               </>
             )}
@@ -533,68 +361,7 @@ export default function Header(props) {
           </div>
         </div>
       </div>
-      {openConnect ? (
-        <div className="promptBox">
-          <div className="boxMain">
-            <div className="boxInfo">
-              <h2>Connect a wallet</h2>
-              <img
-                className={styles.close}
-                onClick={() => setOpenConnect(false)}
-                src="/icon/close.svg"
-                alt="close"
-              />
-            </div>
-            {connectors.map((connector) => (
-              <div
-                className="divBtn"
-                key={connector.uid}
-                onClick={() => {
-                  if (!isConnecting) {
-                    handleConnect(connector);
-                  }
-                }}
-                id={"connect-" + connector.id}
-                style={{
-                  opacity: isConnecting ? 0.5 : 1,
-                  cursor: isConnecting ? "not-allowed" : "pointer",
-                }}
-              >
-                {connector.name === "Injected (Sapphire)"
-                  ? "Browser wallet (Sapphire)"
-                  : connector.name === "Injected"
-                  ? "Browser wallet"
-                  : connector.name}
-                {isConnecting &&
-                  connector.name === "Coinbase Wallet" &&
-                  " (Connecting...)"}
 
-                {connector.name === "Coinbase Wallet" ? (
-                  <img
-                    className={styles.close}
-                    src="/icon/coinbase.svg"
-                    alt="close"
-                  />
-                ) : (
-                  <img
-                    className={styles.close}
-                    src="/icon/browserWallet.svg"
-                    alt="close"
-                  />
-                )}
-              </div>
-            ))}
-
-            {connectError && (
-              <div
-                style={{ color: "red", marginTop: "10px", textAlign: "center" }}
-              >
-                {connectError.message}
-              </div>
-            )}
-          </div>
-        </div>
-      ) : null}
       {openNetworks ? (
         <div className="promptBox">
           <div className="boxMain">
@@ -682,46 +449,6 @@ export default function Header(props) {
           </div>
         </div>
       ) : null}
-      {showSignIn ? (
-        <div className="promptSign">
-          <div className="firstBox">
-            <div className="infoBox">
-              Bit Protocol is the first and only encrypted DeFi protocol for
-              Web3 that provides intelligent privacy features. Only your
-              personal signature grants access to individual data. To streamline
-              the signing process and enhance user experience, you are required
-              to use EIP-712 to "sign in" once per day.
-            </div>
-            <div className="button" onClick={() => signTrove()}>
-              Sign in
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {showSignInToken ? (
-        <div className="promptSign">
-          <div className="firstBox">
-            <div className="infoBox">
-              Please sign in your wallet's pop-up to allow Bit Protocol to
-              access your bitUSD balance.
-            </div>
-            <div
-              className="button"
-              onClick={async () => {
-                try {
-                  await signDebtToken();
-                } catch (error) {
-                  console.error("Failed to sign:", error);
-                }
-              }}
-            >
-              Sign in
-            </div>
-          </div>
-        </div>
-      ) : null}
-      {/* {status === "pending" ? <Wait></Wait> : null} */}
     </>
   );
 }

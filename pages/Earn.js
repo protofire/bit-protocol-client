@@ -1092,9 +1092,7 @@ export default function Earn() {
       </div>
 
       {!Object.keys(stabilityPool).length > 0 &&
-      account.status === "connected" &&
-      signatureToken?.user &&
-      signatureTrove?.user ? (
+      account.status === "connected" ? (
         <Loading></Loading>
       ) : null}
 
