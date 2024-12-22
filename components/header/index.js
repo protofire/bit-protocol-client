@@ -15,8 +15,6 @@ export default function Header(props) {
   const router = useRouter();
   const account = useAccount();
 
-  const { needsSignature, isChecking } = useSignatureCheck();
-
   const {
     connectors,
     connect,
@@ -87,52 +85,51 @@ export default function Header(props) {
     }
   };
 
-  const [isConnecting, setIsConnecting] = useState(false);
   const [hasAttemptedSwitch, setHasAttemptedSwitch] = useState(false);
 
-  const handleChainAddition = async (provider) => {
-    try {
-      // Check if chain is already added
-      try {
-        const chain = await provider.request({
-          method: "eth_chainId",
-          params: [],
-        });
+  // const handleChainAddition = async (provider) => {
+  //   try {
+  //     // Check if chain is already added
+  //     try {
+  //       const chain = await provider.request({
+  //         method: "eth_chainId",
+  //         params: [],
+  //       });
 
-        if (chain === `0x${CHAIN_ID.SAPPHIRE.toString(16)}`) {
-          return true;
-        }
-      } catch (error) {
-        console.error("Error checking chain:", error);
-      }
+  //       if (chain === `0x${CHAIN_ID.SAPPHIRE.toString(16)}`) {
+  //         return true;
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking chain:", error);
+  //     }
 
-      // Add the network
-      await provider.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: `0x${CHAIN_ID.SAPPHIRE.toString(16)}`,
-            chainName: "Oasis Sapphire",
-            nativeCurrency: {
-              name: "ROSE",
-              symbol: "ROSE",
-              decimals: 18,
-            },
-            rpcUrls: ["https://sapphire.oasis.dev"],
-            blockExplorerUrls: ["https://explorer.sapphire.oasis.dev"],
-          },
-        ],
-      });
+  //     // Add the network
+  //     await provider.request({
+  //       method: "wallet_addEthereumChain",
+  //       params: [
+  //         {
+  //           chainId: `0x${CHAIN_ID.SAPPHIRE.toString(16)}`,
+  //           chainName: "Oasis Sapphire",
+  //           nativeCurrency: {
+  //             name: "ROSE",
+  //             symbol: "ROSE",
+  //             decimals: 18,
+  //           },
+  //           rpcUrls: ["https://sapphire.oasis.dev"],
+  //           blockExplorerUrls: ["https://explorer.sapphire.oasis.dev"],
+  //         },
+  //       ],
+  //     });
 
-      return true;
-    } catch (error) {
-      console.error("Error adding chain:", error);
-      if (error.code === 4001) {
-        throw new Error("User rejected adding the network");
-      }
-      throw error;
-    }
-  };
+  //     return true;
+  //   } catch (error) {
+  //     console.error("Error adding chain:", error);
+  //     if (error.code === 4001) {
+  //       throw new Error("User rejected adding the network");
+  //     }
+  //     throw error;
+  //   }
+  // };
 
   useEffect(() => {
     if (account.status === "connected" && !hasAttemptedSwitch) {
@@ -328,16 +325,18 @@ export default function Header(props) {
             ) : (
               <>
                 {account.status === "connected" && (
-                  <div
-                    className={styles.network}
-                    onClick={() => setOpenNetworks(true)}
-                  >
-                    {account.chainId === 19236265 ? (
-                      <img src="/dapp/btc-logo.svg" alt="chainLogo" />
-                    ) : (
-                      <img src="/dapp/rose.svg" alt="chainLogo" />
-                    )}
-                    {account?.chain?.name}
+                  <div className="h5None">
+                    <div
+                      className={styles.network}
+                      onClick={() => setOpenNetworks(true)}
+                    >
+                      {account.chainId === 19236265 ? (
+                        <img src="/dapp/btc-logo.svg" alt="chainLogo" />
+                      ) : (
+                        <img src="/dapp/rose.svg" alt="chainLogo" />
+                      )}
+                      {account?.chain?.name}
+                    </div>
                   </div>
                 )}
 
@@ -361,6 +360,141 @@ export default function Header(props) {
           </div>
         </div>
       </div>
+
+      {!open ? (
+        type == "dapp" ? (
+          <div className={styles.h5Block}>
+            <div className={styles.h5Item}>
+              <Link href="/Vault" rel="nofollow noopener noreferrer">
+                <span>Vault</span>
+              </Link>
+            </div>
+            <div className={styles.h5Item}>
+              <Link href="/Earn" rel="nofollow noopener noreferrer">
+                <span>Earn</span>
+              </Link>
+            </div>
+            {/* <div className={styles.h5Item}>
+              <Link href="/Reward" rel="nofollow noopener noreferrer">
+                <span>Reward</span>
+              </Link>
+            </div>
+            <div className={styles.h5Item}>
+              <Link href="/Lock" rel="nofollow noopener noreferrer">
+                <span>Lock</span>
+              </Link>
+            </div> */}
+            <div className={styles.h5Item}>
+              <Link href="/Redeem" rel="nofollow noopener noreferrer">
+                <span>Redeem</span>
+              </Link>
+            </div>
+            {/* <div className={styles.h5Item}>
+              <Link href="/Vote" rel="nofollow noopener noreferrer">
+                <span>Vote</span>
+              </Link>
+            </div> */}
+            <div className={styles.h5Item}>
+              {account.status === "connected" && (
+                <div
+                  className={styles.network}
+                  onClick={() => setOpenNetworks(true)}
+                >
+                  {account.chainId === 19236265 ? (
+                    <img src="/dapp/btc-logo.svg" alt="chainLogo" />
+                  ) : (
+                    <img src="/dapp/rose.svg" alt="chainLogo" />
+                  )}
+                  {account?.chain?.name}
+                </div>
+              )}
+            </div>
+            <div className="h5user">
+              <ConnectButton
+                accountStatus="avatar"
+                chainStatus="name"
+                showBalance={true}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className={styles.h5Block}>
+            <div className={styles.h5Item} onClick={() => goMenu_h5("works")}>
+              How it works
+            </div>
+            <div className={styles.h5Item}>
+              <Link
+                target="_blank"
+                href="https://vine-money.gitbook.io/vine-money/"
+                rel="nofollow noopener noreferrer"
+              >
+                <span>Docs</span>
+              </Link>
+            </div>
+            <div className={`${styles.h5Item}`}>
+              <div>Socials</div>
+              <div className={styles.socials}>
+                <div>
+                  <Link
+                    target="_blank"
+                    href="https://x.com/BitUSD_finance"
+                    rel="nofollow noopener noreferrer"
+                  >
+                    Twitter/X
+                  </Link>
+                </div>
+                <div>
+                  <Link
+                    target="_blank"
+                    href="https://t.me/vinemoneyofficial"
+                    rel="nofollow noopener noreferrer"
+                  >
+                    Telegram Community
+                  </Link>
+                </div>
+                <div>
+                  <Link
+                    target="_blank"
+                    href="https://t.me/vinemoneyann"
+                    rel="nofollow noopener noreferrer"
+                  >
+                    Telegram Announcements
+                  </Link>
+                </div>
+                <div>
+                  <Link
+                    target="_blank"
+                    href="https://medium.com/@bitusdprotocol"
+                    rel="nofollow noopener noreferrer"
+                  >
+                    Medium
+                  </Link>
+                </div>
+              </div>
+            </div>
+            <div className={styles.h5Item} onClick={() => goMenu_h5("faq")}>
+              FAQ
+            </div>
+            <div className={styles.h5Item}>
+              <Link
+                target="_blank"
+                href="/Vine_Money_Disclaimer.pdf"
+                rel="nofollow noopener noreferrer"
+              >
+                <span>Disclaimer</span>
+              </Link>
+            </div>
+
+            <div className="h5user">
+              <ConnectButton
+                accountStatus="avatar"
+                chainStatus="name"
+                showBalance={true}
+              />
+            </div>
+          </div>
+        )
+      ) : null}
 
       {openNetworks ? (
         <div className="promptBox">

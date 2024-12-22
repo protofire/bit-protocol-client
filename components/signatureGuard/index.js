@@ -26,10 +26,15 @@ export function SignatureGuard({ children }) {
         <div className="firstBox">
           <div className="infoBox">
             Bit Protocol is the first and only encrypted DeFi protocol for Web3
-            that provides intelligent privacy features. Only your personal
-            signature grants access to individual data. To streamline the
-            signing process and enhance user experience, you are required to use
-            EIP-712 to "sign in" once per day.
+            that provides intelligent privacy features.
+            <br />
+            Access to your individual data is secured through your personal
+            signature. To streamline the process and enhance your experience,
+            you are required to sign in using EIP-712 once per day.
+            <br />
+            We require two signatures from you: one to access your bitUSD
+            balance and another for your Trove data. Please confirm these
+            requests in your wallet's pop-up windows.
           </div>
           <div className="button" onClick={requestNewSignature}>
             Sign in
