@@ -19,10 +19,11 @@ export function useSignatureCheck() {
       }
 
       try {
-        const { dataTrove, dataDebt } =
-          await SignatureManager.getStoredSignature(account.address);
+        const signatures = await SignatureManager.getStoredSignature(
+          account.address
+        );
 
-        setNeedsSignature(!dataTrove || !dataDebt);
+        setNeedsSignature(!signatures?.dataTrove || !signatures?.dataDebt);
       } catch (error) {
         console.error("Error checking signature:", error);
         setNeedsSignature(true);

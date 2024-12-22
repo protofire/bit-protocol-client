@@ -15,7 +15,7 @@ export const addresses = {
     [19236265]: "",
   },
   priceFeed: {
-    [23294]: "0x981fdCe0f7c9c163E4D749a3067ea56144332abd",
+    [23294]: "0xd35c6AAA15F04C29E09635FB08f26C288ccE87Dd",
     [23295]: "",
     [19236265]: "",
   },

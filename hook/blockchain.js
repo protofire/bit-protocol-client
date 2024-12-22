@@ -652,9 +652,14 @@ export const BlockchainContextProvider = ({ children }) => {
   const getData = useCallback(async () => {
     if (typeof window === "undefined") return;
 
-    const { dataTrove, dataDebt } = await getSignatures();
+    const signatures = await getSignatures();
 
-    if (account.address && result?.data && dataTrove && dataDebt) {
+    if (
+      account.address &&
+      result?.data &&
+      signatures?.dataTrove &&
+      signatures?.dataDebt
+    ) {
       if (lock) return;
       setLock(true);
       // console.log("Getting data");
@@ -1141,6 +1146,8 @@ export const BlockchainContextProvider = ({ children }) => {
           args: [index],
         });
 
+        const block = await publicClient.getBlock();
+
         const systemBalances = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
@@ -1220,6 +1227,14 @@ export const BlockchainContextProvider = ({ children }) => {
         const tvl =
           fromBigNumber(systemBalances[0]) * fromBigNumber(systemBalances[2]);
         totalTVL += tvl;
+
+        console.log("final", {
+          tvl,
+          totalTVL,
+          systemBalances,
+          collateralPricesCache,
+          block,
+        });
 
         userTrovesCache[address] = await getTrove(address);
 
