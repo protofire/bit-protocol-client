@@ -325,16 +325,18 @@ export default function Header(props) {
             ) : (
               <>
                 {account.status === "connected" && (
-                  <div
-                    className={styles.network}
-                    onClick={() => setOpenNetworks(true)}
-                  >
-                    {account.chainId === 19236265 ? (
-                      <img src="/dapp/btc-logo.svg" alt="chainLogo" />
-                    ) : (
-                      <img src="/dapp/rose.svg" alt="chainLogo" />
-                    )}
-                    {account?.chain?.name}
+                  <div className="h5None">
+                    <div
+                      className={styles.network}
+                      onClick={() => setOpenNetworks(true)}
+                    >
+                      {account.chainId === 19236265 ? (
+                        <img src="/dapp/btc-logo.svg" alt="chainLogo" />
+                      ) : (
+                        <img src="/dapp/rose.svg" alt="chainLogo" />
+                      )}
+                      {account?.chain?.name}
+                    </div>
                   </div>
                 )}
 
@@ -392,6 +394,21 @@ export default function Header(props) {
                 <span>Vote</span>
               </Link>
             </div> */}
+            <div className={styles.h5Item}>
+              {account.status === "connected" && (
+                <div
+                  className={styles.network}
+                  onClick={() => setOpenNetworks(true)}
+                >
+                  {account.chainId === 19236265 ? (
+                    <img src="/dapp/btc-logo.svg" alt="chainLogo" />
+                  ) : (
+                    <img src="/dapp/rose.svg" alt="chainLogo" />
+                  )}
+                  {account?.chain?.name}
+                </div>
+              )}
+            </div>
             <div className="h5user">
               <ConnectButton
                 accountStatus="avatar"
