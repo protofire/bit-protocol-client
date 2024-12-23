@@ -1101,6 +1101,7 @@ export const BlockchainContextProvider = ({ children }) => {
           deposits: fromBigNumber(trove[2]),
           debt,
           status: trove[5],
+          owner: account.address,
         };
       } else {
         const { dataTrove } = await getSignatures();
@@ -1117,6 +1118,7 @@ export const BlockchainContextProvider = ({ children }) => {
           deposits: fromBigNumber(trove[1]),
           debt,
           status: trove[3],
+          owner: account.address,
         };
       }
     } catch (error) {
@@ -1145,8 +1147,6 @@ export const BlockchainContextProvider = ({ children }) => {
           functionName: "troveManagers",
           args: [index],
         });
-
-        const block = await publicClient.getBlock();
 
         const systemBalances = await publicClient.readContract({
           abi: TroveManagerABI,
@@ -1227,14 +1227,6 @@ export const BlockchainContextProvider = ({ children }) => {
         const tvl =
           fromBigNumber(systemBalances[0]) * fromBigNumber(systemBalances[2]);
         totalTVL += tvl;
-
-        console.log("final", {
-          tvl,
-          totalTVL,
-          systemBalances,
-          collateralPricesCache,
-          block,
-        });
 
         userTrovesCache[address] = await getTrove(address);
 

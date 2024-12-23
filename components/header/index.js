@@ -35,7 +35,7 @@ export default function Header(props) {
             .getProvider()
             .then(() => true)
             .catch(() => false);
-          console.log(`Connector ${connector.name} ready status:`, isReady);
+          // console.log(`Connector ${connector.name} ready status:`, isReady);
         } catch (error) {
           console.log(`Connector ${connector.name} check failed:`, error);
         }

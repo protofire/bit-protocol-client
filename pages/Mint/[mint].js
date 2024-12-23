@@ -10,11 +10,12 @@ import DepositsAndDebt from "../../components/dapp/depositsAndDebt";
 import { useRouter } from "next/router";
 import { BlockchainContext } from "../../hook/blockchain";
 import PageBack from "../../components/pageBack";
-import { useWaitForTransactionReceipt } from "wagmi";
+import { useWaitForTransactionReceipt, useAccount } from "wagmi";
 import useDebounce from "../../hook/useDebounce";
 
 export default function Mint() {
   const router = useRouter();
+  const account = useAccount();
   const {
     userTroves,
     collaterals,
@@ -85,8 +86,13 @@ export default function Mint() {
         : 0;
       setCollateralBalance(tokenBalance);
     }
+
+    if (userTroves[router.query.mint]?.owner !== account.address) {
+      router.push("/Vault");
+    }
+
     getData();
-  }, [collaterals, userTroves]);
+  }, [collaterals, userTroves, account.address]);
 
   useEffect(() => {
     if (txReceipt && txHash) {
