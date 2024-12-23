@@ -11,3 +11,9 @@ export const formatNumber = (num) => {
     compactDisplay: "short",
   });
 };
+
+export const checkProtectedRoute = (path, routes) => {
+  if (routes.includes(path)) return true;
+  if (path.startsWith("/Mint/")) return true;
+  return false;
+};

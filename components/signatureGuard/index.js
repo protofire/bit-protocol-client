@@ -1,6 +1,7 @@
 import styles from "../header/index.module.scss";
 import { useRouter } from "next/router";
 import { useSignatureCheck } from "../../hook/useSignatureCheck";
+import { checkProtectedRoute } from "../../utils/helpers";
 
 const PROTECTED_ROUTES = ["/Vault", "/Redeem", "/Earn", "/Vote", "/Lock"];
 
@@ -9,7 +10,10 @@ export function SignatureGuard({ children }) {
   const { needsSignature, isChecking, requestNewSignature } =
     useSignatureCheck();
 
-  const isProtectedRoute = PROTECTED_ROUTES.includes(router.pathname);
+  const isProtectedRoute = checkProtectedRoute(
+    router.pathname,
+    PROTECTED_ROUTES
+  );
 
   // If it's not a protected route, just render children
   if (!isProtectedRoute) {

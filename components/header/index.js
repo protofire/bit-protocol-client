@@ -35,7 +35,7 @@ export default function Header(props) {
             .getProvider()
             .then(() => true)
             .catch(() => false);
-          console.log(`Connector ${connector.name} ready status:`, isReady);
+          // console.log(`Connector ${connector.name} ready status:`, isReady);
         } catch (error) {
           console.log(`Connector ${connector.name} check failed:`, error);
         }
@@ -53,7 +53,7 @@ export default function Header(props) {
 
   const [open, setOpen] = useState(true);
   const [openConnect, setOpenConnect] = useState(false);
-  const [openNetworks, setOpenNetworks] = useState(false);
+  // const [openNetworks, setOpenNetworks] = useState(false);
 
   const goMenu = (id) => {
     if (menu == "Home") {
@@ -324,7 +324,7 @@ export default function Header(props) {
               </div>
             ) : (
               <>
-                {account.status === "connected" && (
+                {/* {account.status === "connected" && (
                   <div className="h5None">
                     <div
                       className={styles.network}
@@ -338,12 +338,12 @@ export default function Header(props) {
                       {account?.chain?.name}
                     </div>
                   </div>
-                )}
+                )} */}
 
                 <div className="h5None">
                   <ConnectButton
                     accountStatus="avatar"
-                    chainStatus="name"
+                    chainStatus="none"
                     showBalance={true}
                   />
                 </div>
@@ -394,7 +394,7 @@ export default function Header(props) {
                 <span>Vote</span>
               </Link>
             </div> */}
-            <div className={styles.h5Item}>
+            {/* <div className={styles.h5Item}>
               {account.status === "connected" && (
                 <div
                   className={styles.network}
@@ -408,7 +408,7 @@ export default function Header(props) {
                   {account?.chain?.name}
                 </div>
               )}
-            </div>
+            </div> */}
             <div className="h5user">
               <ConnectButton
                 accountStatus="avatar"
@@ -496,7 +496,7 @@ export default function Header(props) {
         )
       ) : null}
 
-      {openNetworks ? (
+      {/* {openNetworks ? (
         <div className="promptBox">
           <div className="boxMain">
             <div className="boxInfo">
@@ -537,7 +537,7 @@ export default function Header(props) {
             ))}
           </div>
         </div>
-      ) : null}
+      ) : null} */}
       {openHealth ? (
         <div className="promptBox">
           <div className="boxMain">
