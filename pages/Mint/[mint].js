@@ -12,6 +12,7 @@ import { BlockchainContext } from "../../hook/blockchain";
 import PageBack from "../../components/pageBack";
 import { useWaitForTransactionReceipt, useAccount } from "wagmi";
 import useDebounce from "../../hook/useDebounce";
+import { utils } from "ethers";
 
 export default function Mint() {
   const router = useRouter();
@@ -374,7 +375,7 @@ export default function Mint() {
       return;
     }
 
-    if (Number(debtAmount) < 1) {
+    if (Number(debtAmount) < 10) {
       tooltip.error({
         content: "A Minimum Debt of 10 bitUSD is Required!",
         duration: 5000,
@@ -383,14 +384,11 @@ export default function Mint() {
     }
 
     try {
-      const collAmountBN = new BigNumber(collAmount);
-      const tx = await approve(
-        collateralAddr,
-        collAmountBN.multipliedBy(1e18).integerValue().toString()
-      );
+      const collAmountBN = utils.parseUnits(collAmount.toString(), 18);
+      const tx = await approve(collateralAddr, collAmountBN.toString());
       setCurrentWaitInfo({
         type: "loading",
-        info: `Approving ${Number(collAmount.toFixed(4)).toLocaleString()} $${
+        info: `Approving ${Number(collAmount).toLocaleString()} $${
           collateral?.collateral?.name
         }`,
       });
@@ -423,13 +421,13 @@ export default function Mint() {
     }
     try {
       // Convert both amounts using BigNumber properly
-      const collAmountBN = new BigNumber(collAmount);
-      const debtAmountBN = new BigNumber(debtAmount);
+      const collAmountBN = utils.parseUnits(collAmount.toString(), 18);
+      const debtAmountBN = utils.parseUnits(debtAmount.toString(), 18);
 
       const tx = await adjustTrove(
         router.query.mint,
-        collAmountBN.multipliedBy(1e18).integerValue().toString(),
-        debtAmountBN.multipliedBy(1e18).integerValue().toString(),
+        collAmountBN.toString(),
+        debtAmountBN.toString(),
         isPayable
       );
       setCurrentWaitInfo({
@@ -451,6 +449,7 @@ export default function Mint() {
       setCollAmount("");
       setDebtAmount("");
     } catch (error) {
+      console.log("error", error);
       setCurrentState(false);
       tooltip.error({
         content:

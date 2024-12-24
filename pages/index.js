@@ -108,7 +108,7 @@ export default function Home() {
                   <span className="hide">Launching Soon</span>
                 </div>
               ) : (
-                <div div className="button">
+                <div className="button">
                   <Link href="/Vault">
                     <span>Deposit Collateral</span>
                   </Link>

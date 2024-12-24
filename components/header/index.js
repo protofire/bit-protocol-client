@@ -8,7 +8,6 @@ import { useRouter } from "next/router";
 import { formatNumber } from "../../utils/helpers";
 import { CHAIN_ID } from "../../hook/wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useSignatureCheck } from "../../hook/useSignatureCheck";
 
 export default function Header(props) {
   const { menu, type, dappMenu } = props;
