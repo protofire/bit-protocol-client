@@ -624,7 +624,6 @@ export const BlockchainContextProvider = ({ children }) => {
         BorrowerOperationsABI,
         sapphire.wrap(signer)
       );
-
       const prev = await getPrev(collaterals[address].sortedTroves);
       const next = await getNext(collaterals[address].sortedTroves);
 
@@ -1325,12 +1324,10 @@ export const BlockchainContextProvider = ({ children }) => {
       args: [debt],
     });
 
-    const borrowingFeeBN = new BigNumber(borrowingFee.toString());
-    const debtBN = new BigNumber(debt.toString());
-
-    const maxFee = borrowingFeeBN.dividedBy(debtBN).multipliedBy(1.2);
-
-    return maxFee.multipliedBy(1e18).toFixed();
+    // Convert 1.2 to a BigNumber to avoid decimal precision issues
+    const maxFee = (fromBigNumber(borrowingFee) / fromBigNumber(debt)) * 1.2
+    
+    return ethers.utils.parseEther(maxFee.toString().replace(/,/g, "")).toString();
   };
 
   return (
