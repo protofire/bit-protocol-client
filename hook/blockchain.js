@@ -1317,36 +1317,6 @@ export const BlockchainContextProvider = ({ children }) => {
     return bitGovPrice * rosePrice;
   };
 
-  const checkAuth = () => {
-    if (account.chainId !== 23294 && account.chainId !== 23295) return true;
-    const auth = JSON.parse(
-      localStorage.getItem(`signInAuth-${account.chainId}`)
-    );
-    if (!auth) {
-      return false;
-    }
-    const time = Math.floor(new Date().getTime() / 1000);
-    if (account.address !== auth.user || time - auth.time >= 86400) {
-      return false;
-    }
-    return true;
-  };
-
-  const checkAuthToken = () => {
-    if (account.chainId !== 23294 && account.chainId !== 23295) return true;
-    const auth = JSON.parse(
-      localStorage.getItem(`signInToken-${account.chainId}`)
-    );
-    if (!auth) {
-      return false;
-    }
-    const time = Math.floor(new Date().getTime() / 1000);
-    if (account.address !== auth.user || time - auth.time >= 86400) {
-      return false;
-    }
-    return true;
-  };
-
   const calcMaxFeePercentage = async (troveAddr, debt) => {
     const borrowingFee = await publicClient.readContract({
       abi: TroveManagerABI,
@@ -1355,9 +1325,12 @@ export const BlockchainContextProvider = ({ children }) => {
       args: [debt],
     });
 
-    const maxFee = (fromBigNumber(borrowingFee) / fromBigNumber(debt)) * 1.2;
+    const borrowingFeeBN = new BigNumber(borrowingFee.toString());
+    const debtBN = new BigNumber(debt.toString());
 
-    return new BigNumber(maxFee).multipliedBy(1e18).toFixed();
+    const maxFee = borrowingFeeBN.dividedBy(debtBN).multipliedBy(1.2);
+
+    return maxFee.multipliedBy(1e18).toFixed();
   };
 
   return (
