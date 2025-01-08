@@ -39,7 +39,7 @@ export default function DepositsAndDebt({ type, address }) {
             <p>{Number(deposits.toFixed(4)).toLocaleString()}</p>
             <p>
               <img
-                style={{ width: "24px", height: "24px" }}
+                style={{ width: "24px", height: "24px", borderRadius: "50%" }}
                 src={`/dapp/${collateral.collateral.logo}`}
                 alt="rose"
               />
