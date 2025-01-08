@@ -19,12 +19,14 @@ export default function Vault() {
         <div className={`${styles.Earn} ${"dappMain2"}`}>
           {account.status === "connected" ? (
             <div className={styles.earnMain}>
-              {Object.keys(collaterals).map((key) => (
-                <Collateral
-                  key={key}
-                  props={{ ...collaterals[key], address: key }}
-                />
-              ))}
+              {Object.keys(collaterals).map((key) => {
+                return key === "0xC91EDf48269D0373c17718F6D281D34908a5700d" && (
+                  <Collateral
+                    key={key}
+                    props={{ ...collaterals[key], address: key }}
+                  />
+                );
+              })}
             </div>
           ) : (
             <h2 style={{ textAlign: "center" }}>Please connect your wallet</h2>
