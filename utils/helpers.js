@@ -17,3 +17,9 @@ export const checkProtectedRoute = (path, routes) => {
   if (path.startsWith("/Mint/")) return true;
   return false;
 };
+
+
+export const bnIsBiggerThan = (big = new BigNumber(0), num = 0) => {
+  const numBN = new BigNumber(num).multipliedBy(1e18).integerValue().toFixed();
+  return big.lt(numBN);
+}

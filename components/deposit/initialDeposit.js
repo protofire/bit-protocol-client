@@ -5,6 +5,8 @@ import { ethers } from "ethers";
 import Wait from "../../components/tooltip/wait";
 import tooltip from "../../components/tooltip";
 import { useWaitForTransactionReceipt } from "wagmi";
+import BigNumber from "bignumber.js";
+import {bnIsBiggerThan} from "../../utils/helpers"
 
 export default function InitialDeposit({ address }) {
   const {
@@ -32,7 +34,7 @@ export default function InitialDeposit({ address }) {
   const [isPayable, setIsPayable] = useState(false);
   const [deposits, setDeposits] = useState(0);
   const [collateralAddr, setCollateralAddr] = useState("");
-  const [collateralBalance, setCollateralBalance] = useState(0);
+  const [collateralBalance, setCollateralBalance] = useState({ formatted: 0, exact: new BigNumber(0) });
   const [debt, setDebt] = useState(0);
   const [status, setStatus] = useState(0);
   const [txHash, setTxHash] = useState("");
@@ -60,7 +62,7 @@ export default function InitialDeposit({ address }) {
         setIsPayable(collaterals[address]?.collateral.payable);
         const tokenBalance = !collaterals[address]?.collateral.payable
           ? await getTokenBalance(collaterals[address]?.collateral.address)
-          : 0;
+          : { formatted: 0, exact: new BigNumber(0) };
         setCollateralBalance(tokenBalance);
       }
     }
@@ -165,8 +167,11 @@ export default function InitialDeposit({ address }) {
   const changeCollAmount = async (e) => {
     const value = enforceThreeDecimals(e.target.value);
     const numValue = Number(value);
-    const userBalance = isPayable ? balance : collateralBalance;
-    const maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
+    const userBalance = isPayable ? balance : collateralBalance.formatted;
+
+    let maxBalance
+    if (isPayable) maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
+    else maxBalance = userBalance
 
     // Allow empty string or values within range (including zero)
     if (value === "" || (numValue >= 0 && numValue <= maxBalance)) {
@@ -193,8 +198,10 @@ export default function InitialDeposit({ address }) {
   };
 
   const changeCollValue = (value) => {
-    const balanceValue = isPayable ? balance : collateralBalance;
-    const newAmount = (balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value;
+    const balanceValue = isPayable ? balance : collateralBalance.formatted;
+    
+    const amount = isPayable ? (balanceValue - 1 > 0 ? balanceValue - 1 : 0) : balanceValue
+    const newAmount = amount * value;
     setCollAmount(newAmount);
 
     // Update debt amount based on new collateral amount
@@ -284,10 +291,21 @@ export default function InitialDeposit({ address }) {
       return;
     }
 
-    try {
-      const collateralWei = numberHelpers.toWei(collAmount);
+    const numDebtAmount = Number(debtAmount);
+    if (numDebtAmount < 10) {
+      tooltip.error({
+        content: "A Minimum Debt of 10 bitUSD is Required!",
+        duration: 5000,
+      });
+      return;
+    }
 
-      const tx = await approve(collateralAddr, collateralWei);
+    try {
+      let collAmountBN
+      if (bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+      else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
+
+      const tx = await approve(collateralAddr, collAmountBN.integerValue().toFixed());
 
       setCurrentWaitInfo({
         type: "loading",
@@ -358,7 +376,10 @@ export default function InitialDeposit({ address }) {
     }
 
     try {
-      const collateralWei = numberHelpers.toWei(collAmount);
+      let collAmountBN
+      if (bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+      else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
+
       const debtWei = numberHelpers.toWei(debtAmount);
 
       // Set loading state
@@ -371,14 +392,9 @@ export default function InitialDeposit({ address }) {
       // Send transaction
       const tx = await openTrove(
         address,
-        collateralWei,
+        collAmountBN.integerValue().toFixed(),
         debtWei,
-        isPayable,
         isPayable
-          ? {
-              value: collateralWei,
-            }
-          : {}
       );
 
       const result = await tx.wait();
@@ -453,7 +469,7 @@ export default function InitialDeposit({ address }) {
                 <span style={{ fontSize: "12px" }}>
                   Balance{" "}
                   {Number(
-                    Number(isPayable ? balance : collateralBalance).toFixed(3)
+                    Number(isPayable ? balance : collateralBalance.formatted).toFixed(3)
                   ).toLocaleString()}{" "}
                   ${collateral?.collateral?.name}
                 </span>
@@ -469,7 +485,7 @@ export default function InitialDeposit({ address }) {
                   step="0.001"
                   onKeyDown={onKeyDown}
                   onChange={changeCollAmount}
-                  value={collAmount}
+                  value={collAmount === 0 ? "0" : bnIsBiggerThan(collateralBalance.exact, collAmount) ? collateralBalance.exact.div(1e18).toString() : collAmount || ""}
                 />
                 <span>${collateral?.collateral?.name}</span>
               </div>

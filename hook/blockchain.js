@@ -966,7 +966,6 @@ export const BlockchainContextProvider = ({ children }) => {
       abi: DebtTokenABI,
       address: addresses.debtToken[account.chainId],
       functionName: "checkBalanceOf",
-      // args: [signatureToken],
       args: [dataDebt],
     });
     setBitUSDBalance(fromBigNumber(balance));
@@ -989,7 +988,11 @@ export const BlockchainContextProvider = ({ children }) => {
       functionName: "balanceOf",
       args: [account.address],
     });
-    return fromBigNumber(balance);
+    
+    return {
+      formatted: fromBigNumber(balance),
+      exact: new BigNumber(balance),
+    };
   };
 
   const getAccountWeight = async () => {
