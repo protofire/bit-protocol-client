@@ -341,7 +341,7 @@ export default function ManageDeposit({ address }) {
     if (status !== 0 && status !== 2) {
       try {
         let collAmountBN
-        if (bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+        if (!isPayable && bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
         else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
 
         const tx = await addColl(

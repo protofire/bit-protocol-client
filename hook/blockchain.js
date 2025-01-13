@@ -453,11 +453,12 @@ export const BlockchainContextProvider = ({ children }) => {
         BorrowerOperationsABI,
         sapphire.wrap(signer)
       );
-
+      
       const prev = await getPrev(collaterals[address].sortedTroves);
       const next = await getNext(collaterals[address].sortedTroves);
 
       const maxFee = await calcMaxFeePercentage(address, debtAmount);
+      
       const tx = await borrowerOps.openTrove(
         address,
         account.address,

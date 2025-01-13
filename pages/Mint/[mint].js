@@ -435,7 +435,7 @@ export default function Mint() {
     try {
       // Convert both amounts using BigNumber properly
       let collAmountBN
-      if (bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+      if (!isPayable && bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
       else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
 
       const debtAmountBN = utils.parseUnits(debtAmount.toString(), 18);

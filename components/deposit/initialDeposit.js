@@ -377,7 +377,7 @@ export default function InitialDeposit({ address }) {
 
     try {
       let collAmountBN
-      if (bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+      if (!isPayable && bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
       else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
 
       const debtWei = numberHelpers.toWei(debtAmount);
