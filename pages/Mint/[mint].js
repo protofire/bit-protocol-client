@@ -13,7 +13,7 @@ import PageBack from "../../components/pageBack";
 import { useWaitForTransactionReceipt, useAccount } from "wagmi";
 import useDebounce from "../../hook/useDebounce";
 import { utils } from "ethers";
-import {bnIsBiggerThan} from "../../utils/helpers"
+import { bnIsBiggerThan , inputValueDisplay} from "../../utils/helpers"
 
 export default function Mint() {
   const router = useRouter();
@@ -397,12 +397,6 @@ export default function Mint() {
       if (bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
       else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
 
-      console.log("aprove mint", {
-        collAmountBN: collAmountBN.toString(),
-        collateralBalance,
-        collAmountBN2: collAmountBN.integerValue().toFixed()
-      });
-
       const tx = await approve(collateralAddr, collAmountBN.integerValue().toFixed());
       setCurrentWaitInfo({
         type: "loading",
@@ -526,7 +520,7 @@ export default function Mint() {
                   id="collAmount"
                   onKeyDown={onKeyDown}
                   onChange={changeCollAmount}
-                  value={collAmount === 0 ? "0" : bnIsBiggerThan(collateralBalance.exact, collAmount) ? collateralBalance.exact.div(1e18).toString() : collAmount || ""}
+                  value={inputValueDisplay(collAmount, collateralBalance.exact, isPayable)}
                 />
                 <span>${collateral?.collateral?.name}</span>
               </div>

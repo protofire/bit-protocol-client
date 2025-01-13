@@ -23,3 +23,9 @@ export const bnIsBiggerThan = (big = new BigNumber(0), num = 0) => {
   const numBN = new BigNumber(num).multipliedBy(1e18).integerValue().toFixed();
   return big.lt(numBN);
 }
+
+export const inputValueDisplay = (value, balance, isPayable) => {
+  if (value === 0) return "0"
+  if (!isPayable && bnIsBiggerThan(balance, value)) return balance.div(1e18).toString()
+  return value || ""
+}

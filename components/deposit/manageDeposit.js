@@ -8,7 +8,7 @@ import tooltip from "../../components/tooltip";
 import { useRouter } from "next/router";
 import DepositsAndDebt from "../../components/dapp/depositsAndDebt";
 import { useWaitForTransactionReceipt } from "wagmi";
-import {bnIsBiggerThan} from "../../utils/helpers"
+import {bnIsBiggerThan, inputValueDisplay} from "../../utils/helpers"
 
 export default function ManageDeposit({ address }) {
   const router = useRouter();
@@ -246,8 +246,6 @@ export default function ManageDeposit({ address }) {
       let maxBalance;
       if (isPayable) maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
       else maxBalance = balanceValue;
-
-      // console.log({ maxBalance, value, multi: maxBalance * value });
 
       setCollAmount(maxBalance * value);
     } else if (buttonName == "Withdraw") {
@@ -622,7 +620,7 @@ export default function ManageDeposit({ address }) {
                       id="collAmount"
                       onKeyDown={onKeyDown}
                       onChange={changeCollAmount}
-                      value={collAmount === 0 ? "0" : bnIsBiggerThan(collateralBalance.exact, collAmount) ? collateralBalance.exact.div(1e18).toString() : collAmount || ""}
+                      value={inputValueDisplay(collAmount, collateralBalance.exact, isPayable)}
                     />
                     <span>${collateral?.collateral?.name}</span>
                   </div>

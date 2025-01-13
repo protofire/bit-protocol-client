@@ -6,7 +6,7 @@ import Wait from "../../components/tooltip/wait";
 import tooltip from "../../components/tooltip";
 import { useWaitForTransactionReceipt } from "wagmi";
 import BigNumber from "bignumber.js";
-import {bnIsBiggerThan} from "../../utils/helpers"
+import { bnIsBiggerThan, inputValueDisplay} from "../../utils/helpers"
 
 export default function InitialDeposit({ address }) {
   const {
@@ -485,7 +485,7 @@ export default function InitialDeposit({ address }) {
                   step="0.001"
                   onKeyDown={onKeyDown}
                   onChange={changeCollAmount}
-                  value={collAmount === 0 ? "0" : bnIsBiggerThan(collateralBalance.exact, collAmount) ? collateralBalance.exact.div(1e18).toString() : collAmount || ""}
+                  value={inputValueDisplay(collAmount, collateralBalance.exact, isPayable)}
                 />
                 <span>${collateral?.collateral?.name}</span>
               </div>
