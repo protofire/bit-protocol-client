@@ -3,11 +3,10 @@ export const collateralNames = {
     logo: "rose.svg",
     name: "ROSE",
   },
-  // // Temporarily disabled collaterals
-  // "0xB5EA3151e1edED183CC9571916B435b6B188D508": {
-  //   logo: "btc-logo.svg",
-  //   name: "wBTC",
-  // },
+  "0x3cAbbe76Ea8B4e7a2c0a69812CBe671800379eC8": {
+    logo: "wstRose.svg",
+    name: "wstROSE",
+  },
   // "0x1a384b3EC67372f4765C5d2cD5Fd786Beb51bc05": {
   //   logo: "protofire.png",
   //   name: "PROTO",

@@ -331,7 +331,7 @@ export default function Redeem() {
                   <label className={styles.dropdown}>
                     <div className={styles.ddButton}>
                       <img
-                        style={{ width: 24, height: 24 }}
+                        style={{ width: 24, height: 24, borderRadius: "50%", marginRight: "5px" }}
                         src={`/dapp/${collaterals[selectCollateral]?.collateral.logo}`}
                         alt="rose"
                       />
@@ -352,7 +352,7 @@ export default function Redeem() {
                             onClick={() => selectCollateralChange(item)}
                           >
                             <img
-                              style={{ width: 24, height: 24 }}
+                              style={{ width: 24, height: 24, borderRadius: "50%", marginRight: "5px" }}
                               src={`/dapp/${collaterals[item]?.collateral.logo}`}
                               alt="rose"
                             />

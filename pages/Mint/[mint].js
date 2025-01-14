@@ -13,6 +13,7 @@ import PageBack from "../../components/pageBack";
 import { useWaitForTransactionReceipt, useAccount } from "wagmi";
 import useDebounce from "../../hook/useDebounce";
 import { utils } from "ethers";
+import { bnIsBiggerThan , inputValueDisplay} from "../../utils/helpers"
 
 export default function Mint() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function Mint() {
   const [ratio, setRatio] = useState(0);
   const [ratioNew, setRatioNew] = useState(0);
   const [isPayable, setIsPayable] = useState(false);
-  const [collateralBalance, setCollateralBalance] = useState(0);
+  const [collateralBalance, setCollateralBalance] = useState({ formatted: 0, exact: new BigNumber(0) });
   const [deposits, setDeposits] = useState(0);
   const [debt, setDebt] = useState(0);
   const [status, setStatus] = useState(0);
@@ -84,7 +85,7 @@ export default function Mint() {
         ? await getTokenBalance(
             collaterals[router.query.mint]?.collateral.address
           )
-        : 0;
+        : { formatted: 0, exact: new BigNumber(0) };
       setCollateralBalance(tokenBalance);
     }
 
@@ -206,8 +207,11 @@ export default function Mint() {
     }
 
     const numValue = Number(debouncedCollAmount);
-    const userBalance = isPayable ? balance : collateralBalance;
-    const maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
+    const userBalance = isPayable ? balance : collateralBalance.formatted;
+
+    let maxBalance;
+    if (isPayable) maxBalance = userBalance - 1 > 0 ? userBalance - 1 : 0;
+    else maxBalance = userBalance;
 
     // Allow empty string or values within range (including zero)
     if (
@@ -264,8 +268,10 @@ export default function Mint() {
     }
 
     const numValue = Number(value);
-    const balanceValue = isPayable ? balance : collateralBalance;
-    const maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
+    const balanceValue = isPayable ? balance : collateralBalance.formatted;
+    let maxBalance
+    if (isPayable) maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
+    else maxBalance = balanceValue
 
     if (numValue >= 0 && numValue <= maxBalance) {
       setCollAmount(value);
@@ -275,9 +281,12 @@ export default function Mint() {
   };
 
   const changeCollValue = (value) => {
-    const balanceValue = isPayable ? balance : collateralBalance;
-    const newAmount = (balanceValue - 1 > 0 ? balanceValue - 1 : 0) * value;
+    const balanceValue = isPayable ? balance : collateralBalance.formatted;
+
+    const amount = isPayable ? (balanceValue - 1 > 0 ? balanceValue - 1 : 0) : balanceValue
+    const newAmount = amount * value;
     setCollAmount(newAmount);
+
     if (collateralRatio && ratioType === "Auto") {
       const max =
         (Number(deposits + newAmount) * price) / (collateralRatio / 100) - debt;
@@ -375,17 +384,20 @@ export default function Mint() {
       return;
     }
 
-    if (Number(debtAmount) < 10) {
-      tooltip.error({
-        content: "A Minimum Debt of 10 bitUSD is Required!",
-        duration: 5000,
-      });
-      return;
-    }
+    // if (Number(debtAmount) < 10) {
+    //   tooltip.error({
+    //     content: "A Minimum Debt of 10 bitUSD is Required!",
+    //     duration: 5000,
+    //   });
+    //   return;
+    // }
 
     try {
-      const collAmountBN = utils.parseUnits(collAmount.toString(), 18);
-      const tx = await approve(collateralAddr, collAmountBN.toString());
+      let collAmountBN
+      if (bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+      else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
+
+      const tx = await approve(collateralAddr, collAmountBN.integerValue().toFixed());
       setCurrentWaitInfo({
         type: "loading",
         info: `Approving ${Number(collAmount).toLocaleString()} $${
@@ -412,21 +424,25 @@ export default function Mint() {
     if (!collAmount || !debtAmount) {
       return;
     }
-    if (Number(debtAmount) < 10) {
-      tooltip.error({
-        content: "A Minimum Debt of 10 bitUSD is Required!",
-        duration: 5000,
-      });
-      return;
-    }
+    // if (Number(debtAmount) < 10) {
+    //   tooltip.error({
+    //     content: "A Minimum Debt of 10 bitUSD is Required!",
+    //     duration: 5000,
+    //   });
+    //   return;
+    // }
+
     try {
       // Convert both amounts using BigNumber properly
-      const collAmountBN = utils.parseUnits(collAmount.toString(), 18);
+      let collAmountBN
+      if (!isPayable && bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+      else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
+
       const debtAmountBN = utils.parseUnits(debtAmount.toString(), 18);
 
       const tx = await adjustTrove(
         router.query.mint,
-        collAmountBN.toString(),
+        collAmountBN.integerValue().toFixed(),
         debtAmountBN.toString(),
         isPayable
       );
@@ -490,7 +506,7 @@ export default function Mint() {
                 <span style={{ fontSize: "12px" }}>
                   Balance{" "}
                   {Number(
-                    Number(isPayable ? balance : collateralBalance).toFixed(4)
+                    Number(isPayable ? balance : collateralBalance.formatted).toFixed(4)
                   ).toLocaleString()}{" "}
                   ${collateral?.collateral?.name}
                 </span>
@@ -504,7 +520,7 @@ export default function Mint() {
                   id="collAmount"
                   onKeyDown={onKeyDown}
                   onChange={changeCollAmount}
-                  value={collAmount}
+                  value={inputValueDisplay(collAmount, collateralBalance.exact, isPayable)}
                 />
                 <span>${collateral?.collateral?.name}</span>
               </div>

@@ -8,6 +8,7 @@ import tooltip from "../../components/tooltip";
 import { useRouter } from "next/router";
 import DepositsAndDebt from "../../components/dapp/depositsAndDebt";
 import { useWaitForTransactionReceipt } from "wagmi";
+import {bnIsBiggerThan, inputValueDisplay} from "../../utils/helpers"
 
 export default function ManageDeposit({ address }) {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function ManageDeposit({ address }) {
   const [debt, setDebt] = useState(0);
   const [status, setStatus] = useState(0);
   const [isPayable, setIsPayable] = useState(false);
-  const [collateralBalance, setCollateralBalance] = useState(0);
+  const [collateralBalance, setCollateralBalance] = useState({ formatted: 0, exact: new BigNumber(0) });
   const [collateral, setCollateral] = useState({
     mcr: 0,
     borrowingRate: 0.0,
@@ -82,7 +83,7 @@ export default function ManageDeposit({ address }) {
         setIsPayable(collaterals[address]?.collateral.payable);
         const tokenBalance = !collaterals[address]?.collateral.payable
           ? await getTokenBalance(collaterals[address]?.collateral.address)
-          : 0;
+          : { formatted: 0, exact: new BigNumber(0) };
         setCollateralBalance(tokenBalance);
       } else {
         // Handle the case when the trove is closed
@@ -201,9 +202,11 @@ export default function ManageDeposit({ address }) {
     }
 
     const numValue = Number(value);
-    const balanceValue = isPayable ? balance : collateralBalance;
-    const maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
-
+    const balanceValue = isPayable ? balance : collateralBalance.formatted;
+    let maxBalance
+    if (isPayable) maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
+    else maxBalance = balanceValue
+    
     if (numValue >= 0 && numValue <= maxBalance) {
       setCollAmount(value);
     } else if (numValue > maxBalance) {
@@ -238,8 +241,12 @@ export default function ManageDeposit({ address }) {
 
   const changeCollValue = (value) => {
     if (buttonName == "Deposit") {
-      const balanceValue = isPayable ? balance : collateralBalance;
-      const maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
+      const balanceValue = isPayable ? balance : collateralBalance.formatted;
+
+      let maxBalance;
+      if (isPayable) maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
+      else maxBalance = balanceValue;
+
       setCollAmount(maxBalance * value);
     } else if (buttonName == "Withdraw") {
       setCollAmount(withdrawMax * value);
@@ -295,10 +302,13 @@ export default function ManageDeposit({ address }) {
     }
 
     try {
-      const collAmountBN = new BigNumber(collAmount);
+      let collAmountBN
+      if (bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+      else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
+
       const tx = await approve(
         collateralAddr,
-        collAmountBN.multipliedBy(1e18).integerValue().toFixed()
+        collAmountBN.integerValue().toFixed()
       );
       setCurrentWaitInfo({
         type: "loading",
@@ -330,10 +340,13 @@ export default function ManageDeposit({ address }) {
 
     if (status !== 0 && status !== 2) {
       try {
-        const collAmountBN = new BigNumber(collAmount);
+        let collAmountBN
+        if (!isPayable && bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+        else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
+
         const tx = await addColl(
           address,
-          collAmountBN.multipliedBy(1e18).integerValue().toFixed(),
+          collAmountBN.integerValue().toFixed(),
           isPayable
         );
         setCurrentWaitInfo({
@@ -592,7 +605,7 @@ export default function ManageDeposit({ address }) {
                     <span style={{ fontSize: "12px" }}>
                       Balance{" "}
                       {Number(
-                        Number(isPayable ? balance : collateralBalance).toFixed(
+                        Number(isPayable ? balance : collateralBalance.formatted).toFixed(
                           3
                         )
                       ).toLocaleString()}{" "}
@@ -607,7 +620,7 @@ export default function ManageDeposit({ address }) {
                       id="collAmount"
                       onKeyDown={onKeyDown}
                       onChange={changeCollAmount}
-                      value={collAmount === 0 ? "0" : collAmount || ""}
+                      value={inputValueDisplay(collAmount, collateralBalance.exact, isPayable)}
                     />
                     <span>${collateral?.collateral?.name}</span>
                   </div>
