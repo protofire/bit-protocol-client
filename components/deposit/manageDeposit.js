@@ -1,34 +1,38 @@
-import styles from "../../styles/dapp.module.scss";
-import { BlockchainContext } from "../../hook/blockchain";
-import { useEffect, useState, useContext } from "react";
-import BigNumber from "bignumber.js";
-import Wait from "../../components/tooltip/wait";
-import Loading from "../../components/tooltip/loading";
-import tooltip from "../../components/tooltip";
-import { useRouter } from "next/router";
-import DepositsAndDebt from "../../components/dapp/depositsAndDebt";
-import { useWaitForTransactionReceipt } from "wagmi";
-import {bnIsBiggerThan, inputValueDisplay} from "../../utils/helpers"
+import styles from '../../styles/dapp.module.scss';
+import { BlockchainContext } from '../../hook/blockchain';
+import { useEffect, useState, useContext } from 'react';
+import BigNumber from 'bignumber.js';
+import Wait from '../../components/tooltip/wait';
+import Loading from '../../components/tooltip/loading';
+import tooltip from '../../components/tooltip';
+import { useRouter } from 'next/router';
+import DepositsAndDebt from '../../components/dapp/depositsAndDebt';
+import { useWaitForTransactionReceipt } from 'wagmi';
+import { bnIsBiggerThan, inputValueDisplay } from '../../utils/helpers';
+import RedemptionNotification from './RedemptionNotification';
 
 export default function ManageDeposit({ address }) {
   const router = useRouter();
 
-  const [buttonName, setButtonName] = useState("Deposit");
-  const [operateType, setOperateType] = useState("Collateral");
-  const [operateType2, setOperateType2] = useState("Deposit");
-  const [collAmount, setCollAmount] = useState("");
+  const [buttonName, setButtonName] = useState('Deposit');
+  const [operateType, setOperateType] = useState('Collateral');
+  const [operateType2, setOperateType2] = useState('Deposit');
+  const [collAmount, setCollAmount] = useState('');
   const [currentRatio, setCurrentRatio] = useState(0);
   const [afterDepositRatio, setDepositAfterRatio] = useState(0);
   const [afterWithdrawRatio, setWithdrawAfterRatio] = useState(0);
-  const [debtAmount, setDebtAmount] = useState("");
+  const [debtAmount, setDebtAmount] = useState('');
   const [withdrawMax, setWithdrawMax] = useState(0);
   const [showClose, setShowClose] = useState(false);
-  const [txHash, setTxHash] = useState("");
+  const [txHash, setTxHash] = useState('');
   const [deposits, setDeposits] = useState(0);
   const [debt, setDebt] = useState(0);
   const [status, setStatus] = useState(0);
   const [isPayable, setIsPayable] = useState(false);
-  const [collateralBalance, setCollateralBalance] = useState({ formatted: 0, exact: new BigNumber(0) });
+  const [collateralBalance, setCollateralBalance] = useState({
+    formatted: 0,
+    exact: new BigNumber(0),
+  });
   const [collateral, setCollateral] = useState({
     mcr: 0,
     borrowingRate: 0.0,
@@ -36,15 +40,15 @@ export default function ManageDeposit({ address }) {
     mintedBitUSD: 0.0,
     tvl: 0.0,
     collateral: {
-      logo: "rose.svg",
-      name: "",
-      address: "",
+      logo: 'rose.svg',
+      name: '',
+      address: '',
       payable: false,
     },
   });
-  const [collateralAddr, setCollateralAddr] = useState("");
+  const [collateralAddr, setCollateralAddr] = useState('');
   const [approved, setApproved] = useState({
-    hash: "",
+    hash: '',
     status: false,
   });
 
@@ -91,7 +95,7 @@ export default function ManageDeposit({ address }) {
         setDeposits(0);
         setDebt(0);
         setStatus(0);
-        setCollateralAddr("");
+        setCollateralAddr('');
         setIsPayable(false);
         setCollateralBalance(0);
       }
@@ -102,7 +106,7 @@ export default function ManageDeposit({ address }) {
   useEffect(() => {
     if (txReceipt && txHash) {
       setCurrentState(false);
-      tooltip.success({ content: "Successful", duration: 5000 });
+      tooltip.success({ content: 'Successful', duration: 5000 });
       if (approved.hash) {
         setApproved({
           hash: approved.hash,
@@ -114,15 +118,15 @@ export default function ManageDeposit({ address }) {
       setCurrentState(false);
       tooltip.error({
         content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
+          'Transaction failed due to a network error. Please refresh the page and try again.',
         duration: 5000,
       });
       setApproved({
-        hash: "",
+        hash: '',
         status: false,
       });
     }
-    setTxHash("");
+    setTxHash('');
   }, [txReceipt, txError]);
 
   useEffect(() => {
@@ -130,7 +134,7 @@ export default function ManageDeposit({ address }) {
       if (approved.hash && approved.status) {
         await deposit();
         setApproved({
-          hash: "",
+          hash: '',
           status: false,
         });
       }
@@ -142,13 +146,13 @@ export default function ManageDeposit({ address }) {
 
   const onKeyDown = (e) => {
     // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
-    if (["-", "+", "e", "E"].includes(e.key)) {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
       e.preventDefault();
     }
 
     // Allow: backspace, delete, tab, escape, enter, decimal point
     if (
-      ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", ","].includes(
+      ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', '.', ','].includes(
         e.key
       )
     ) {
@@ -163,17 +167,17 @@ export default function ManageDeposit({ address }) {
 
   const changeOperateType = (value) => {
     setOperateType(value);
-    if (value == "Repay") {
-      setButtonName("Repay");
-    } else if (value == "Close") {
-      setButtonName("Repay & Close");
-    } else if (value === "Mint") {
-      setButtonName("Mint");
+    if (value == 'Repay') {
+      setButtonName('Repay');
+    } else if (value == 'Close') {
+      setButtonName('Repay & Close');
+    } else if (value === 'Mint') {
+      setButtonName('Mint');
     } else {
-      if (operateType2 == "Deposit") {
-        setButtonName("Deposit");
+      if (operateType2 == 'Deposit') {
+        setButtonName('Deposit');
       } else {
-        setButtonName("Withdraw");
+        setButtonName('Withdraw');
       }
     }
   };
@@ -181,14 +185,14 @@ export default function ManageDeposit({ address }) {
   const changeOperateType2 = (value) => {
     setOperateType2(value);
     setButtonName(value);
-    setCollAmount("");
+    setCollAmount('');
   };
 
   const changeCollAmount = async (e) => {
     const value = e.target.value;
 
-    if (value === "") {
-      setCollAmount("");
+    if (value === '') {
+      setCollAmount('');
       return;
     }
 
@@ -196,17 +200,17 @@ export default function ManageDeposit({ address }) {
       return;
     }
 
-    const parts = value.split(".");
+    const parts = value.split('.');
     if (parts[1] && parts[1].length > 3) {
       return;
     }
 
     const numValue = Number(value);
     const balanceValue = isPayable ? balance : collateralBalance.formatted;
-    let maxBalance
+    let maxBalance;
     if (isPayable) maxBalance = balanceValue - 1 > 0 ? balanceValue - 1 : 0;
-    else maxBalance = balanceValue
-    
+    else maxBalance = balanceValue;
+
     if (numValue >= 0 && numValue <= maxBalance) {
       setCollAmount(value);
     } else if (numValue > maxBalance) {
@@ -217,8 +221,8 @@ export default function ManageDeposit({ address }) {
   const changeWithdrawAmount = async (e) => {
     const value = e.target.value;
 
-    if (value === "") {
-      setCollAmount("");
+    if (value === '') {
+      setCollAmount('');
       return;
     }
 
@@ -226,7 +230,7 @@ export default function ManageDeposit({ address }) {
       return;
     }
 
-    const parts = value.split(".");
+    const parts = value.split('.');
     if (parts[1] && parts[1].length > 3) {
       return;
     }
@@ -240,7 +244,7 @@ export default function ManageDeposit({ address }) {
   };
 
   const changeCollValue = (value) => {
-    if (buttonName == "Deposit") {
+    if (buttonName == 'Deposit') {
       const balanceValue = isPayable ? balance : collateralBalance.formatted;
 
       let maxBalance;
@@ -248,7 +252,7 @@ export default function ManageDeposit({ address }) {
       else maxBalance = balanceValue;
 
       setCollAmount(maxBalance * value);
-    } else if (buttonName == "Withdraw") {
+    } else if (buttonName == 'Withdraw') {
       setCollAmount(withdrawMax * value);
     } else {
       setDebtAmount(Number(bitUSDBalance) * value);
@@ -269,8 +273,8 @@ export default function ManageDeposit({ address }) {
   const changeDebtAmount = async (e) => {
     const value = e.target.value;
 
-    if (value === "") {
-      setDebtAmount("");
+    if (value === '') {
+      setDebtAmount('');
       return;
     }
 
@@ -278,7 +282,7 @@ export default function ManageDeposit({ address }) {
       return;
     }
 
-    const parts = value.split(".");
+    const parts = value.split('.');
     if (parts[1] && parts[1].length > 3) {
       return;
     }
@@ -302,8 +306,9 @@ export default function ManageDeposit({ address }) {
     }
 
     try {
-      let collAmountBN
-      if (bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+      let collAmountBN;
+      if (bnIsBiggerThan(collateralBalance?.exact, collAmount))
+        collAmountBN = collateralBalance?.exact;
       else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
 
       const tx = await approve(
@@ -311,7 +316,7 @@ export default function ManageDeposit({ address }) {
         collAmountBN.integerValue().toFixed()
       );
       setCurrentWaitInfo({
-        type: "loading",
+        type: 'loading',
         info: `Approving ${Number(collAmount).toLocaleString()} $${
           collateral?.collateral?.name
         }`,
@@ -327,7 +332,7 @@ export default function ManageDeposit({ address }) {
       setCurrentState(false);
       tooltip.error({
         content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
+          'Transaction failed due to a network error. Please refresh the page and try again.',
         duration: 5000,
       });
     }
@@ -340,8 +345,9 @@ export default function ManageDeposit({ address }) {
 
     if (status !== 0 && status !== 2) {
       try {
-        let collAmountBN
-        if (!isPayable && bnIsBiggerThan(collateralBalance?.exact, collAmount)) collAmountBN = collateralBalance?.exact
+        let collAmountBN;
+        if (!isPayable && bnIsBiggerThan(collateralBalance?.exact, collAmount))
+          collAmountBN = collateralBalance?.exact;
         else collAmountBN = new BigNumber(collAmount).multipliedBy(1e18);
 
         const tx = await addColl(
@@ -350,7 +356,7 @@ export default function ManageDeposit({ address }) {
           isPayable
         );
         setCurrentWaitInfo({
-          type: "loading",
+          type: 'loading',
           info: `Deposit ${Number(collAmount).toLocaleString()} $${
             collateral?.collateral?.name
           }`,
@@ -361,13 +367,13 @@ export default function ManageDeposit({ address }) {
         if (result.status === 0) {
           tooltip.error({
             content:
-              "Transaction failed due to a network error. Please refresh the page and try again.",
+              'Transaction failed due to a network error. Please refresh the page and try again.',
             duration: 5000,
           });
         } else {
-          tooltip.success({ content: "Successful", duration: 5000 });
+          tooltip.success({ content: 'Successful', duration: 5000 });
         }
-        setCollAmount("");
+        setCollAmount('');
         setLock(false);
         await getData();
       } catch (error) {
@@ -375,7 +381,7 @@ export default function ManageDeposit({ address }) {
         setCurrentState(false);
         tooltip.error({
           content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
+            'Transaction failed due to a network error. Please refresh the page and try again.',
           duration: 5000,
         });
       }
@@ -394,7 +400,7 @@ export default function ManageDeposit({ address }) {
         collAmountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
-        type: "loading",
+        type: 'loading',
         info: `Withdraw ${Number(collAmount).toLocaleString()} $${
           collateral?.collateral?.name
         }`,
@@ -405,19 +411,19 @@ export default function ManageDeposit({ address }) {
       if (result.status === 0) {
         tooltip.error({
           content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
+            'Transaction failed due to a network error. Please refresh the page and try again.',
           duration: 5000,
         });
       } else {
-        tooltip.success({ content: "Successful", duration: 5000 });
+        tooltip.success({ content: 'Successful', duration: 5000 });
       }
-      setCollAmount("");
+      setCollAmount('');
     } catch (error) {
       console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
+          'Transaction failed due to a network error. Please refresh the page and try again.',
         duration: 5000,
       });
     }
@@ -436,7 +442,7 @@ export default function ManageDeposit({ address }) {
         debtAmountBN.multipliedBy(1e18).integerValue().toFixed()
       );
       setCurrentWaitInfo({
-        type: "loading",
+        type: 'loading',
         info: `Repay ${Number(debtAmount).toLocaleString()} $bitUSD`,
       });
       setCurrentState(true);
@@ -445,19 +451,19 @@ export default function ManageDeposit({ address }) {
       if (result.status === 0) {
         tooltip.error({
           content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
+            'Transaction failed due to a network error. Please refresh the page and try again.',
           duration: 5000,
         });
       } else {
-        tooltip.success({ content: "Successful", duration: 5000 });
+        tooltip.success({ content: 'Successful', duration: 5000 });
       }
-      setDebtAmount("");
+      setDebtAmount('');
     } catch (error) {
       console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
+          'Transaction failed due to a network error. Please refresh the page and try again.',
         duration: 5000,
       });
     }
@@ -467,11 +473,11 @@ export default function ManageDeposit({ address }) {
     if (Number(bitUSDBalance) < Number(debt)) {
       tooltip.error({
         content:
-          "You do not have enough bitUSD in your wallet to repay your debt. You require an additional " +
+          'You do not have enough bitUSD in your wallet to repay your debt. You require an additional ' +
           Number(
             (Number(debt) - Number(bitUSDBalance)).toFixed(4)
           ).toLocaleString() +
-          " $bitUSD.",
+          ' $bitUSD.',
         duration: 5000,
       });
       return;
@@ -479,28 +485,28 @@ export default function ManageDeposit({ address }) {
     setShowClose(false);
     try {
       const tx = await closeTrove(address);
-      setCurrentWaitInfo({ type: "loading", info: "" });
+      setCurrentWaitInfo({ type: 'loading', info: '' });
       setCurrentState(true);
       const result = await tx.wait();
       setCurrentState(false);
       if (result.status === 0) {
         tooltip.error({
           content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
+            'Transaction failed due to a network error. Please refresh the page and try again.',
           duration: 5000,
         });
       } else {
-        tooltip.success({ content: "Successful", duration: 5000 });
+        tooltip.success({ content: 'Successful', duration: 5000 });
       }
-      setOperateType("Collateral");
-      setOperateType2("Deposit");
-      setButtonName("Deposit");
-      router.push("/Vault");
+      setOperateType('Collateral');
+      setOperateType2('Deposit');
+      setButtonName('Deposit');
+      router.push('/Vault');
     } catch (error) {
       setCurrentState(false);
       tooltip.error({
         content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
+          'Transaction failed due to a network error. Please refresh the page and try again.',
         duration: 5000,
       });
     }
@@ -515,12 +521,12 @@ export default function ManageDeposit({ address }) {
   };
 
   const Operate = () => {
-    if (buttonName == "Deposit") {
+    if (buttonName == 'Deposit') {
       if (isPayable) deposit();
       else approveCollateral();
-    } else if (buttonName == "Withdraw") {
+    } else if (buttonName == 'Withdraw') {
       withdraw();
-    } else if (buttonName == "Repay") {
+    } else if (buttonName == 'Repay') {
       repay();
     } else {
       repayClose();
@@ -530,7 +536,13 @@ export default function ManageDeposit({ address }) {
   return (
     <>
       <div className="dappBg">
-        <div className={`${styles.Vault} ${"dappMain"}`}>
+        <div className={`${styles.Vault} ${'dappMain'}`}>
+          <RedemptionNotification
+            address={address}
+            status={status}
+            token={collateral?.collateral?.name}
+          />
+
           <DepositsAndDebt address={router.query.vault}></DepositsAndDebt>
 
           <div className={styles.topType}>
@@ -550,7 +562,7 @@ export default function ManageDeposit({ address }) {
                   className={styles.mintBtn}
                   onClick={() =>
                     router.push({
-                      pathname: "/Mint/[mint]",
+                      pathname: '/Mint/[mint]',
                       query: { mint: address },
                     })
                   }
@@ -562,53 +574,53 @@ export default function ManageDeposit({ address }) {
             <div className={styles.enterAmount}>
               <div className={styles.operateType}>
                 <div
-                  className={operateType == "Collateral" ? styles.active : ""}
-                  onClick={() => changeOperateType("Collateral")}
+                  className={operateType == 'Collateral' ? styles.active : ''}
+                  onClick={() => changeOperateType('Collateral')}
                 >
                   Collateral
                 </div>
                 <div
-                  className={operateType == "Repay" ? styles.active : ""}
-                  onClick={() => changeOperateType("Repay")}
+                  className={operateType == 'Repay' ? styles.active : ''}
+                  onClick={() => changeOperateType('Repay')}
                 >
                   Repay bitUSD
                 </div>
                 <div
-                  className={operateType == "Close" ? styles.active : ""}
-                  onClick={() => changeOperateType("Close")}
+                  className={operateType == 'Close' ? styles.active : ''}
+                  onClick={() => changeOperateType('Close')}
                 >
                   Close
                 </div>
               </div>
 
-              {operateType == "Collateral" ? (
+              {operateType == 'Collateral' ? (
                 <div className={styles.operateType2}>
                   <div
-                    className={operateType2 == "Deposit" ? styles.active : ""}
-                    onClick={() => changeOperateType2("Deposit")}
+                    className={operateType2 == 'Deposit' ? styles.active : ''}
+                    onClick={() => changeOperateType2('Deposit')}
                   >
                     Deposit ${collateral?.collateral?.name}
                   </div>
                   <div
-                    className={operateType2 == "Withdraw" ? styles.active : ""}
-                    onClick={() => changeOperateType2("Withdraw")}
+                    className={operateType2 == 'Withdraw' ? styles.active : ''}
+                    onClick={() => changeOperateType2('Withdraw')}
                   >
                     Withdraw ${collateral?.collateral?.name}
                   </div>
                 </div>
               ) : null}
 
-              {buttonName == "Deposit" || buttonName === "Mint" ? (
+              {buttonName == 'Deposit' || buttonName === 'Mint' ? (
                 <>
                   <div className={styles.miniTitle}>
                     <span>Enter amount</span>
-                    <span style={{ fontSize: "12px" }}>
-                      Balance{" "}
+                    <span style={{ fontSize: '12px' }}>
+                      Balance{' '}
                       {Number(
-                        Number(isPayable ? balance : collateralBalance.formatted).toFixed(
-                          3
-                        )
-                      ).toLocaleString()}{" "}
+                        Number(
+                          isPayable ? balance : collateralBalance.formatted
+                        ).toFixed(3)
+                      ).toLocaleString()}{' '}
                       ${collateral?.collateral?.name}
                     </span>
                   </div>
@@ -620,18 +632,22 @@ export default function ManageDeposit({ address }) {
                       id="collAmount"
                       onKeyDown={onKeyDown}
                       onChange={changeCollAmount}
-                      value={inputValueDisplay(collAmount, collateralBalance.exact, isPayable)}
+                      value={inputValueDisplay(
+                        collAmount,
+                        collateralBalance.exact,
+                        isPayable
+                      )}
                     />
                     <span>${collateral?.collateral?.name}</span>
                   </div>
                 </>
-              ) : buttonName == "Withdraw" ? (
+              ) : buttonName == 'Withdraw' ? (
                 <>
                   <div className={styles.miniTitle}>
                     <span>Enter amount</span>
-                    <span style={{ fontSize: "12px" }}>
-                      Balance{" "}
-                      {Number(Number(withdrawMax).toFixed(3)).toLocaleString()}{" "}
+                    <span style={{ fontSize: '12px' }}>
+                      Balance{' '}
+                      {Number(Number(withdrawMax).toFixed(3)).toLocaleString()}{' '}
                       ${collateral?.collateral?.name}
                     </span>
                   </div>
@@ -643,20 +659,20 @@ export default function ManageDeposit({ address }) {
                       id="collAmount"
                       onKeyDown={onKeyDown}
                       onChange={changeWithdrawAmount}
-                      value={collAmount === 0 ? "0" : collAmount || ""}
+                      value={collAmount === 0 ? '0' : collAmount || ''}
                     />
                     <span>${collateral?.collateral?.name}</span>
                   </div>
                 </>
-              ) : buttonName == "Repay" ? (
+              ) : buttonName == 'Repay' ? (
                 <>
                   <div className={styles.miniTitle}>
                     <span>{operateType} bitUSD</span>
-                    <span style={{ fontSize: "12px" }}>
-                      Balance{" "}
+                    <span style={{ fontSize: '12px' }}>
+                      Balance{' '}
                       {Number(
                         Number(bitUSDBalance).toFixed(3)
-                      ).toLocaleString()}{" "}
+                      ).toLocaleString()}{' '}
                       bitUSD
                     </span>
                   </div>
@@ -668,20 +684,20 @@ export default function ManageDeposit({ address }) {
                       id="debtAmount"
                       onKeyDown={onKeyDown}
                       onChange={changeDebtAmount}
-                      value={debtAmount === 0 ? "0" : debtAmount || ""}
+                      value={debtAmount === 0 ? '0' : debtAmount || ''}
                     />
                     <span>$bitUSD</span>
                   </div>
                 </>
               ) : null}
-              {operateType == "Close" ? null : (
+              {operateType == 'Close' ? null : (
                 <div className="changeBalance">
                   <span onClick={() => changeCollValue(0.25)}>25%</span>
                   <span onClick={() => changeCollValue(0.5)}>50%</span>
                   <span onClick={() => changeCollValue(0.75)}>75%</span>
                   <span
                     onClick={() => changeCollValue(1)}
-                    style={{ border: "none" }}
+                    style={{ border: 'none' }}
                   >
                     Max
                   </span>
@@ -691,25 +707,25 @@ export default function ManageDeposit({ address }) {
               <>
                 <div
                   className={styles.miniTitle}
-                  style={{ fontSize: "12px", marginTop: "10px" }}
+                  style={{ fontSize: '12px', marginTop: '10px' }}
                 >
                   <span>Current Collateral Ratio </span>
                   <span>
                     {Number(Number(currentRatio).toFixed(4)).toLocaleString()}%
                   </span>
                 </div>
-                {collAmount ? (
+                {collAmount && operateType === 'Collateral' ? (
                   <div
                     className={styles.miniTitle}
                     style={{
-                      fontSize: "12px",
-                      marginTop: "10px",
-                      color: "#00D7CA",
+                      fontSize: '12px',
+                      marginTop: '10px',
+                      color: '#00D7CA',
                     }}
                   >
                     <span>Collateral Ratio after {operateType2} </span>
                     <span>
-                      {operateType2 == "Deposit"
+                      {operateType2 == 'Deposit'
                         ? Number(
                             Number(afterDepositRatio).toFixed(4)
                           ).toLocaleString()
@@ -722,11 +738,11 @@ export default function ManageDeposit({ address }) {
                 ) : null}
               </>
 
-              {operateType == "Close" ? (
+              {operateType == 'Close' ? (
                 <>
                   <div
                     className={`${styles.miniTitle} ${styles.borderGreen}`}
-                    style={{ fontSize: "12px", marginTop: "10px" }}
+                    style={{ fontSize: '12px', marginTop: '10px' }}
                   >
                     <span>Total Collateral</span>
                     <span>
@@ -736,7 +752,7 @@ export default function ManageDeposit({ address }) {
                   </div>
                   <div
                     className={`${styles.miniTitle} ${styles.borderGray}`}
-                    style={{ fontSize: "12px", marginTop: "10px" }}
+                    style={{ fontSize: '12px', marginTop: '10px' }}
                   >
                     <span>Your Total Debt</span>
                     <span>
@@ -745,7 +761,7 @@ export default function ManageDeposit({ address }) {
                   </div>
                   <div
                     className={`${styles.miniTitle}`}
-                    style={{ fontSize: "12px", marginTop: "10px" }}
+                    style={{ fontSize: '12px', marginTop: '10px' }}
                   >
                     <span>Wallet Balance</span>
                     <div className={styles.walletBalance}>
@@ -753,37 +769,37 @@ export default function ManageDeposit({ address }) {
                         style={
                           Number(bitUSDBalance) < Number(debt)
                             ? null
-                            : { color: "#fff" }
+                            : { color: '#fff' }
                         }
                       >
                         {Number(
                           Number(bitUSDBalance).toFixed(3)
                         ).toLocaleString()}
-                      </span>{" "}
+                      </span>{' '}
                       $bitUSD
                     </div>
                   </div>
                 </>
               ) : null}
             </div>
-            <div style={{ padding: "8px" }}>
-              {buttonName == "Deposit" || buttonName == "Withdraw" ? (
+            <div style={{ padding: '8px' }}>
+              {buttonName == 'Deposit' || buttonName == 'Withdraw' ? (
                 <div
                   className={
                     !collAmount
-                      ? "button rightAngle height disable"
-                      : "button rightAngle height"
+                      ? 'button rightAngle height disable'
+                      : 'button rightAngle height'
                   }
                   onClick={() => Operate()}
                 >
                   {buttonName}
                 </div>
-              ) : buttonName == "Repay" ? (
+              ) : buttonName == 'Repay' ? (
                 <div
                   className={
                     !debtAmount
-                      ? "button rightAngle height disable"
-                      : "button rightAngle height"
+                      ? 'button rightAngle height disable'
+                      : 'button rightAngle height'
                   }
                   onClick={() => Operate()}
                 >
@@ -793,8 +809,8 @@ export default function ManageDeposit({ address }) {
                 <div
                   className={
                     Number(bitUSDBalance) < Number(debt)
-                      ? "button rightAngle height disable"
-                      : "button rightAngle height"
+                      ? 'button rightAngle height disable'
+                      : 'button rightAngle height'
                   }
                   onClick={() => changeShowClose()}
                 >
@@ -802,17 +818,17 @@ export default function ManageDeposit({ address }) {
                 </div>
               )}
             </div>
-            {operateType == "Close" ? (
+            {operateType == 'Close' ? (
               Number(bitUSDBalance) < Number(debt) ? (
                 <div className={styles.closeTip}>
                   <p>
                     You do not have enough bitUSD in your wallet to repay your
-                    debt. You require an additional{" "}
+                    debt. You require an additional{' '}
                     <span>
                       {Number(
                         (Number(debt) - Number(bitUSDBalance)).toFixed(4)
                       ).toLocaleString()}
-                    </span>{" "}
+                    </span>{' '}
                     $bitUSD.
                   </p>
                 </div>
@@ -830,12 +846,8 @@ export default function ManageDeposit({ address }) {
                   <span>${Number(debt.toFixed(3)).toLocaleString()}</span>
                 </div>
                 <div className={styles.dataItem}>
-                  <p>Mint Fee</p>
-                  <span>0.5%</span>
-                </div>
-                <div className={styles.dataItem}>
                   <p>Borrow Interest Rate</p>
-                  <span>2.5%</span>
+                  <span>{collateral?.borrowingRate}%</span>
                 </div>
               </div>
             )}
@@ -856,7 +868,7 @@ export default function ManageDeposit({ address }) {
               />
             </div>
             <div className={styles.closeTitle}>
-              You are about to close your ${collateral?.collateral?.name}{" "}
+              You are about to close your ${collateral?.collateral?.name}{' '}
               account
             </div>
             <p className={styles.closeDesc}>
@@ -887,7 +899,7 @@ export default function ManageDeposit({ address }) {
             <div className={styles.button}>
               <span
                 className="button rightAngle height"
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onClick={() => Operate()}
               >
                 Repay & Close
