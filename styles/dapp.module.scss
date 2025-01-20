@@ -1156,6 +1156,48 @@
   }
 }
 
+.redemptionNotification {
+  margin: 1rem 0;
+  padding: 1.5rem;
+  background-color: #010101;
+  border: 1px solid #333;
+
+  .notificationContent {
+    text-align: center;
+
+    h3 {
+      color: #00d7ca;
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+    }
+
+    p {
+      color: #a8ccb0;
+      margin-bottom: 1rem;
+    }
+
+    .claimButton {
+      background-color: #00d7ca;
+      color: #010101;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: darken(#00d7ca, 10%);
+      }
+
+      &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
 @media screen and (max-width: 798px) {
   .Earn {
     .earnMain {

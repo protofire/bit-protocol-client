@@ -7,6 +7,7 @@ import tooltip from "../../components/tooltip";
 import { useWaitForTransactionReceipt } from "wagmi";
 import BigNumber from "bignumber.js";
 import { bnIsBiggerThan, inputValueDisplay} from "../../utils/helpers"
+import RedemptionNotification from './RedemptionNotification';
 
 export default function InitialDeposit({ address }) {
   const {
@@ -185,8 +186,8 @@ export default function InitialDeposit({ address }) {
         const max =
           (Number(deposits + numValue) * price) / (collateralRatio / 100) -
           debt;
-        setDebtAmount(max);
-        setDebtMax(max);
+          setDebtAmount(max);
+          setDebtMax(max);
       } else {
         const max = (Number(deposits + numValue) * price) / 1.55 - debt;
         setDebtAmount(max);
@@ -443,9 +444,10 @@ export default function InitialDeposit({ address }) {
   };
 
   return (
-    <>
+    <div>
       <div className="dappBg">
         <div className={`${styles.Mint} ${"dappMain"}`}>
+          <RedemptionNotification address={address} status={status} token={collateral?.collateral?.name} />
           <div className={styles.topType}>
             <h3>Mint bitUSD</h3>
             <p>
@@ -639,11 +641,7 @@ export default function InitialDeposit({ address }) {
                   <p>Liquidation Price</p>
                   <span>
                     {collateral?.collateral?.name} = $
-                    {deposits > 0
-                      ? Number(((debt || 0) * 1.5) / deposits)
-                          .toFixed(3)
-                          .toLocaleString()
-                      : 0}
+                    { debtAmount > 0 ? Number(((debtAmount || 0) * 1.5) / (deposits + collAmount)).toFixed(3).toLocaleString() : 0}
                   </span>
                 </div>
               </div>
@@ -679,6 +677,6 @@ export default function InitialDeposit({ address }) {
         </div>
       </div>
       {currentState ? <Wait></Wait> : null}
-    </>
+    </div>
   );
 }
