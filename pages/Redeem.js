@@ -1,17 +1,17 @@
-import styles from "../styles/dapp.module.scss";
-import Header from "../components/header";
-import Footer from "../components/footer";
-import { useEffect, useState, useContext, useRef } from "react";
-import BigNumber from "bignumber.js";
-import Wait from "../components/tooltip/wait";
-import Loading from "../components/tooltip/loading";
-import tooltip from "../components/tooltip";
-import { BlockchainContext } from "../hook/blockchain";
-import { formatNumber } from "../utils/helpers";
-import { useAccount } from "wagmi";
+import styles from '../styles/dapp.module.scss';
+import Header from '../components/header';
+import Footer from '../components/footer';
+import { useEffect, useState, useContext, useRef } from 'react';
+import BigNumber from 'bignumber.js';
+import Wait from '../components/tooltip/wait';
+import Loading from '../components/tooltip/loading';
+import tooltip from '../components/tooltip';
+import { BlockchainContext } from '../hook/blockchain';
+import { formatNumber } from '../utils/helpers';
+import { useAccount } from 'wagmi';
 
 export default function Redeem() {
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState('');
   const [startTime, setStartTime] = useState(0);
   const [fee, setFee] = useState(0);
   const [showRedeem, setShowRedeem] = useState(false);
@@ -19,7 +19,7 @@ export default function Redeem() {
   const [expectedCollateralReceived, setExpectedCollateralReceived] =
     useState(0);
   const [rosePrice, setRosePrice] = useState(0);
-  const [selectCollateral, setSelectedCollateral] = useState("");
+  const [selectCollateral, setSelectedCollateral] = useState('');
   const [canRedeem, setCanRedeem] = useState(false);
   const initializedRef = useRef(false);
 
@@ -33,8 +33,6 @@ export default function Redeem() {
     bitUSDBalance,
     collaterals,
     redeemCollateral,
-    signatureTrove,
-    signatureToken,
   } = useContext(BlockchainContext);
 
   useEffect(() => {
@@ -58,13 +56,13 @@ export default function Redeem() {
 
   const onKeyDown = (e) => {
     // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
-    if (["-", "+", "e", "E"].includes(e.key)) {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
       e.preventDefault();
     }
 
     // Allow: backspace, delete, tab, escape, enter, decimal point
     if (
-      ["Backspace", "Delete", "Tab", "Escape", "Enter", ".", ","].includes(
+      ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', '.', ','].includes(
         e.key
       )
     ) {
@@ -84,8 +82,8 @@ export default function Redeem() {
     const numValue = Number(value);
 
     // Handle empty string case
-    if (value === "") {
-      setAmount("");
+    if (value === '') {
+      setAmount('');
       setFeeAmount(0);
       setExpectedCollateralReceived(0);
       return;
@@ -93,9 +91,9 @@ export default function Redeem() {
 
     // Enforce 3 decimal places if there's a decimal point
     let formattedValue = value;
-    if (value.includes(".")) {
-      const parts = value.split(".");
-      formattedValue = parts[0] + "." + parts[1].slice(0, 3);
+    if (value.includes('.')) {
+      const parts = value.split('.');
+      formattedValue = parts[0] + '.' + parts[1].slice(0, 3);
     }
 
     // Check if the value is within valid range
@@ -124,7 +122,7 @@ export default function Redeem() {
     const newAmount = (Number(bitUSDBalance) * value).toFixed(3);
     setAmount(newAmount);
 
-    if (newAmount === "0" || newAmount === "0.000") {
+    if (newAmount === '0' || newAmount === '0.000') {
       setFeeAmount(0);
       setExpectedCollateralReceived(0);
     } else {
@@ -155,7 +153,7 @@ export default function Redeem() {
       setRosePrice(price);
 
       // Only set initial collateral if it hasn't been set yet
-      if (selectCollateral === "" && !initializedRef.current) {
+      if (selectCollateral === '' && !initializedRef.current) {
         selectCollateralChange(Object.keys(collaterals)[0]);
         initializedRef.current = true;
       }
@@ -176,21 +174,21 @@ export default function Redeem() {
       let minute = Math.floor((t / 60) % 60);
       let second = Math.floor(t % 60);
       if (day < 10) {
-        day = "0" + day;
+        day = '0' + day;
       }
       if (hour < 10) {
-        hour = "0" + hour;
+        hour = '0' + hour;
       }
       if (minute < 10) {
-        minute = "0" + minute;
+        minute = '0' + minute;
       }
       if (second < 10) {
-        second = "0" + second;
+        second = '0' + second;
       }
       timer = setTimeout(() => {
         getCountDown();
       }, 1000);
-      return day + "d " + hour + "h " + minute + "m";
+      return day + 'd ' + hour + 'h ' + minute + 'm';
     }
   };
 
@@ -204,8 +202,8 @@ export default function Redeem() {
       );
 
       setCurrentWaitInfo({
-        type: "loading",
-        info: "Redeem " + numAmount.toLocaleString() + " bitUSD",
+        type: 'loading',
+        info: 'Redeem ' + numAmount.toLocaleString() + ' bitUSD',
       });
 
       setCurrentState(true);
@@ -215,20 +213,20 @@ export default function Redeem() {
       if (result.status === 0) {
         tooltip.error({
           content:
-            "Transaction failed due to a network error. Please refresh the page and try again.",
+            'Transaction failed due to a network error. Please refresh the page and try again.',
           duration: 5000,
         });
       } else {
-        tooltip.success({ content: "Successful", duration: 5000 });
+        tooltip.success({ content: 'Successful', duration: 5000 });
       }
 
-      setAmount("");
+      setAmount('');
     } catch (error) {
       console.log(error);
       setCurrentState(false);
       tooltip.error({
         content:
-          "Transaction failed due to a network error. Please refresh the page and try again.",
+          'Transaction failed due to a network error. Please refresh the page and try again.',
         duration: 5000,
       });
     }
@@ -237,20 +235,20 @@ export default function Redeem() {
   const redeemWrapper = () => {
     if (!showRedeem) {
       tooltip.error({
-        content: "Redemption should be available in " + getCountDown(),
+        content: 'Redemption should be available in ' + getCountDown(),
         duration: 5000,
       });
       return;
     }
 
-    if (amount === "" || amount === undefined) {
+    if (amount === '' || amount === undefined) {
       return;
     }
 
     const numAmount = Number(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       tooltip.error({
-        content: "Please enter a valid amount",
+        content: 'Please enter a valid amount',
         duration: 5000,
       });
       return;
@@ -262,10 +260,10 @@ export default function Redeem() {
   const renderCollateralInfo = () => {
     const selectedCollateralInfo = collaterals[selectCollateral]?.collateral;
     const collateralSymbol =
-      selectedCollateralInfo?.symbol || selectedCollateralInfo?.name || "ROSE";
+      selectedCollateralInfo?.symbol || selectedCollateralInfo?.name || 'ROSE';
 
     return (
-      <div className={styles.data} style={{ borderTop: "none" }}>
+      <div className={styles.data} style={{ borderTop: 'none' }}>
         <div className={styles.dataItem}>
           <p>Collateral Price</p>
           <span>${formatNumber(rosePrice)}</span>
@@ -302,10 +300,10 @@ export default function Redeem() {
     <>
       <Header type="dapp" dappMenu="Redeem"></Header>
       <div className="dappBg">
-        <div className={`${styles.Redeem} ${"dappMain"}`}>
-          {account.status !== "connected" ? (
-            <div className={`${styles.Earn} ${"dappMain2"}`}>
-              <h2 style={{ textAlign: "center" }}>
+        <div className={`${styles.Redeem} ${'dappMain'}`}>
+          {account.status !== 'connected' ? (
+            <div className={`${styles.Earn} ${'dappMain2'}`}>
+              <h2 style={{ textAlign: 'center' }}>
                 Please connect your wallet
               </h2>
             </div>
@@ -319,19 +317,24 @@ export default function Redeem() {
                 <div className={styles.inputMain}>
                   <p
                     style={{
-                      color: "#bdbdbd",
-                      fontSize: "14px",
+                      color: '#bdbdbd',
+                      fontSize: '14px',
                       fontWeight: 500,
-                      lineHeight: "20px",
-                      marginBottom: "5px",
+                      lineHeight: '20px',
+                      marginBottom: '5px',
                     }}
                   >
-                    Select collateral to redeem for:{" "}
+                    Select collateral to redeem for:{' '}
                   </p>
                   <label className={styles.dropdown}>
                     <div className={styles.ddButton}>
                       <img
-                        style={{ width: 24, height: 24, borderRadius: "50%", marginRight: "5px" }}
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: '50%',
+                          marginRight: '5px',
+                        }}
                         src={`/dapp/${collaterals[selectCollateral]?.collateral.logo}`}
                         alt="rose"
                       />
@@ -352,7 +355,12 @@ export default function Redeem() {
                             onClick={() => selectCollateralChange(item)}
                           >
                             <img
-                              style={{ width: 24, height: 24, borderRadius: "50%", marginRight: "5px" }}
+                              style={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: '50%',
+                                marginRight: '5px',
+                              }}
                               src={`/dapp/${collaterals[item]?.collateral.logo}`}
                               alt="rose"
                             />
@@ -363,7 +371,7 @@ export default function Redeem() {
                     </ul>
                   </label>
 
-                  {!canRedeem && selectCollateral !== "" ? (
+                  {!canRedeem && selectCollateral !== '' ? (
                     <p>{`Redemption should be available in ${getCountDown()}`}</p>
                   ) : null}
                   {canRedeem && (
@@ -389,21 +397,21 @@ export default function Redeem() {
                             step="any"
                             onKeyDown={onKeyDown}
                             onChange={changeAmount}
-                            value={amount === 0 ? "0" : amount || ""}
+                            value={amount === 0 ? '0' : amount || ''}
                           />
                         </div>
                         <span className="font_14 gray">bitUSD</span>
                       </div>
                       <div
                         className="changeBalance"
-                        style={{ marginTop: "12px" }}
+                        style={{ marginTop: '12px' }}
                       >
                         <span onClick={() => changeAmountValue(0.25)}>25%</span>
                         <span onClick={() => changeAmountValue(0.5)}>50%</span>
                         <span onClick={() => changeAmountValue(0.75)}>75%</span>
                         <span
                           onClick={() => changeAmountValue(1)}
-                          style={{ border: "none" }}
+                          style={{ border: 'none' }}
                         >
                           Max
                         </span>
@@ -416,8 +424,8 @@ export default function Redeem() {
                     <div
                       className={
                         amount && showRedeem
-                          ? "button rightAngle height "
-                          : "button rightAngle height disable"
+                          ? 'button rightAngle height '
+                          : 'button rightAngle height disable'
                       }
                       onClick={() => redeemWrapper()}
                     >
@@ -439,7 +447,7 @@ export default function Redeem() {
       </div>
       {currentState ? <Wait></Wait> : null}
       {Object.keys(collaterals).length === 0 &&
-      account.status === "connected" ? (
+      account.status === 'connected' ? (
         <Loading></Loading>
       ) : null}
       <Footer></Footer>
