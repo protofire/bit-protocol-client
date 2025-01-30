@@ -10,6 +10,7 @@ import DepositsAndDebt from '../../components/dapp/depositsAndDebt';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import { bnIsBiggerThan, inputValueDisplay } from '../../utils/helpers';
 import RedemptionNotification from './RedemptionNotification';
+import Notification from '../notification';
 
 export default function ManageDeposit({ address }) {
   const router = useRouter();
@@ -545,8 +546,9 @@ export default function ManageDeposit({ address }) {
 
           <DepositsAndDebt address={router.query.vault}></DepositsAndDebt>
 
-          <div className={styles.topType}>
+          <div className={styles.topTypeMgmt}>
             <h3>Manage Your Vault</h3>
+            <Notification />
           </div>
           <div className={styles.rose}>
             <div className={styles.CoinType}>
