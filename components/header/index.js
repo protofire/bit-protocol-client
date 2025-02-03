@@ -1,13 +1,13 @@
-import Head from "next/head";
-import styles from "./index.module.scss";
-import { useEffect, useState, useContext } from "react";
-import { useAccount, useConnect, useSwitchChain } from "wagmi";
-import { BlockchainContext } from "../../hook/blockchain";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { formatNumber } from "../../utils/helpers";
-import { CHAIN_ID } from "../../hook/wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Head from 'next/head';
+import styles from './index.module.scss';
+import { useEffect, useState, useContext } from 'react';
+import { useAccount, useConnect, useSwitchChain } from 'wagmi';
+import { BlockchainContext } from '../../hook/blockchain';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { formatNumber } from '../../utils/helpers';
+import { CHAIN_ID } from '../../hook/wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Header(props) {
   const { menu, type, dappMenu } = props;
@@ -20,7 +20,7 @@ export default function Header(props) {
     error: connectError,
   } = useConnect({
     onError(error) {
-      console.error("Connect error:", error);
+      console.error('Connect error:', error);
     },
     onSuccess(data) {
       setOpenConnect(false);
@@ -55,15 +55,15 @@ export default function Header(props) {
   // const [openNetworks, setOpenNetworks] = useState(false);
 
   const goMenu = (id) => {
-    if (menu == "Home") {
+    if (menu == 'Home') {
       props.updateId(id);
     } else {
-      router.push("/#" + id);
+      router.push('/#' + id);
     }
   };
 
   useEffect(() => {
-    if (account.status === "connected" && menu !== "Home") {
+    if (account.status === 'connected' && menu !== 'Home') {
       // FOR STAGING ONLY / FOR PRODUCTION SHOULD BE OASIS SAPPHIRE MAINNET 23294
       if (account.chainId !== 23294) {
         switchChain({ chainId: 23294 });
@@ -77,10 +77,10 @@ export default function Header(props) {
 
   const goMenu_h5 = (id) => {
     setOpen(true);
-    if (menu == "Home") {
+    if (menu == 'Home') {
       props.updateId(id);
     } else {
-      router.push("/#" + id);
+      router.push('/#' + id);
     }
   };
 
@@ -131,14 +131,14 @@ export default function Header(props) {
   // };
 
   useEffect(() => {
-    if (account.status === "connected" && !hasAttemptedSwitch) {
+    if (account.status === 'connected' && !hasAttemptedSwitch) {
       const switchChainIfNeeded = async () => {
         if (account.chainId !== CHAIN_ID.SAPPHIRE) {
           try {
             setHasAttemptedSwitch(true);
             await switchChain({ chainId: CHAIN_ID.SAPPHIRE });
           } catch (error) {
-            console.error("Chain switch error:", error);
+            console.error('Chain switch error:', error);
             // Don't throw, just log the error
           }
         }
@@ -150,7 +150,7 @@ export default function Header(props) {
 
   // Reset switch attempt flag on disconnect
   useEffect(() => {
-    if (account.status === "disconnected") {
+    if (account.status === 'disconnected') {
       setHasAttemptedSwitch(false);
     }
   }, [account.status]);
@@ -162,7 +162,7 @@ export default function Header(props) {
   }, [account.isConnected]);
 
   useEffect(() => {
-    if (account.status === "disconnected") {
+    if (account.status === 'disconnected') {
       setHasAttemptedSwitch(false);
     }
   }, [account.status, account.chainId]);
@@ -187,16 +187,16 @@ export default function Header(props) {
                 className={styles.logoImg}
               />
             </Link>
-            {type == "dapp" ? (
+            {type == 'dapp' ? (
               <div className={styles.main}>
                 <div
                   className={styles.health}
                   onClick={() => setOpenHealth(true)}
                 >
                   <img src="/icon/heart.svg" alt="heart"></img>
-                  {account.status === "connected"
+                  {account.status === 'connected'
                     ? tcr >= 1.1579208923731621e61
-                      ? "∞"
+                      ? '∞'
                       : `${formatNumber(tcr)}%`
                     : 0}
                 </div>
@@ -204,17 +204,17 @@ export default function Header(props) {
             ) : null}
           </div>
 
-          {type == "dapp" ? (
+          {type == 'dapp' ? (
             <div className={styles.dappList}>
               <Link
-                className={dappMenu == "Vault" ? `${styles.active}` : null}
+                className={dappMenu == 'Vault' ? `${styles.active}` : null}
                 href="/Vault"
                 rel="nofollow noopener noreferrer"
               >
                 <span>Vaults</span>
               </Link>
               <Link
-                className={dappMenu == "Earn" ? `${styles.active}` : null}
+                className={dappMenu == 'Earn' ? `${styles.active}` : null}
                 href="/Earn"
                 rel="nofollow noopener noreferrer"
               >
@@ -235,7 +235,7 @@ export default function Header(props) {
                 <span>Lock</span>
               </Link> */}
               <Link
-                className={dappMenu == "Redeem" ? `${styles.active}` : null}
+                className={dappMenu == 'Redeem' ? `${styles.active}` : null}
                 href="/Redeem"
                 rel="nofollow noopener noreferrer"
               >
@@ -251,8 +251,12 @@ export default function Header(props) {
             </div>
           ) : (
             <div className={styles.list}>
-              <span onClick={() => goMenu("works")}>How it works</span>
-              <Link target="_blank" href="" rel="nofollow noopener noreferrer">
+              <span onClick={() => goMenu('works')}>How it works</span>
+              <Link
+                target="_blank"
+                href="https://bitprotocol.gitbook.io/bitprotocol"
+                rel="nofollow noopener noreferrer"
+              >
                 <span>Docs</span>
               </Link>
               <div className="menu-container">
@@ -267,17 +271,10 @@ export default function Header(props) {
                   </Link>
                   <Link
                     target="_blank"
-                    href="https://t.me/vinemoneyofficial"
+                    href="https://t.me/bitprotocolofficial"
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Community
-                  </Link>
-                  <Link
-                    target="_blank"
-                    href="https://t.me/vinemoneyann"
-                    rel="nofollow noopener noreferrer"
-                  >
-                    Telegram Announcements
                   </Link>
                   <Link
                     target="_blank"
@@ -288,7 +285,7 @@ export default function Header(props) {
                   </Link>
                 </div>
               </div>
-              <span onClick={() => goMenu("faq")}>FAQ</span>
+              <span onClick={() => goMenu('faq')}>FAQ</span>
               {/* <div className="menu-container">
                 <span>IDO</span>
                 <div className="dropdown-menu">
@@ -315,7 +312,7 @@ export default function Header(props) {
           )}
 
           <div className={styles.menuList}>
-            {type != "dapp" ? (
+            {type != 'dapp' ? (
               <div className="button">
                 <Link href="/Vault">
                   <span>Launch App</span>
@@ -361,7 +358,7 @@ export default function Header(props) {
       </div>
 
       {!open ? (
-        type == "dapp" ? (
+        type == 'dapp' ? (
           <div className={styles.h5Block}>
             <div className={styles.h5Item}>
               <Link href="/Vault" rel="nofollow noopener noreferrer">
@@ -418,7 +415,7 @@ export default function Header(props) {
           </div>
         ) : (
           <div className={styles.h5Block}>
-            <div className={styles.h5Item} onClick={() => goMenu_h5("works")}>
+            <div className={styles.h5Item} onClick={() => goMenu_h5('works')}>
               How it works
             </div>
             <div className={styles.h5Item}>
@@ -471,7 +468,7 @@ export default function Header(props) {
                 </div>
               </div>
             </div>
-            <div className={styles.h5Item} onClick={() => goMenu_h5("faq")}>
+            <div className={styles.h5Item} onClick={() => goMenu_h5('faq')}>
               FAQ
             </div>
             <div className={styles.h5Item}>
@@ -550,11 +547,11 @@ export default function Header(props) {
               ></img>
             </div>
             <div className="infoMain">
-              <div className="data" style={{ borderTop: "none" }}>
+              <div className="data" style={{ borderTop: 'none' }}>
                 <div className="dataItem">
                   <p>Total Collateral Value</p>
                   <span>
-                    {account.status === "connected"
+                    {account.status === 'connected'
                       ? `$${formatNumber(totalPricedCollateral)}`
                       : 0}
                   </span>
@@ -562,7 +559,7 @@ export default function Header(props) {
                 <div className="dataItem">
                   <p>Total Debt Value</p>
                   <span>
-                    {account.status === "connected"
+                    {account.status === 'connected'
                       ? `$${formatNumber(totalSystemDebt)}`
                       : 0}
                   </span>
@@ -570,9 +567,9 @@ export default function Header(props) {
                 <div className="dataItem">
                   <p>TCR</p>
                   <span>
-                    {account.status === "connected"
+                    {account.status === 'connected'
                       ? tcr >= 1.1579208923731621e61
-                        ? "∞"
+                        ? '∞'
                         : `${formatNumber(tcr)}%`
                       : 0}
                   </span>
