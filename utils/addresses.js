@@ -114,4 +114,5 @@ export const rpc = {
 
 export const api = {
   bot: 'https://api.bitusd.finance/api',
+  // bot: 'http://localhost:3000/api',
 };

@@ -4,9 +4,8 @@ import { BsBell } from 'react-icons/bs';
 import { useSignMessage, useAccount } from 'wagmi';
 import { api } from '../../utils/addresses';
 import tooltip from '../../components/tooltip';
-import { setCode } from 'viem/actions';
 
-export default function Notification() {
+export default function Notification({ collateral }) {
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [registrationCode, setRegistrationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,12 +19,19 @@ export default function Notification() {
   };
 
   useEffect(() => {
-    getSubscription();
-  }, []);
+    async function fetchData() {
+      if (collateral) {
+        await getSubscription();
+      }
+    }
+
+    fetchData();
+  }, [collateral]);
 
   const getSubscription = async () => {
     try {
       if (!address) return;
+      setIsLoading(true);
       const response = await fetch(`${api.bot}/subscription/${address}`, {
         method: 'GET',
         headers: {
@@ -38,8 +44,10 @@ export default function Notification() {
       }
 
       const { data } = await response.json();
-
-      setAlreadyRegistered(data.length  > 0);
+      console.log({ data, collateral });
+      setAlreadyRegistered(
+        data.find((item) => item.collateralName === collateral)
+      );
     } catch (error) {
       setAlreadyRegistered(false);
     } finally {
@@ -66,6 +74,7 @@ export default function Notification() {
         body: JSON.stringify({
           walletAddress: address,
           signature,
+          collateralName: collateral,
         }),
       });
 
