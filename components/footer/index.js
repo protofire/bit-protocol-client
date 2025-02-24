@@ -16,7 +16,7 @@ export default function Footer(props) {
   return (
     <>
       <div className={styles.footer}>
-        <div>
+        <div className={styles.leftSection}>
           <div className={styles.logo} onClick={() => goMenu('vine')}>
             <img
               style={{ width: '50px', height: '35px', cursor: 'pointer' }}
@@ -26,10 +26,6 @@ export default function Footer(props) {
           </div>
           <div className={styles.list}>
             <span onClick={() => goMenu('works')}>How it works</span>
-            {/* <div className='tooltipMain'>
-                            <span>Key features</span>
-                            <div className='tooltip'>LAUNCHING SOON</div>
-                        </div> */}
             <Link
               target="_blank"
               href="https://bitprotocol.gitbook.io/bitprotocol"
@@ -37,11 +33,6 @@ export default function Footer(props) {
             >
               <span>Docs</span>
             </Link>
-            {/* <span>Whitepaper</span> */}
-            {/* <div className='tooltipMain'>
-                            <span>Socials</span>
-                            <div className='tooltip'>LAUNCHING SOON</div>
-                        </div> */}
             <div className="menu-container">
               <span>Socials</span>
               <div
@@ -72,28 +63,59 @@ export default function Footer(props) {
               </div>
             </div>
             <span onClick={() => goMenu('faq')}>FAQ</span>
-            {/* <div className="menu-container">
-                            <span>IDO</span>
-                            <div className="dropdown-menu" style={{ "bottom": "120%", "top": "auto" }}>
-                                <Link href="/ido-countdown" rel="nofollow noopener noreferrer" style={{ "width": "135px" }}>IDO Countdown</Link>
-                                <Link href="/ido-raffle" rel="nofollow noopener noreferrer" style={{ "width": "135px" }}>Whitelist Raffle</Link>
-                            </div>
-                        </div> */}
-            {/* <Link
-              target="_blank"
-              href="/Vine_Money_Disclaimer.pdf"
-              rel="nofollow noopener noreferrer"
-            >
-              <span>Disclaimer</span>
-            </Link> */}
+            <div className={styles.some}>
+              <Link
+                href="https://github.com/protofire/bit-protocol-contracts"
+                target="_blank"
+                rel="nofollow noopener noreferrer"
+                className={styles.iconLink}
+              >
+                <img
+                  src="/icon/github.svg"
+                  alt="GitHub"
+                  width={20}
+                  height={20}
+                />
+              </Link>
+              <Link
+                href="https://defillama.com/protocol/bitusd"
+                target="_blank"
+                rel="nofollow noopener noreferrer"
+                className={styles.iconLink}
+              >
+                <img
+                  src="/icon/defillama.svg"
+                  alt="DefiLlama"
+                  width={20}
+                  height={20}
+                />
+              </Link>
+            </div>
           </div>
         </div>
-        {/* <div className={styles.iconList}>
-                    <img src="/home/icon01.svg" alt="icon" />
-                    <img src="/home/icon02.svg" alt="icon" />
-                    <img src="/home/icon03.svg" alt="icon" />
-                    <img src="/home/icon04.svg" alt="icon" />
-                </div> */}
+        {/* <div className={styles.rightSection}>
+          <Link
+            href="https://github.com/bitprotocol"
+            target="_blank"
+            rel="nofollow noopener noreferrer"
+            className={styles.iconLink}
+          >
+            <img src="/icon/github.svg" alt="GitHub" width={20} height={20} />
+          </Link>
+          <Link
+            href="https://defillama.com/protocol/bit-protocol"
+            target="_blank"
+            rel="nofollow noopener noreferrer"
+            className={styles.iconLink}
+          >
+            <img
+              src="/icon/defillama.svg"
+              alt="DefiLlama"
+              width={20}
+              height={20}
+            />
+          </Link>
+        </div> */}
       </div>
     </>
   );
