@@ -434,11 +434,11 @@ export const BlockchainContextProvider = ({ children }) => {
         functionName: 'approve',
         address: collateralAddr,
         args,
-        gas: await publicClient.estimateGas(args),
+        gas: '3000000', //  await publicClient.estimateGas(args),
       });
-
       return tx;
     } catch (error) {
+      console.log('approve error: ', error);
       throw error;
     }
   };
