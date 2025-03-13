@@ -548,11 +548,7 @@ export default function ManageDeposit({ address }) {
 
           <div className={styles.topTypeMgmt}>
             <h3>Manage Your Vault</h3>
-            {address === '0x4E77238627F1D2516eb05ec0b0B38f86905d60bc' ? (
-              <></>
-            ) : (
-              <Notification collateral={collateral?.collateral?.name} />
-            )}
+            <Notification collateral={collateral?.collateral?.name} />
           </div>
 
           <div className={styles.rose}>
