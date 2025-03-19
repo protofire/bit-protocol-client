@@ -32,7 +32,7 @@ import BitLpTokenABI from '../abi/BitLpTokenPool';
 import MultiCollateralHintHelpersABI from '../abi/MultiCollateralHintHelpers';
 import BitLpOracleABI from '../abi/BitLpOracle';
 import TWAPOracleABI from '../abi/TWAPOracle';
-import { fromBigNumber } from '../utils/helpers';
+import { fromBigNumber, convertInterestRate } from '../utils/helpers';
 import { useSignatureCheck } from './useSignatureCheck';
 import BigNumber from 'bignumber.js';
 import * as sapphire from '@oasisprotocol/sapphire-paratime';
@@ -1219,6 +1219,12 @@ export const BlockchainContextProvider = ({ children }) => {
           functionName: 'baseRate',
           args: [],
         });
+        const interestRate = await publicClient.readContract({
+          abi: TroveManagerABI,
+          address: address,
+          functionName: 'interestRate',
+          args: [],
+        });
 
         const sortedTroves = await publicClient.readContract({
           abi: TroveManagerABI,
@@ -1248,6 +1254,7 @@ export const BlockchainContextProvider = ({ children }) => {
               collateral === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
           },
           sortedTroves,
+          interestRate: convertInterestRate(interestRate),
           maxSystemDebt: fromBigNumber(maxSystemDebt),
           rewardRate: fromBigNumber(rewardRate),
           deploymentTime: Number(deploymentTime),
