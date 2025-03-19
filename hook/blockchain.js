@@ -428,15 +428,32 @@ export const BlockchainContextProvider = ({ children }) => {
   const approve = async (collateralAddr, collAmount) => {
     try {
       const args = [addresses.borrowerOps[account.chainId], collAmount];
-      const tx = await walletClient.writeContract({
-        account: account.address,
-        abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
-        functionName: 'approve',
-        address: collateralAddr,
-        args,
-        gas: '3000000', //  await publicClient.estimateGas(args),
-      });
-      return tx;
+
+      // Check if walletClient is available
+      if (walletClient) {
+        const tx = await walletClient.writeContract({
+          account: account.address,
+          abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
+          functionName: 'approve',
+          address: collateralAddr,
+          args,
+          gas: '3000000', //  await publicClient.estimateGas(args),
+        });
+        return tx;
+      } else {
+        // Fallback to ethers.js if walletClient is not available
+        const tokenContract = new ethers.Contract(
+          collateralAddr,
+          BitGovABI, // JUST TO USE THE ERC20 INTERFACE
+          sapphire.wrap(signer)
+        );
+
+        const tx = await tokenContract.approve(
+          addresses.borrowerOps[account.chainId],
+          collAmount
+        );
+        return tx.hash;
+      }
     } catch (error) {
       console.log('approve error: ', error);
       throw error;
