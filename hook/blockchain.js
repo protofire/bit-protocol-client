@@ -112,6 +112,7 @@ export const BlockchainContext = createContext({
   getBitGovPrice: async () => {},
   checkCollateralSurplus: async () => {},
   claimCollateral: async () => {},
+  getCollateralPrice: async () => {},
 });
 
 export const BlockchainContextProvider = ({ children }) => {
@@ -1461,6 +1462,7 @@ export const BlockchainContextProvider = ({ children }) => {
         getBitGovPrice,
         checkCollateralSurplus,
         claimCollateral,
+        getCollateralPrice,
       }}
     >
       {children}
