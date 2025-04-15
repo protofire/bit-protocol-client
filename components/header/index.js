@@ -421,7 +421,7 @@ export default function Header(props) {
             <div className={styles.h5Item}>
               <Link
                 target="_blank"
-                href="https://vine-money.gitbook.io/vine-money/"
+                href="https://bitprotocol.gitbook.io/bitprotocol"
                 rel="nofollow noopener noreferrer"
               >
                 <span>Docs</span>
@@ -442,19 +442,10 @@ export default function Header(props) {
                 <div>
                   <Link
                     target="_blank"
-                    href="https://t.me/vinemoneyofficial"
+                    href="https://t.me/bitprotocolofficial"
                     rel="nofollow noopener noreferrer"
                   >
                     Telegram Community
-                  </Link>
-                </div>
-                <div>
-                  <Link
-                    target="_blank"
-                    href="https://t.me/vinemoneyann"
-                    rel="nofollow noopener noreferrer"
-                  >
-                    Telegram Announcements
                   </Link>
                 </div>
                 <div>
@@ -470,15 +461,6 @@ export default function Header(props) {
             </div>
             <div className={styles.h5Item} onClick={() => goMenu_h5('faq')}>
               FAQ
-            </div>
-            <div className={styles.h5Item}>
-              <Link
-                target="_blank"
-                href="/Vine_Money_Disclaimer.pdf"
-                rel="nofollow noopener noreferrer"
-              >
-                <span>Disclaimer</span>
-              </Link>
             </div>
 
             <div className="h5user">
