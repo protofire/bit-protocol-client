@@ -1,6 +1,7 @@
 import styles from "../styles/Home.module.scss";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import Roadmap from "../components/roadmap";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useState, useEffect, useContext, useRef } from "react";
@@ -26,13 +27,13 @@ export default function Home() {
     {
       questions: "What is Bit Protocol?",
       answer:
-        "<p>Bit Protocol is a decentralized borrowing protocol that allows you to borrow against Oasis Network’s native token ROSE, which is used as collateral. Loans are taken out in bitUSD - a $1 pegged private and confidential decentralized stablecoin.</p>",
+        "<p>Bit Protocol is a decentralized borrowing protocol that allows you to borrow against Oasis Network's native token ROSE, which is used as collateral. Loans are taken out in bitUSD - a $1 pegged private and confidential decentralized stablecoin.</p>",
       hide: true,
     },
     {
       questions: "How do I use Bit Protocol?",
       answer:
-        "<p>To use Bit Protocol and take out a bitUSD loan, earn rewards, or vote on governance proposals, visit the Bit Protocol website, and select “Launch App” within the interface and connect a Web3 wallet.</p>",
+        "<p>To use Bit Protocol and take out a bitUSD loan, earn rewards, or vote on governance proposals, visit the Bit Protocol website, and select \"Launch App\" within the interface and connect a Web3 wallet.</p>",
       hide: true,
     },
     {
@@ -204,6 +205,7 @@ export default function Home() {
               {/* <img className={styles.img02} src="/home/vusd.svg" alt="bitUSD" /> */}
             </div>
           </div>
+          <Roadmap />
           <div className={styles.faq} id="faq">
             <h2 style={{ textAlign: "center" }}>Frequently Asked Questions</h2>
             <div className={styles.faqList}>
