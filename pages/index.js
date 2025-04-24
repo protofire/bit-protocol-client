@@ -3,6 +3,7 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import Roadmap from "../components/roadmap";
 import Partners from "../components/partners";
+import Socials from "../components/socials";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useState, useEffect, useContext, useRef } from "react";
@@ -208,6 +209,7 @@ export default function Home() {
           </div>
           <Roadmap />
           <Partners />
+          <Socials />
           <div className={styles.faq} id="faq">
             <h2 style={{ textAlign: "center" }}>Frequently Asked Questions</h2>
             <div className={styles.faqList}>

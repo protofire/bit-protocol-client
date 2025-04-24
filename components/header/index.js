@@ -182,8 +182,8 @@ export default function Header(props) {
           <div className={styles.logo}>
             <Link href="/" className={styles.logo}>
               <img
-                src="/bitusd-logo.svg"
-                alt="logo"
+                src="/BIT-logo.svg"
+                alt="Bit Protocol"
                 className={styles.logoImg}
               />
             </Link>
