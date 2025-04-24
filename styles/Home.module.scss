@@ -1,62 +1,92 @@
 .home {
   .banner {
-    padding: 30px 0;
+    position: relative;
+    overflow: hidden;
+    padding: 120px 0;
+    background: #000;
 
     .bannerMain {
-      // background: url("../public/home/bannerBg.svg");
-      height: 600px;
-      background-size: 100% 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      overflow: hidden;
-      background-repeat: no-repeat;
-      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      position: relative;
+      z-index: 1;
 
       .bannerTxt {
-        padding: 20% 0 0 80px;
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
 
-        h2 {
-          color: #f2f2f2;
-          font-size: 48px;
-          font-style: normal;
-          font-weight: 900;
-          line-height: 56px;
-          letter-spacing: -0.96px;
+        .newTag {
+          display: inline-flex;
+          align-items: center;
+          background: linear-gradient(90deg, rgba(0, 255, 209, 0.1), rgba(0, 255, 209, 0.05));
+          border: 1px solid rgba(0, 255, 209, 0.2);
+          border-radius: 20px;
+          padding: 8px 16px;
+          margin-bottom: 24px;
+          color: #00FFD1;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background: linear-gradient(90deg, rgba(0, 255, 209, 0.2), rgba(0, 255, 209, 0.1));
+          }
+
+          .arrow {
+            margin-left: 8px;
+          }
+        }
+
+        h1 {
+          font-size: 64px;
+          color: #fff;
+          margin: 0 0 24px;
+          font-weight: normal;
         }
 
         p {
-          // color: #BDBDBD;
-          font-size: 18px;
-          font-style: normal;
-          font-weight: 600;
-          line-height: 28px;
-          margin-top: 24px;
-          margin-bottom: 28px;
-          // font-family: "DMSans";
+          font-size: 20px;
+          color: #999;
+          margin: 0 0 40px;
+          line-height: 1.5;
         }
 
-        div {
-          width: 198px;
-        }
-      }
+        .buttons {
+          display: flex;
+          gap: 20px;
+          justify-content: center;
 
-      .bannerImg {
-        height: 100%;
-        position: relative;
-        background: url("../public/home/bannerBg.svg");
-        overflow: hidden;
-        background-repeat: no-repeat;
-        .img01 {
-          width: 80%;
-          position: absolute;
-          right: 0;
-          top: 0;
-        }
+          a {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
 
-        .img02 {
-          position: absolute;
-          bottom: 40px;
-          right: 40px;
+            &.primary {
+              background-color: #00FFD1;
+              color: #000;
+
+              &:hover {
+                background-color: darken(#00FFD1, 10%);
+              }
+            }
+
+            &.secondary {
+              background-color: transparent;
+              border: 1px solid #333;
+              color: #fff;
+
+              &:hover {
+                border-color: #00FFD1;
+                color: #00FFD1;
+              }
+            }
+          }
         }
       }
     }
@@ -271,6 +301,15 @@
     line-height: 82.5px;
     letter-spacing: -0.96px;
     margin-bottom: 24px;
+  }
+}
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
   }
 }
 

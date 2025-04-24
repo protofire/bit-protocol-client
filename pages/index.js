@@ -9,6 +9,7 @@ import "aos/dist/aos.css";
 import { useState, useEffect, useContext, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import PriceSection from '../components/PriceSection'
 
 export default function Home() {
   const router = useRouter();
@@ -90,39 +91,36 @@ export default function Home() {
     <>
       <Header updateId={updateId} menu="Home"></Header>
       <div className={styles.home}>
-        <div className={`${styles.banner} ${"main"}`}>
-          <img
-            className="h5Show"
-            style={{ width: "100%" }}
-            src="/home/bannerBg.svg"
-            alt="banner"
-          />
+        <div className={styles.banner}>
           <div className={styles.bannerMain}>
             <div className={styles.bannerTxt}>
-              <h2>bitUSD Privacy Focused Omnichain Stablecoin</h2>
+              <Link 
+                href="/Vault" 
+                className={styles.newTag}
+              >
+                NEW! Borrow BitUSD against MtBill
+                <span className={styles.arrow}>→</span>
+              </Link>
+              <h1>Bit Protocol</h1>
               <p>
-                The first privacy-focused stablecoin built on Oasis Sapphire EVM
-                Decentralised, Confidential and Democratized
+                #1 Native Multi-chain CDP Protocol behind $BitUSD the most
+                decentralized, crypto-backed overcollateralized stablecoin.
               </p>
-
-              {parseInt(new Date().getTime() / 1000) < 1709730000 ? (
-                <div className="button soon">
-                  <span className="show">Deposit Collateral</span>
-                  <span className="hide">Launching Soon</span>
-                </div>
-              ) : (
-                <div className="button">
-                  <Link href="/Vault">
-                    <span>Deposit Collateral</span>
-                  </Link>
-                </div>
-              )}
+              <div className={styles.buttons}>
+                <Link href="/Vault" className={styles.primary}>
+                  Mint BitUSD
+                </Link>
+                <Link 
+                  href="https://bitprotocol.gitbook.io/bitprotocol"
+                  className={styles.secondary}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Documentation
+                </Link>
+              </div>
             </div>
-            <div className={styles.bannerImg}>
-              {/* <img className={styles.img01} src="/home/banner_right.png" alt="banner" />
-              <img className={styles.img02} src="/home/banner_bottom.svg" alt="banner" /> */}
-            </div>
-          </div>
+          </div>      
         </div>
         <div className={`${styles.works} ${"main"}`} id="works">
           <h2>How Bit Protocol Works</h2>
@@ -143,9 +141,9 @@ export default function Home() {
               </div>
               <p>Mint bitUSD</p>
               <span>
-                Deposit ROSE as your collateral and effortlessly mint bitUSD.
+                Deposit multiple collaterals and effortlessly mint bitUSD.
                 More collateral assets will be supported by Bit Protocol in the
-                future
+                future.
               </span>
             </div>
             <div className={styles.worksItem}>
@@ -172,27 +170,24 @@ export default function Home() {
           </div>
           <div className={styles.privacy}>
             <div>
-              <h2>
-                Privacy-Powered
-                <br />
-                Stablecoin <span>bitUSD</span>
-                <br />
-                Revolution on Oasis Sapphire
-              </h2>
-              <div className={styles.redBorder}>
-                <p style={{ marginBottom: "30px" }}>
-                  bitUSD, built on Oasis Sapphire EVM, is the first
-                  privacy-focused stablecoin, bridging the gap between privacy
-                  and stability in DeFi.{" "}
+              <img 
+                src="/bitusd-logo.svg"
+                alt="bitUSD"
+                width={190}
+                className={styles.bitIcon} 
+              />
+              <h2>The Universal Stablecoin.</h2>
+              <div>
+                <p style={{ fontSize: "24px", marginBottom: "30px" }}>
+                Backed by Everything, Everywhere.
                 </p>
-                <p>
-                  Set to revolutionize the $3 trillion stablecoin market, bitUSD
-                  paves the way for a new secure, private, and expansive DeFi
-                  ecosystem with its innovative approach and omnichain
-                  functionality to maximise scalability.
-                </p>
+                <div className={styles.buttons}>
+                  <Link href="/Vault" className={styles.primary}>
+                    Mint BitUSD
+                  </Link>
+                </div>
               </div>
-            </div>
+            </div>            
             <div className={styles.vUSD}>
               {/* <img
                 className={styles.img01}
@@ -203,10 +198,12 @@ export default function Home() {
                 className={styles.img03}
                 src="/dapp/bitUSD.svg"
                 alt="bitUSD"
+                width={300}
               />
               {/* <img className={styles.img02} src="/home/vusd.svg" alt="bitUSD" /> */}
             </div>
           </div>
+          <PriceSection />
           <Roadmap />
           <Partners />
           <Socials />
