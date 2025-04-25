@@ -43,7 +43,9 @@ const Roadmap = () => {
 
   return (
     <div className={styles.roadmap}>
-      <h2>ROADMAP</h2>
+      <div></div>
+      <h2>ROADMAP 2025</h2>
+      <p>Updated on 24 April 2025</p>
       <div className={styles.timeline}>
         <div className={styles.line}>
           {roadmapItems.map((item, index) => (

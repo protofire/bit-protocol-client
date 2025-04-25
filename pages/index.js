@@ -10,6 +10,7 @@ import { useState, useEffect, useContext, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import PriceSection from '../components/PriceSection'
+import Features from '../components/Features'
 
 export default function Home() {
   const router = useRouter();
@@ -122,6 +123,7 @@ export default function Home() {
             </div>
           </div>      
         </div>
+        <Features />
         <div className={`${styles.works} ${"main"}`} id="works">
           <h2>How Bit Protocol Works</h2>
           <div className={styles.worksList}>
