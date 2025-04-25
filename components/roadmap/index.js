@@ -8,18 +8,18 @@ const Roadmap = () => {
       items: [
         'v1 Launch',
         '$1M BitUSD Minted',
-        '3 Type of Collaterals'
+        '3 Types of Collateral'
       ]
     },
     {
       quarter: 'Q2',
-      title: 'New Collaterals & Crosschain',
+      title: 'New Collateral & Cross-Chain',
       items: [
         'Crosschain v2 Launch (Flashloans)',
         'Point System',
         'FrontEnd Operators',
         '+3 Chains',
-        '+10 Type of Collaterals'
+        '+10 Types of Collateral'
       ]
     },
     {
@@ -35,7 +35,7 @@ const Roadmap = () => {
       title: 'Credit & Lending',
       items: [
         'Seed Round (3M)',
-        'Uncollateralised/Unsecured Lending',
+        'Uncollateralized/Unsecured Lending',
         'Credit Score Implementation'
       ]
     }
