@@ -103,7 +103,15 @@ export default function Home() {
                 NEW! Borrow BitUSD against MtBill
                 <span className={styles.arrow}>→</span>
               </Link>
-              <h1>Bit Protocol</h1>
+              <div>
+                <img
+                  src="/BIT-logo.svg"
+                  alt="Bit Protocol"
+                  height={60}
+                  className={styles.logoImg}
+                />
+                <h2>PROTOCOL</h2>
+              </div>
               <p>
                 #1 Native Multi-chain CDP Protocol behind $BitUSD the most
                 decentralized, crypto-backed overcollateralized stablecoin.
