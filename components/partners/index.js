@@ -15,7 +15,7 @@ const Partners = () => {
     },
     {
       name: 'Accumulated Finance',
-      logo: '/partners/AccumulatedFinance.png',
+      logo: '/partners/AccumulatedFinance.svg',
       url: 'https://accumulated.finance'
     },
     {
