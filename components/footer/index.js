@@ -1,6 +1,7 @@
 import styles from './index.module.scss';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import ExternalLinkIcon from '../icons/ExternalLinkIcon';
 
 export default function Footer(props) {
   const { menu } = props;
@@ -31,13 +32,7 @@ export default function Footer(props) {
           </div>
           <div className={styles.list}>
             <span onClick={() => goMenu('works')}>How it works</span>
-            <Link
-              target="_blank"
-              href="https://bitprotocol.gitbook.io/bitprotocol"
-              rel="nofollow noopener noreferrer"
-            >
-              <span>Docs</span>
-            </Link>
+            <span onClick={() => goMenu('bitusd')}>BitUSD</span>
             <div className="menu-container">
               <span>Socials</span>
               <div
@@ -68,6 +63,14 @@ export default function Footer(props) {
               </div>
             </div>
             <span onClick={() => goMenu('faq')}>FAQ</span>
+            <Link
+                target="_blank"
+                href="https://bitprotocol.gitbook.io/bitprotocol"
+                rel="nofollow noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <span>Docs<ExternalLinkIcon /></span>
+              </Link>
             <div className={styles.some}>
               <Link
                 href="https://github.com/protofire/bit-protocol-contracts"

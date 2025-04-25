@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import PriceSection from '../components/PriceSection'
 import Features from '../components/Features'
+import ExternalLinkIcon from '../components/icons/ExternalLinkIcon';
 
 export default function Home() {
   const router = useRouter();
@@ -117,7 +118,7 @@ export default function Home() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Documentation
+                  <span>Documentation <ExternalLinkIcon /></span>
                 </Link>
               </div>
             </div>
@@ -170,7 +171,7 @@ export default function Home() {
               </span>
             </div>
           </div>
-          <div className={styles.privacy}>
+          <div className={styles.privacy} id="bitusd">
             <div>
               <img 
                 src="/bitusd-logo.svg"

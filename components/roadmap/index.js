@@ -55,7 +55,7 @@ const Roadmap = () => {
         <div className={styles.items}>
           {roadmapItems.map((item, index) => (
             <div key={index} className={styles.item}>
-              <div className={styles.quarter}>[{item.quarter}] {item.title}</div>
+              <div className={styles.quarter}>{item.quarter} {item.title}</div>
               <ul>
                 {item.items.map((listItem, i) => (
                   <li key={i}>{listItem}</li>
