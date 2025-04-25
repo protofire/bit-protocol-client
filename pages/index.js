@@ -181,7 +181,7 @@ export default function Home() {
               />
               <h2>The Universal Stablecoin.</h2>
               <div>
-                <p style={{ fontSize: "24px", marginBottom: "30px" }}>
+                <p>
                 Backed by Everything, Everywhere.
                 </p>
                 <div className={styles.buttons}>

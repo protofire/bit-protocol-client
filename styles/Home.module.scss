@@ -165,6 +165,10 @@
         line-height: 72px;
       }
 
+      p {
+        font-size: 1.5rem;
+      }
+
       span {
         background-color: #00d7ca;
         padding: 0 10px;
@@ -338,8 +342,6 @@
     }
 
     .works {
-      padding: 60px 20px;
-
       h2 {
         font-size: 32px;
         margin-bottom: 40px;
@@ -366,8 +368,17 @@
 
       .privacy {
         grid-template-columns: 1fr;
-        margin-top: 30px;
+        margin-top: 8rem;
         gap: 40px;
+        
+        h2 {
+          line-height: 3rem;
+          margin-top: 1rem;
+        }
+
+        p {
+          font-size: 1.2rem;
+        }
 
         .bitUSD {
           width: 95%;
@@ -392,6 +403,15 @@
         }
       }
     }
+    .buttons {
+      .primary {
+        padding: 8px 16px;
+      }
+    
+      .secondary {
+        padding: 8px 16px;
+    }
+  }
   }
 }
 
