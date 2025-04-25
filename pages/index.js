@@ -172,7 +172,7 @@ export default function Home() {
             </div>
           </div>
           <div className={styles.privacy} id="bitusd">
-            <div>
+            <div className={styles.privacyContainer}>
               <img 
                 src="/bitusd-logo.svg"
                 alt="bitUSD"
