@@ -139,6 +139,16 @@
 
 @media screen and (max-width: 798px) {
   .head {
+    transform: none;
+    transition: none;
+  
+    &.hidden {
+      transform: none;
+    }
+  
+    &.visible {
+      transform: none;
+    }
     .headMain {
       width: 100%;
       padding: 0 15px;
@@ -171,6 +181,7 @@
     position: fixed;
     z-index: 3;
     background: #000;
+    top: 72px;
 
     .h5Item {
       width: 100%;
