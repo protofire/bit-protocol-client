@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import styles from './index.module.scss';
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useCallback } from 'react';
 import { useAccount, useConnect, useSwitchChain } from 'wagmi';
 import { BlockchainContext } from '../../hook/blockchain';
 import Link from 'next/link';
@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { formatNumber } from '../../utils/helpers';
 import { CHAIN_ID } from '../../hook/wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import ExternalLinkIcon from '../icons/ExternalLinkIcon';
 
 export default function Header(props) {
   const { menu, type, dappMenu } = props;
@@ -52,7 +53,8 @@ export default function Header(props) {
 
   const [open, setOpen] = useState(true);
   const [openConnect, setOpenConnect] = useState(false);
-  // const [openNetworks, setOpenNetworks] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const goMenu = (id) => {
     if (menu == 'Home') {
@@ -85,50 +87,6 @@ export default function Header(props) {
   };
 
   const [hasAttemptedSwitch, setHasAttemptedSwitch] = useState(false);
-
-  // const handleChainAddition = async (provider) => {
-  //   try {
-  //     // Check if chain is already added
-  //     try {
-  //       const chain = await provider.request({
-  //         method: "eth_chainId",
-  //         params: [],
-  //       });
-
-  //       if (chain === `0x${CHAIN_ID.SAPPHIRE.toString(16)}`) {
-  //         return true;
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking chain:", error);
-  //     }
-
-  //     // Add the network
-  //     await provider.request({
-  //       method: "wallet_addEthereumChain",
-  //       params: [
-  //         {
-  //           chainId: `0x${CHAIN_ID.SAPPHIRE.toString(16)}`,
-  //           chainName: "Oasis Sapphire",
-  //           nativeCurrency: {
-  //             name: "ROSE",
-  //             symbol: "ROSE",
-  //             decimals: 18,
-  //           },
-  //           rpcUrls: ["https://sapphire.oasis.dev"],
-  //           blockExplorerUrls: ["https://explorer.sapphire.oasis.dev"],
-  //         },
-  //       ],
-  //     });
-
-  //     return true;
-  //   } catch (error) {
-  //     console.error("Error adding chain:", error);
-  //     if (error.code === 4001) {
-  //       throw new Error("User rejected adding the network");
-  //     }
-  //     throw error;
-  //   }
-  // };
 
   useEffect(() => {
     if (account.status === 'connected' && !hasAttemptedSwitch) {
@@ -167,6 +125,38 @@ export default function Header(props) {
     }
   }, [account.status, account.chainId]);
 
+  const controlHeader = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const currentScrollY = window.scrollY;
+    
+    if (currentScrollY < 100) {
+      setIsVisible(true);
+    } else if (currentScrollY > lastScrollY) {
+      // Scrolling down
+      setIsVisible(false);
+    } else {
+      // Scrolling up
+      setIsVisible(true);
+    }
+
+    setLastScrollY(currentScrollY);
+  }, [lastScrollY]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.addEventListener('scroll', controlHeader);
+
+    return () => {
+      window.removeEventListener('scroll', controlHeader);
+    };
+  }, [controlHeader]);
+
   return (
     <>
       <Head>
@@ -177,13 +167,13 @@ export default function Header(props) {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className={styles.head}>
+      <div className={`${styles.head} ${isVisible ? styles.visible : styles.hidden}`}>
         <div className={styles.headMain} id="vine">
           <div className={styles.logo}>
             <Link href="/" className={styles.logo}>
               <img
-                src="/bitusd-logo.svg"
-                alt="logo"
+                src="/BIT-logo.svg"
+                alt="Bit Protocol"
                 className={styles.logoImg}
               />
             </Link>
@@ -252,13 +242,7 @@ export default function Header(props) {
           ) : (
             <div className={styles.list}>
               <span onClick={() => goMenu('works')}>How it works</span>
-              <Link
-                target="_blank"
-                href="https://bitprotocol.gitbook.io/bitprotocol"
-                rel="nofollow noopener noreferrer"
-              >
-                <span>Docs</span>
-              </Link>
+              <span onClick={() => goMenu('bitusd')}>BitUSD</span>
               <div className="menu-container">
                 <span>Socials</span>
                 <div className="dropdown-menu">
@@ -285,29 +269,15 @@ export default function Header(props) {
                   </Link>
                 </div>
               </div>
-              <span onClick={() => goMenu('faq')}>FAQ</span>
-              {/* <div className="menu-container">
-                <span>IDO</span>
-                <div className="dropdown-menu">
-                  <Link
-                    href="/ido-countdown"
-                    rel="nofollow noopener noreferrer"
-                    style={{ width: "135px" }}
-                  >
-                    IDO Countdown
-                  </Link>
-                  <Link
-                    href="/ido-raffle"
-                    rel="nofollow noopener noreferrer"
-                    style={{ width: "135px" }}
-                  >
-                    Whitelist Raffle
-                  </Link>
-                </div>
-              </div> */}
-              {/* <Link target="_blank" href="" rel="nofollow noopener noreferrer">
-                <span>Disclaimer</span>
-              </Link> */}
+              <span onClick={() => goMenu('faq')}>FAQs</span>
+              <Link
+                target="_blank"
+                href="https://bitprotocol.gitbook.io/bitprotocol"
+                rel="nofollow noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center' }}
+              >
+                <span>Docs<ExternalLinkIcon /></span>
+              </Link>
             </div>
           )}
 
@@ -386,11 +356,6 @@ export default function Header(props) {
               </Link>
             </div>
             {/* <div className={styles.h5Item}>
-              <Link href="/Vote" rel="nofollow noopener noreferrer">
-                <span>Vote</span>
-              </Link>
-            </div> */}
-            {/* <div className={styles.h5Item}>
               {account.status === "connected" && (
                 <div
                   className={styles.network}
@@ -418,14 +383,8 @@ export default function Header(props) {
             <div className={styles.h5Item} onClick={() => goMenu_h5('works')}>
               How it works
             </div>
-            <div className={styles.h5Item}>
-              <Link
-                target="_blank"
-                href="https://bitprotocol.gitbook.io/bitprotocol"
-                rel="nofollow noopener noreferrer"
-              >
-                <span>Docs</span>
-              </Link>
+            <div className={styles.h5Item} onClick={() => goMenu_h5('bitusd')}>
+              BitUSD
             </div>
             <div className={`${styles.h5Item}`}>
               <div>Socials</div>
@@ -459,10 +418,17 @@ export default function Header(props) {
                 </div>
               </div>
             </div>
-            <div className={styles.h5Item} onClick={() => goMenu_h5('faq')}>
-              FAQ
+            <div className={styles.h5Item}>
+              <Link
+                target="_blank"
+                href="https://docs.bitprotocol.com"
+                rel="nofollow noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <span>Docs</span>
+                <ExternalLinkIcon />
+              </Link>
             </div>
-
             <div className="h5user">
               <ConnectButton
                 accountStatus="avatar"

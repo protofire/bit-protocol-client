@@ -1,81 +1,86 @@
 .footer {
-  background: #0c0b0b;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  height: 228px;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 24px;
-  padding: 0 112px;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px;
+  padding: 40px 0;
+  background-color: #000;
+  color: #fff;
 
   .leftSection {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
     display: flex;
     flex-direction: column;
-  }
+    gap: 30px;
 
-  .some {
-    display: flex;
-    gap: 24px;
-  }
+    .logoSection {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
 
-  .list {
-    margin-top: 32px;
-    display: flex;
-    gap: 24px;
-    cursor: pointer;
-    align-items: center;
-    align-content: space-around;
+      .logo {
+        cursor: pointer;
+      }
 
-    span {
-      &:hover {
-        opacity: 0.8;
+      .disclaimer {
+        font-size: 12px;
+        color: #999;
+        line-height: 1.5;
+        max-width: 800px;
+        margin: 0;
       }
     }
-  }
 
-  .iconLink {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.2s ease;
-    cursor: pointer;
+    .list {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      flex-wrap: wrap;
 
-    &:hover {
-      opacity: 0.8;
-    }
+      span {
+        cursor: pointer;
+        transition: color 0.3s ease;
 
-    img {
-      filter: brightness(0) invert(1);
+        &:hover {
+          color: #00FFD1;
+        }
+      }
+
+      .some {
+        display: flex;
+        gap: 15px;
+        margin-left: auto;
+
+        .iconLink {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: opacity 0.3s ease;
+
+          &:hover {
+            opacity: 0.8;
+          }
+
+          .whiteIcon {
+            filter: brightness(0) invert(1);
+          }
+        }
+      }
     }
   }
 }
 
-@media screen and (max-width: 798px) {
+@media (max-width: 768px) {
   .footer {
-    flex-wrap: wrap;
-    padding: 0 15px;
-    justify-content: center;
+    .leftSection {
+      .list {
+        gap: 20px;
+        justify-content: center;
 
-    .leftSection,
-    .rightSection {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .list {
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+        .some {
+          margin-left: 0;
+          width: 100%;
+          justify-content: center;
+        }
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
 import styles from './index.module.scss';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import ExternalLinkIcon from '../icons/ExternalLinkIcon';
 
 export default function Footer(props) {
   const { menu } = props;
@@ -17,22 +18,21 @@ export default function Footer(props) {
     <>
       <div className={styles.footer}>
         <div className={styles.leftSection}>
-          <div className={styles.logo} onClick={() => goMenu('vine')}>
-            <img
-              style={{ width: '50px', height: '35px', cursor: 'pointer' }}
-              src="/bitusd-logo.svg"
-              alt="logo"
-            ></img>
+          <div className={styles.logoSection}>
+            <div className={styles.logo} onClick={() => goMenu('vine')}>
+              <img
+                style={{ width: '50px', height: '35px', cursor: 'pointer' }}
+                src="/BIT-logo.svg"
+                alt="logo"
+              />
+            </div>
+            <p className={styles.disclaimer}>
+              Bit Protocol is a decentralized, open-source, self-executing smart contract system. [BIT LABS] does not control, operate, or manage the Bit Protocol, bitUSD stablecoin, or BIT token. The Protocol is run by its users and DAO. No entity herein provides financial services, investment advice, or custody of assets. Use at your own risk.
+            </p>
           </div>
           <div className={styles.list}>
             <span onClick={() => goMenu('works')}>How it works</span>
-            <Link
-              target="_blank"
-              href="https://bitprotocol.gitbook.io/bitprotocol"
-              rel="nofollow noopener noreferrer"
-            >
-              <span>Docs</span>
-            </Link>
+            <span onClick={() => goMenu('bitusd')}>BitUSD</span>
             <div className="menu-container">
               <span>Socials</span>
               <div
@@ -55,7 +55,7 @@ export default function Footer(props) {
                 </Link>
                 <Link
                   target="_blank"
-                  href="https://medium.com/@bitusdprotocol"
+                  href="https://medium.com/@bitprotocol"
                   rel="nofollow noopener noreferrer"
                 >
                   Medium
@@ -63,6 +63,14 @@ export default function Footer(props) {
               </div>
             </div>
             <span onClick={() => goMenu('faq')}>FAQ</span>
+            <Link
+                target="_blank"
+                href="https://bitprotocol.gitbook.io/bitprotocol"
+                rel="nofollow noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <span>Docs<ExternalLinkIcon /></span>
+              </Link>
             <div className={styles.some}>
               <Link
                 href="https://github.com/protofire/bit-protocol-contracts"
@@ -75,6 +83,7 @@ export default function Footer(props) {
                   alt="GitHub"
                   width={20}
                   height={20}
+                  className={styles.whiteIcon}
                 />
               </Link>
               <Link
@@ -88,6 +97,7 @@ export default function Footer(props) {
                   alt="DefiLlama"
                   width={20}
                   height={20}
+                  className={styles.whiteIcon}
                 />
               </Link>
             </div>
