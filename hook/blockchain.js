@@ -678,7 +678,7 @@ export const BlockchainContextProvider = ({ children }) => {
     console.log('signatures', signatures);
     console.log('before if', {
       accountAddress: account.address,
-      resultData: result?.data,
+      resultData: result,
       dataTrove: signatures?.dataTrove,
       dataDebt: signatures?.dataDebt,
     });
