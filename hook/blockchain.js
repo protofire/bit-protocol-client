@@ -190,7 +190,6 @@ export const BlockchainContextProvider = ({ children }) => {
     if (account.address) {
       getData();
       const intervalId = setInterval(() => {
-        console.log('interval');
         setLock(false);
         getData();
       }, 30000);
@@ -671,57 +670,40 @@ export const BlockchainContextProvider = ({ children }) => {
 
   // QUERY FUNCTIONS
   const getData = useCallback(async () => {
-    console.log('Getting data');
     if (typeof window === 'undefined') return;
 
     const signatures = await getSignatures();
-    console.log('signatures', signatures);
-    console.log('before if', {
-      accountAddress: account.address,
-      resultData: result,
-      dataTrove: signatures?.dataTrove,
-      dataDebt: signatures?.dataDebt,
-    });
-    
+
     // Check if we have the minimum required data to proceed
     // In production, result.data might be undefined sometimes
     if (account.address && signatures?.dataTrove && signatures?.dataDebt) {
-      if (lock) {
-        console.log('Locking');
-        return;
-      }
-      console.log('outside lock');
+      if (lock) return;
       setLock(true);
-      console.log('fetch 1');
       // Safely set balance only if result.data exists
       if (result?.data?.value) {
         setBalance(fromBigNumber(result.data.value));
       } else {
-        console.log('Warning: result.data.value is undefined, skipping balance update');
+        // console.log('Warning: result.data.value is undefined, skipping balance update');
         // Try to get balance through alternative method if needed
         try {
           if (account.address && signerQuery) {
             const balance = await signerQuery.getBalance(account.address);
             setBalance(fromBigNumber(balance));
-            console.log('Got balance through alternative method');
+            // console.log('Got balance through alternative method');
           }
         } catch (error) {
-          console.log('Failed to get balance through alternative method', error);
+          console.log(
+            'Failed to get balance through alternative method',
+            error
+          );
         }
       }
-      console.log('fetch 2');
       await getSystemInfo();
-      console.log('fetch 3');
       await getCollaterals();
-      console.log('fetch 4');
       await getBitUSDBalance();
-      console.log('fetch 5');
       await getBitGovBalance();
-      console.log('fetch 6');
       await getBitUSDCirculation();
-      console.log('fetch 7');
       await getStabilityPoolData();
-      console.log('fetch 8');
       // await getBoostAmount();
       // COMMENTED OUT UNTIL WE HAVE BITGOV AND REWARDS
       // await getClaimableRewards();
@@ -729,7 +711,6 @@ export const BlockchainContextProvider = ({ children }) => {
       // await getAccountBalances();
       // await getTotalWeight();
     }
-    console.log('end getting data');
   }, [account.address, lock, result?.data?.value]);
 
   const getRedemptionHints = async (troveManager, amount) => {
