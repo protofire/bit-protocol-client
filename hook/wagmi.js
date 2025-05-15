@@ -1,5 +1,5 @@
-import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { sapphire, sapphireTestnet } from "wagmi/chains";
+import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { sapphire, sapphireTestnet } from 'wagmi/chains';
 
 export const CHAIN_ID = {
   SAPPHIRE: sapphire.id,
@@ -7,9 +7,18 @@ export const CHAIN_ID = {
 };
 
 export const config = getDefaultConfig({
-  appName: "Bit Protocol",
+  appName: 'Bit Protocol',
   chains: [sapphire],
-  projectId: "7fabb9fcd815ac04dfd210d062824df1",
+  projectId: '7fabb9fcd815ac04dfd210d062824df1',
+  ssr: true,
+  walletConnectParameters: {
+    metadata: {
+      name: 'Bit Protocol',
+      description: 'Bit Protocol Multi-chain CDP Protocol',
+      url: 'https://www.bitusd.finance',
+      icons: ['https://www.bitusd.finance/favicon.ico'],
+    },
+  },
 });
 
 // import { http, createConfig } from "wagmi";
