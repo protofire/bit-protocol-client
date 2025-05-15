@@ -674,16 +674,30 @@ export const BlockchainContextProvider = ({ children }) => {
 
     const signatures = await getSignatures();
 
-    if (
-      account.address &&
-      result?.data &&
-      signatures?.dataTrove &&
-      signatures?.dataDebt
-    ) {
+    // Check if we have the minimum required data to proceed
+    // In production, result.data might be undefined sometimes
+    if (account.address && signatures?.dataTrove && signatures?.dataDebt) {
       if (lock) return;
       setLock(true);
-      // console.log("Getting data");
-      setBalance(fromBigNumber(result.data.value));
+      // Safely set balance only if result.data exists
+      if (result?.data?.value) {
+        setBalance(fromBigNumber(result.data.value));
+      } else {
+        // console.log('Warning: result.data.value is undefined, skipping balance update');
+        // Try to get balance through alternative method if needed
+        try {
+          if (account.address && signerQuery) {
+            const balance = await signerQuery.getBalance(account.address);
+            setBalance(fromBigNumber(balance));
+            // console.log('Got balance through alternative method');
+          }
+        } catch (error) {
+          console.log(
+            'Failed to get balance through alternative method',
+            error
+          );
+        }
+      }
       await getSystemInfo();
       await getCollaterals();
       await getBitUSDBalance();
