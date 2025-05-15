@@ -190,6 +190,7 @@ export const BlockchainContextProvider = ({ children }) => {
     if (account.address) {
       getData();
       const intervalId = setInterval(() => {
+        console.log('interval');
         setLock(false);
         getData();
       }, 30000);
@@ -670,26 +671,38 @@ export const BlockchainContextProvider = ({ children }) => {
 
   // QUERY FUNCTIONS
   const getData = useCallback(async () => {
+    console.log('Getting data');
     if (typeof window === 'undefined') return;
 
     const signatures = await getSignatures();
-
+    console.log('signatures', signatures);
     if (
       account.address &&
       result?.data &&
       signatures?.dataTrove &&
       signatures?.dataDebt
     ) {
-      if (lock) return;
+      if (lock) {
+        console.log('Locking');
+        return;
+      }
+      console.log('outside lock');
       setLock(true);
-      // console.log("Getting data");
+      console.log('fetch 1');
       setBalance(fromBigNumber(result.data.value));
+      console.log('fetch 2');
       await getSystemInfo();
+      console.log('fetch 3');
       await getCollaterals();
+      console.log('fetch 4');
       await getBitUSDBalance();
+      console.log('fetch 5');
       await getBitGovBalance();
+      console.log('fetch 6');
       await getBitUSDCirculation();
+      console.log('fetch 7');
       await getStabilityPoolData();
+      console.log('fetch 8');
       // await getBoostAmount();
       // COMMENTED OUT UNTIL WE HAVE BITGOV AND REWARDS
       // await getClaimableRewards();
@@ -697,6 +710,7 @@ export const BlockchainContextProvider = ({ children }) => {
       // await getAccountBalances();
       // await getTotalWeight();
     }
+    console.log('end getting data');
   }, [account.address, lock, result?.data?.value]);
 
   const getRedemptionHints = async (troveManager, amount) => {
