@@ -160,10 +160,10 @@ export default function Header(props) {
   return (
     <>
       <Head>
-        <title>Bit Protocol | Privacy Focused Omnichain Stablecoin</title>
+        <title>Bit Protocol | #1st Multi-Chain CDP</title>
         <meta
           name="description"
-          content="Bit Protocol | Privacy Focused Omnichain Stablecoin"
+          content="Bit Protocol | #1st Multi-Chain CDP"
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
