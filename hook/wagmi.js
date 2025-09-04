@@ -9,7 +9,7 @@ export const CHAIN_ID = {
 export const config = getDefaultConfig({
   appName: 'Bit Protocol',
   chains: [sapphire],
-  projectId: 'e7e7399fe457a3ae899dbeb07495e4c5',
+  projectId: '7fabb9fcd815ac04dfd210d062824df1',
 });
 
 // import { http, createConfig } from 'wagmi';
