@@ -1,13 +1,13 @@
-import styles from '../../styles/dapp.module.scss';
-import { useState, useEffect } from 'react';
-import { BsBell } from 'react-icons/bs';
-import { useSignMessage, useAccount } from 'wagmi';
-import { api } from '../../utils/addresses';
-import tooltip from '../../components/tooltip';
+import styles from "../../styles/dapp.module.scss";
+import { useState, useEffect } from "react";
+import { BsBell } from "react-icons/bs";
+import { useSignMessage, useAccount } from "wagmi";
+import { api } from "../../utils/addresses";
+import tooltip from "../../components/tooltip";
 
 export default function Notification({ collateral }) {
   const [showTelegramModal, setShowTelegramModal] = useState(false);
-  const [registrationCode, setRegistrationCode] = useState('');
+  const [registrationCode, setRegistrationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
@@ -33,18 +33,17 @@ export default function Notification({ collateral }) {
       if (!address) return;
       setIsLoading(true);
       const response = await fetch(`${api.bot}/subscription/${address}`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to register for notifications');
+        throw new Error("Failed to register for notifications");
       }
 
       const { data } = await response.json();
-      console.log({ data, collateral });
       setAlreadyRegistered(
         data.find((item) => item.collateralName === collateral)
       );
@@ -67,9 +66,9 @@ export default function Notification({ collateral }) {
 
       // Call API to register for notifications
       const response = await fetch(`${api.bot}/registration/generate-code`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           walletAddress: address,
@@ -79,16 +78,16 @@ export default function Notification({ collateral }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to register for notifications');
+        throw new Error("Failed to register for notifications");
       }
 
       const { registrationCode } = await response.json();
       setRegistrationCode(registrationCode);
       // setShowModal(true);
     } catch (error) {
-      console.error('Error setting up notifications:', error);
+      console.error("Error setting up notifications:", error);
       tooltip.error({
-        content: 'Failed to setup notifications. Please try again.',
+        content: "Failed to setup notifications. Please try again.",
         duration: 5000,
       });
     } finally {
@@ -131,7 +130,7 @@ export default function Notification({ collateral }) {
                   <>
                     <li>Open our Telegram bot @BitProtocolBot</li>
                     <li>
-                      Send the following code to the bot:{' '}
+                      Send the following code to the bot:{" "}
                       <code>{registrationCode}</code>
                     </li>
                     <li>The bot will confirm your registration</li>
@@ -152,7 +151,7 @@ export default function Notification({ collateral }) {
             <div className={styles.modalButtons}>
               {registrationCode ? (
                 <a
-                  href="https://t.me/BitProtocol_bot"
+                  href="https://t.me/bitusd_v1_bot"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.telegramLink}
@@ -164,7 +163,7 @@ export default function Notification({ collateral }) {
                   className={styles.telegramLink}
                   onClick={() => handleNotificationSetup(false)}
                 >
-                  {isLoading ? 'Signing...' : 'Sign'}
+                  {isLoading ? "Signing..." : "Sign"}
                 </button>
               )}
               <button onClick={() => setShowTelegramModal(false)}>Close</button>
