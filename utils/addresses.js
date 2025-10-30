@@ -115,7 +115,7 @@ export const rpc = {
 export const api = {
   // bot: 'https://api.bitusd.finance/api',
   bot:
-    process.env.NODE_ENV === "production"
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
       ? process.env.NEXT_PUBLIC_API_URL_V1 || "https://api.bitusd.finance/v1"
       : process.env.NEXT_PUBLIC_API_LOCAL_URL_V1 || "/api/bot",
 };

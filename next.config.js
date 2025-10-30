@@ -3,13 +3,15 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   async rewrites() {
-    // Solo usar proxy en desarrollo
-    if (process.env.NODE_ENV === "development") {
+    const isPreview = process.env.VERCEL_ENV === "preview";
+    const isDevelopment = process.env.NODE_ENV === "development";
+
+    if (isDevelopment || isPreview) {
       return [
         {
           source: "/api/bot/:path*",
           destination: `${
-            process.env.BACKEND_API_URL || "http://192.168.0.119/v1"
+            process.env.BACKEND_API_URL || "https://api.bitusd.finance/v1"
           }/:path*`,
         },
       ];
