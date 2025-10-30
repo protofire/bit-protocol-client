@@ -4,44 +4,44 @@ import {
   useEffect,
   useMemo,
   useCallback,
-} from 'react';
-import { ethers } from 'ethers';
+} from "react";
+import { ethers } from "ethers";
 import {
   useAccount,
   usePublicClient,
   useBalance,
   useWalletClient,
   useConnectorClient,
-} from 'wagmi';
-import { addresses, rpc } from '../utils/addresses';
-import { collateralNames } from '../utils/collateralNames';
-import TroveManagerGettersABI from '../abi/TroveManagerGetters';
-import TroveManagerABI from '../abi/TroveManager';
-import BorrowerOperationsABI from '../abi/BorrowerOperations';
-import FactoryABI from '../abi/Factory';
-import PriceFeedABI from '../abi/PriceFeed';
-import SortedTrovesABI from '../abi/SortedTroves';
-import DebtTokenABI from '../abi/DebtToken';
-import StabilityPoolABI from '../abi/StabilityPool';
-import BoostCalculatorABI from '../abi/BoostCalculator';
-import VaultABI from '../abi/Vault';
-import BitGovABI from '../abi/token';
-import TokenLockerABI from '../abi/tokenLocker';
-import IncentiveVotingABI from '../abi/IncentiveVoting';
-import BitLpTokenABI from '../abi/BitLpTokenPool';
-import MultiCollateralHintHelpersABI from '../abi/MultiCollateralHintHelpers';
-import BitLpOracleABI from '../abi/BitLpOracle';
-import TWAPOracleABI from '../abi/TWAPOracle';
-import { fromBigNumber, convertInterestRate } from '../utils/helpers';
-import { useSignatureCheck } from './useSignatureCheck';
-import BigNumber from 'bignumber.js';
-import * as sapphire from '@oasisprotocol/sapphire-paratime';
+} from "wagmi";
+import { addresses, rpc } from "../utils/addresses";
+import { collateralNames } from "../utils/collateralNames";
+import TroveManagerGettersABI from "../abi/TroveManagerGetters";
+import TroveManagerABI from "../abi/TroveManager";
+import BorrowerOperationsABI from "../abi/BorrowerOperations";
+import FactoryABI from "../abi/Factory";
+import PriceFeedABI from "../abi/PriceFeed";
+import SortedTrovesABI from "../abi/SortedTroves";
+import DebtTokenABI from "../abi/DebtToken";
+import StabilityPoolABI from "../abi/StabilityPool";
+import BoostCalculatorABI from "../abi/BoostCalculator";
+import VaultABI from "../abi/Vault";
+import BitGovABI from "../abi/token";
+import TokenLockerABI from "../abi/tokenLocker";
+import IncentiveVotingABI from "../abi/IncentiveVoting";
+import BitLpTokenABI from "../abi/BitLpTokenPool";
+import MultiCollateralHintHelpersABI from "../abi/MultiCollateralHintHelpers";
+import BitLpOracleABI from "../abi/BitLpOracle";
+import TWAPOracleABI from "../abi/TWAPOracle";
+import { fromBigNumber } from "../utils/helpers";
+import { useSignatureCheck } from "./useSignatureCheck";
+import BigNumber from "bignumber.js";
+import * as sapphire from "@oasisprotocol/sapphire-paratime";
 
 export const BlockchainContext = createContext({
   // STATES
   deposits: 0.0,
   debt: 0.0,
-  troveStatus: '',
+  troveStatus: "",
   balance: 0,
   collaterals: {},
   systemTVL: 0,
@@ -129,7 +129,7 @@ export const BlockchainContextProvider = ({ children }) => {
   // STATES
   const [deposits, setDeposits] = useState(0.0);
   const [debt, setDebt] = useState(0.0);
-  const [troveStatus, setTroveStatus] = useState('');
+  const [troveStatus, setTroveStatus] = useState("");
   const [balance, setBalance] = useState(0);
   const [collaterals, setCollaterals] = useState({});
   const [userTroves, setUserTroves] = useState({});
@@ -151,8 +151,8 @@ export const BlockchainContextProvider = ({ children }) => {
   const [totalSystemDebt, setTotalSystemDebt] = useState(0);
   const [currentState, setCurrentState] = useState(false);
   const [currentWaitInfo, setCurrentWaitInfo] = useState({
-    type: '',
-    info: '',
+    type: "",
+    info: "",
   });
   const [systemWeek, setWeek] = useState(0);
   // GET DATA LOCK TO AVOID TOO MANY CALLS
@@ -317,7 +317,7 @@ export const BlockchainContextProvider = ({ children }) => {
 
     const tx = await vault.batchClaimRewards(
       account.address,
-      '0x0000000000000000000000000000000000000000',
+      "0x0000000000000000000000000000000000000000",
       [
         addresses.troveManager[account.chainId],
         addresses.stabilityPool[account.chainId],
@@ -429,34 +429,18 @@ export const BlockchainContextProvider = ({ children }) => {
   const approve = async (collateralAddr, collAmount) => {
     try {
       const args = [addresses.borrowerOps[account.chainId], collAmount];
+      const tx = await walletClient.writeContract({
+        account: account.address,
+        abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
+        functionName: "approve",
+        address: collateralAddr,
+        args,
+        gas: await publicClient.estimateGas(args),
+      });
 
-      // Check if walletClient is available
-      if (walletClient) {
-        const tx = await walletClient.writeContract({
-          account: account.address,
-          abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
-          functionName: 'approve',
-          address: collateralAddr,
-          args,
-          gas: '3000000', //  await publicClient.estimateGas(args),
-        });
-        return tx;
-      } else {
-        // Fallback to ethers.js if walletClient is not available
-        const tokenContract = new ethers.Contract(
-          collateralAddr,
-          BitGovABI, // JUST TO USE THE ERC20 INTERFACE
-          sapphire.wrap(signer)
-        );
-
-        const tx = await tokenContract.approve(
-          addresses.borrowerOps[account.chainId],
-          collAmount
-        );
-        return tx.hash;
-      }
+      return tx;
     } catch (error) {
-      console.log('approve error: ', error);
+      console.log("approve error: ", error);
       throw error;
     }
   };
@@ -670,7 +654,7 @@ export const BlockchainContextProvider = ({ children }) => {
 
   // QUERY FUNCTIONS
   const getData = useCallback(async () => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const signatures = await getSignatures();
 
@@ -693,7 +677,7 @@ export const BlockchainContextProvider = ({ children }) => {
           }
         } catch (error) {
           console.log(
-            'Failed to get balance through alternative method',
+            "Failed to get balance through alternative method",
             error
           );
         }
@@ -735,7 +719,7 @@ export const BlockchainContextProvider = ({ children }) => {
         truncatedDebtAmount: new BigNumber(hints[2]._hex).toFixed(),
       };
     } catch (error) {
-      console.log('error', error);
+      console.log("error", error);
       throw error;
     }
   };
@@ -744,37 +728,37 @@ export const BlockchainContextProvider = ({ children }) => {
     const balanceLp = await publicClient.readContract({
       abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitUsdLp[account.chainId],
-      functionName: 'balanceOf',
+      functionName: "balanceOf",
       args: [account.address],
     });
     const allowanceLp = await publicClient.readContract({
       abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitUsdLp[account.chainId],
-      functionName: 'allowance',
+      functionName: "allowance",
       args: [account.address, addresses.bitUsdDeposit[account.chainId]],
     });
     const deposiitBalance = await publicClient.readContract({
       abi: BitLpTokenABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitUsdDeposit[account.chainId],
-      functionName: 'balanceOf',
+      functionName: "balanceOf",
       args: [account.address],
     });
     const depositLpBalance = await publicClient.readContract({
       abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitUsdLp[account.chainId],
-      functionName: 'balanceOf',
+      functionName: "balanceOf",
       args: [addresses.bitUsdDeposit[account.chainId]],
     });
     const rewardRate = await publicClient.readContract({
       abi: BitLpTokenABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitUsdDeposit[account.chainId],
-      functionName: 'rewardRate',
+      functionName: "rewardRate",
       args: [],
     });
     const totalSupply = await publicClient.readContract({
       abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitUsdDeposit[account.chainId],
-      functionName: 'totalSupply',
+      functionName: "totalSupply",
       args: [],
     });
 
@@ -792,31 +776,31 @@ export const BlockchainContextProvider = ({ children }) => {
     const balanceLp = await publicClient.readContract({
       abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitGovLp[account.chainId],
-      functionName: 'balanceOf',
+      functionName: "balanceOf",
       args: [account.address],
     });
     const allowanceLp = await publicClient.readContract({
       abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitGovLp[account.chainId],
-      functionName: 'allowance',
+      functionName: "allowance",
       args: [account.address, addresses.bitGovDeposit[account.chainId]],
     });
     const depositBalance = await publicClient.readContract({
       abi: BitLpTokenABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitGovDeposit[account.chainId],
-      functionName: 'balanceOf',
+      functionName: "balanceOf",
       args: [account.address],
     });
     const depositLpBalance = await publicClient.readContract({
       abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitGovLp[account.chainId],
-      functionName: 'balanceOf',
+      functionName: "balanceOf",
       args: [addresses.bitGovDeposit[account.chainId]],
     });
     const rewardRate = await publicClient.readContract({
       abi: BitLpTokenABI, // JUST TO USE THE ERC20 INTERFACE
       address: addresses.bitGovDeposit[account.chainId],
-      functionName: 'rewardRate',
+      functionName: "rewardRate",
       args: [],
     });
 
@@ -833,7 +817,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const weight = await publicClient.readContract({
       abi: IncentiveVotingABI,
       address: addresses.incentiveVoting[account.chainId],
-      functionName: 'getReceiverWeightAt',
+      functionName: "getReceiverWeightAt",
       args: [receiver, week],
     });
 
@@ -844,7 +828,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const currentWeeklyEmissions = await publicClient.readContract({
       abi: VaultABI,
       address: addresses.vault[account.chainId],
-      functionName: 'weeklyEmissions',
+      functionName: "weeklyEmissions",
       args: [week],
     });
     return Number(currentWeeklyEmissions);
@@ -854,7 +838,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const weight = await publicClient.readContract({
       abi: IncentiveVotingABI,
       address: addresses.incentiveVoting[account.chainId],
-      functionName: 'getTotalWeightAt',
+      functionName: "getTotalWeightAt",
       args: [week],
     });
     return Number(weight);
@@ -864,7 +848,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const votes = await publicClient.readContract({
       abi: IncentiveVotingABI,
       address: addresses.incentiveVoting[account.chainId],
-      functionName: 'getAccountCurrentVotes',
+      functionName: "getAccountCurrentVotes",
       args: [account.address],
     });
     return votes;
@@ -874,19 +858,19 @@ export const BlockchainContextProvider = ({ children }) => {
     const tcr = await publicClient.readContract({
       abi: BorrowerOperationsABI,
       address: addresses.borrowerOps[account.chainId],
-      functionName: 'getTCR',
+      functionName: "getTCR",
       args: [],
     });
     const systemBalances = await publicClient.readContract({
       abi: BorrowerOperationsABI,
       address: addresses.borrowerOps[account.chainId],
-      functionName: 'getGlobalSystemBalances',
+      functionName: "getGlobalSystemBalances",
       args: [],
     });
     const getWeek = await publicClient.readContract({
       abi: VaultABI,
       address: addresses.vault[account.chainId],
-      functionName: 'getWeek',
+      functionName: "getWeek",
       args: [],
     });
 
@@ -903,11 +887,11 @@ export const BlockchainContextProvider = ({ children }) => {
       const vault = await publicClient.readContract({
         abi: VaultABI,
         address: addresses.vault[account.chainId],
-        functionName: 'claimableRewardAfterBoost',
+        functionName: "claimableRewardAfterBoost",
         args: [
           account.address,
           account.address,
-          '0x0000000000000000000000000000000000000000',
+          "0x0000000000000000000000000000000000000000",
           trove,
         ],
       });
@@ -918,22 +902,22 @@ export const BlockchainContextProvider = ({ children }) => {
     const bitGovPool = await publicClient.readContract({
       abi: VaultABI,
       address: addresses.vault[account.chainId],
-      functionName: 'claimableRewardAfterBoost',
+      functionName: "claimableRewardAfterBoost",
       args: [
         account.address,
         account.address,
-        '0x0000000000000000000000000000000000000000',
+        "0x0000000000000000000000000000000000000000",
         addresses.bitGovDeposit[account.chainId],
       ],
     });
     const bitUsdPool = await publicClient.readContract({
       abi: VaultABI,
       address: addresses.vault[account.chainId],
-      functionName: 'claimableRewardAfterBoost',
+      functionName: "claimableRewardAfterBoost",
       args: [
         account.address,
         account.address,
-        '0x0000000000000000000000000000000000000000',
+        "0x0000000000000000000000000000000000000000",
         addresses.bitUsdDeposit[account.chainId],
       ],
     });
@@ -949,19 +933,19 @@ export const BlockchainContextProvider = ({ children }) => {
     const deposits = await publicClient.readContract({
       abi: StabilityPoolABI,
       address: addresses.stabilityPool[account.chainId],
-      functionName: 'getTotalDebtTokenDeposits',
+      functionName: "getTotalDebtTokenDeposits",
       args: [],
     });
     const rewardRate = await publicClient.readContract({
       abi: StabilityPoolABI,
       address: addresses.stabilityPool[account.chainId],
-      functionName: 'rewardRate',
+      functionName: "rewardRate",
       args: [],
     });
     const accountDeposits = await publicClient.readContract({
       abi: StabilityPoolABI,
       address: addresses.stabilityPool[account.chainId],
-      functionName: 'accountDeposits',
+      functionName: "accountDeposits",
       args: [account.address],
     });
     // COMMENTED OUT UNLESS WE HAVE REWARDS
@@ -980,7 +964,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const collateralGainsByDepositor = await publicClient.readContract({
       abi: StabilityPoolABI,
       address: addresses.stabilityPool[account.chainId],
-      functionName: 'getDepositorCollateralGain',
+      functionName: "getDepositorCollateralGain",
       args: [account.address],
     });
 
@@ -1000,7 +984,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const balance = await publicClient.readContract({
       abi: DebtTokenABI,
       address: addresses.debtToken[account.chainId],
-      functionName: 'checkBalanceOf',
+      functionName: "checkBalanceOf",
       args: [dataDebt],
     });
     setBitUSDBalance(fromBigNumber(balance));
@@ -1010,7 +994,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const balance = await publicClient.readContract({
       abi: BitGovABI,
       address: addresses.bitGov[account.chainId],
-      functionName: 'balanceOf',
+      functionName: "balanceOf",
       args: [account.address],
     });
     setBitGovBalance(fromBigNumber(balance));
@@ -1020,7 +1004,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const balance = await publicClient.readContract({
       abi: BitGovABI, // JUST TO USE THE ERC20 INTERFACE
       address,
-      functionName: 'balanceOf',
+      functionName: "balanceOf",
       args: [account.address],
     });
 
@@ -1034,7 +1018,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const weight = await publicClient.readContract({
       abi: TokenLockerABI,
       address: addresses.tokenLocker[account.chainId],
-      functionName: 'getAccountWeight',
+      functionName: "getAccountWeight",
       args: [account.address],
     });
     setAccountWeight(Number(weight));
@@ -1044,7 +1028,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const balance = await publicClient.readContract({
       abi: TokenLockerABI,
       address: addresses.tokenLocker[account.chainId],
-      functionName: 'getAccountBalances',
+      functionName: "getAccountBalances",
       args: [account.address],
     });
     setAccountLockAmount(Number(balance[0]));
@@ -1055,7 +1039,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const locks = await publicClient.readContract({
       abi: TokenLockerABI,
       address: addresses.tokenLocker[account.chainId],
-      functionName: 'getAccountActiveLocks',
+      functionName: "getAccountActiveLocks",
       args: [account.address, 26],
     });
 
@@ -1072,7 +1056,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const weight = await publicClient.readContract({
       abi: TokenLockerABI,
       address: addresses.tokenLocker[account.chainId],
-      functionName: 'getTotalWeight',
+      functionName: "getTotalWeight",
       args: [],
     });
     setTotalWeight(Number(weight));
@@ -1082,7 +1066,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const amounts = await publicClient.readContract({
       abi: TokenLockerABI,
       address: addresses.tokenLocker[account.chainId],
-      functionName: 'getWithdrawWithPenaltyAmounts',
+      functionName: "getWithdrawWithPenaltyAmounts",
       args: [account.address, value],
     });
 
@@ -1096,7 +1080,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const circulation = await publicClient.readContract({
       abi: DebtTokenABI,
       address: addresses.debtToken[account.chainId],
-      functionName: 'totalSupply',
+      functionName: "totalSupply",
       args: [],
     });
     setBitUSDCirculation(fromBigNumber(circulation));
@@ -1106,7 +1090,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const prev = await publicClient.readContract({
       abi: SortedTrovesABI,
       address: sortedTroves,
-      functionName: 'getPrev',
+      functionName: "getPrev",
       args: [id],
     });
     return prev;
@@ -1116,7 +1100,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const next = await publicClient.readContract({
       abi: SortedTrovesABI,
       address: sortedTroves,
-      functionName: 'getNext',
+      functionName: "getNext",
       args: [id],
     });
     return next;
@@ -1128,7 +1112,7 @@ export const BlockchainContextProvider = ({ children }) => {
         const trove = await publicClient.readContract({
           abi: TroveManagerABI,
           address: troveManagerAddr,
-          functionName: 'getTrove',
+          functionName: "getTrove",
           args: [account.address],
         });
 
@@ -1145,7 +1129,7 @@ export const BlockchainContextProvider = ({ children }) => {
         const trove = await publicClient.readContract({
           abi: TroveManagerGettersABI,
           address: addresses.troveManagerGetter[account.chainId],
-          functionName: 'getTrove',
+          functionName: "getTrove",
           args: [dataTrove, troveManagerAddr],
         });
 
@@ -1173,7 +1157,7 @@ export const BlockchainContextProvider = ({ children }) => {
       const count = await publicClient.readContract({
         abi: FactoryABI,
         address: addresses.factory[account.chainId],
-        functionName: 'troveManagerCount',
+        functionName: "troveManagerCount",
         args: [],
       });
 
@@ -1181,87 +1165,81 @@ export const BlockchainContextProvider = ({ children }) => {
         const address = await publicClient.readContract({
           abi: FactoryABI,
           address: addresses.factory[account.chainId],
-          functionName: 'troveManagers',
+          functionName: "troveManagers",
           args: [index],
         });
 
         const systemBalances = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'getEntireSystemBalances',
+          functionName: "getEntireSystemBalances",
           args: [],
         });
         const redemptionRate = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'getRedemptionRate',
+          functionName: "getRedemptionRate",
           args: [],
         });
         const borrowingRate = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'getBorrowingRate',
+          functionName: "getBorrowingRate",
           args: [],
         });
         const mcr = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'MCR',
+          functionName: "MCR",
           args: [],
         });
         const collateral = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'collateralToken',
+          functionName: "collateralToken",
           args: [],
         });
         const maxSystemDebt = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'maxSystemDebt',
+          functionName: "maxSystemDebt",
           args: [],
         });
         const rewardRate = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'rewardRate',
+          functionName: "rewardRate",
           args: [],
         });
         const deploymentTime = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'systemDeploymentTime',
+          functionName: "systemDeploymentTime",
           args: [],
         });
         const BOOTSTRAP_PERIOD = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'BOOTSTRAP_PERIOD',
+          functionName: "BOOTSTRAP_PERIOD",
           args: [],
         });
         const redemptionFeeFloor = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'redemptionFeeFloor',
+          functionName: "redemptionFeeFloor",
           args: [],
         });
         const baseRate = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'baseRate',
-          args: [],
-        });
-        const interestRate = await publicClient.readContract({
-          abi: TroveManagerABI,
-          address: address,
-          functionName: 'interestRate',
+          functionName: "baseRate",
           args: [],
         });
 
         const sortedTroves = await publicClient.readContract({
           abi: TroveManagerABI,
           address: address,
-          functionName: 'sortedTroves',
+          functionName: "sortedTroves",
           args: [],
         });
 
@@ -1283,7 +1261,7 @@ export const BlockchainContextProvider = ({ children }) => {
             ...collateralNames[collateral],
             address: collateral,
             payable:
-              collateral === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+              collateral === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
           },
           sortedTroves,
           interestRate: convertInterestRate(interestRate),
@@ -1310,7 +1288,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const price = await publicClient.readContract({
       abi: PriceFeedABI,
       address: addresses.priceFeed[account.chainId],
-      functionName: 'loadPrice',
+      functionName: "loadPrice",
       args: [collateral],
     });
     return fromBigNumber(price);
@@ -1320,7 +1298,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const boost = await publicClient.readContract({
       abi: BoostCalculatorABI,
       address: addresses.boostCalculator[account.chainId],
-      functionName: 'getBoostedAmount',
+      functionName: "getBoostedAmount",
       args: [account.address, 10000, 0, 100000],
     });
 
@@ -1333,14 +1311,14 @@ export const BlockchainContextProvider = ({ children }) => {
 
   const getLpTokenPrice = async (lpName) => {
     const lpAddress =
-      lpName === 'bitGov'
+      lpName === "bitGov"
         ? addresses.bitGovLpOracle[account.chainId]
         : addresses.bitUsdLpOracle[account.chainId];
 
     const price = await publicClient.readContract({
       abi: BitLpOracleABI,
       address: lpAddress,
-      functionName: 'getLPPrice',
+      functionName: "getLPPrice",
       args: [],
     });
 
@@ -1351,7 +1329,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const price = await publicClient.readContract({
       abi: TWAPOracleABI,
       address: addresses.bitGovTWAP[account.chainId],
-      functionName: 'consult',
+      functionName: "consult",
       args: [addresses.bitGov[account.chainId], new BigNumber(1e18).toFixed()],
     });
 
@@ -1365,7 +1343,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const borrowingFee = await publicClient.readContract({
       abi: TroveManagerABI,
       address: troveAddr,
-      functionName: 'getBorrowingFee',
+      functionName: "getBorrowingFee",
       args: [debt],
     });
 
@@ -1373,7 +1351,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const maxFee = (fromBigNumber(borrowingFee) / fromBigNumber(debt)) * 1.2;
 
     return ethers.utils
-      .parseEther(maxFee.toString().replace(/,/g, ''))
+      .parseEther(maxFee.toString().replace(/,/g, ""))
       .toString();
   };
 
@@ -1381,7 +1359,7 @@ export const BlockchainContextProvider = ({ children }) => {
     const surplus = await publicClient.readContract({
       abi: TroveManagerABI,
       address: troveManager,
-      functionName: 'surplusBalances',
+      functionName: "surplusBalances",
       args: [account.address],
     });
 

@@ -1,13 +1,13 @@
-import styles from '../../styles/dapp.module.scss';
-import { useState, useEffect } from 'react';
-import { BsBell } from 'react-icons/bs';
-import { useSignMessage, useAccount } from 'wagmi';
-import { api } from '../../utils/addresses';
-import tooltip from '../../components/tooltip';
+import styles from "../../styles/dapp.module.scss";
+import { useState, useEffect } from "react";
+import { BsBell } from "react-icons/bs";
+import { useSignMessage, useAccount } from "wagmi";
+import { api } from "../../utils/addresses";
+import tooltip from "../../components/tooltip";
 
 export default function Notification({ collateral }) {
   const [showTelegramModal, setShowTelegramModal] = useState(false);
-  const [registrationCode, setRegistrationCode] = useState('');
+  const [registrationCode, setRegistrationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
@@ -15,6 +15,22 @@ export default function Notification({ collateral }) {
   const { address } = useAccount();
 
   const handleTelegramSignup = () => {
+    // Validate that we have the necessary information
+    if (!collateral) {
+      tooltip.error({
+        content: "Collateral information is not available. Please try again.",
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (!address) {
+      tooltip.error({
+        content: "Please connect your wallet first.",
+        duration: 5000,
+      });
+      return;
+    }
     setShowTelegramModal(true);
   };
 
@@ -30,25 +46,29 @@ export default function Notification({ collateral }) {
 
   const getSubscription = async () => {
     try {
-      if (!address) return;
+      if (!address || !collateral) return;
       setIsLoading(true);
+
       const response = await fetch(`${api.bot}/subscription/${address}`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to register for notifications');
+        throw new Error("Failed to get subscription");
       }
 
-      const { data } = await response.json();
-      console.log({ data, collateral });
-      setAlreadyRegistered(
-        data.find((item) => item.collateralName === collateral)
+      const responseData = await response.json();
+
+      const { data } = responseData;
+      const subscription = data.find(
+        (item) => item.collateralName === collateral
       );
+      setAlreadyRegistered(!!subscription);
     } catch (error) {
+      console.error("Error fetching subscription:", error);
       setAlreadyRegistered(false);
     } finally {
       setIsLoading(false);
@@ -57,6 +77,23 @@ export default function Notification({ collateral }) {
 
   const handleNotificationSetup = async () => {
     try {
+      // Validate required fields
+      if (!address) {
+        tooltip.error({
+          content: "Please connect your wallet first.",
+          duration: 5000,
+        });
+        return;
+      }
+
+      if (!collateral) {
+        tooltip.error({
+          content: "Collateral information is not available. Please try again.",
+          duration: 5000,
+        });
+        return;
+      }
+
       setIsLoading(true);
 
       // Message to sign
@@ -67,9 +104,9 @@ export default function Notification({ collateral }) {
 
       // Call API to register for notifications
       const response = await fetch(`${api.bot}/registration/generate-code`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           walletAddress: address,
@@ -78,17 +115,24 @@ export default function Notification({ collateral }) {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to register for notifications');
+      if (response.status !== 200 && response.status !== 201) {
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error("Failed to register for notifications");
       }
 
-      const { registrationCode } = await response.json();
+      const data = await response.json();
+      console.log("Response data:", data);
+
+      const { registrationCode } = data;
       setRegistrationCode(registrationCode);
+
       // setShowModal(true);
     } catch (error) {
-      console.error('Error setting up notifications:', error);
+      console.error("Error setting up notifications:", error);
       tooltip.error({
-        content: 'Failed to setup notifications. Please try again.',
+        content:
+          error.message || "Failed to setup notifications. Please try again.",
         duration: 5000,
       });
     } finally {
@@ -98,17 +142,19 @@ export default function Notification({ collateral }) {
 
   return (
     <>
-      <div className={styles.telegramNotification}>
-        <div className={styles.tooltipContainer}>
-          <button
-            onClick={handleTelegramSignup}
-            className={styles.telegramButton}
-          >
-            <BsBell className={styles.bellIcon} />
-          </button>
-          <div className={styles.tooltip}>Enable Telegram Notifications</div>
+      {collateral && (
+        <div className={styles.telegramNotification}>
+          <div className={styles.tooltipContainer}>
+            <button
+              onClick={handleTelegramSignup}
+              className={styles.telegramButton}
+            >
+              <BsBell className={styles.bellIcon} />
+            </button>
+            <div className={styles.tooltip}>Enable Telegram Notifications</div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/*  Modal */}
       {showTelegramModal && (
@@ -131,7 +177,7 @@ export default function Notification({ collateral }) {
                   <>
                     <li>Open our Telegram bot @BitProtocolBot</li>
                     <li>
-                      Send the following code to the bot:{' '}
+                      Send the following code to the bot:{" "}
                       <code>{registrationCode}</code>
                     </li>
                     <li>The bot will confirm your registration</li>
@@ -152,7 +198,7 @@ export default function Notification({ collateral }) {
             <div className={styles.modalButtons}>
               {registrationCode ? (
                 <a
-                  href="https://t.me/BitProtocol_bot"
+                  href="https://t.me/bitusd_v1_bot"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.telegramLink}
@@ -164,7 +210,7 @@ export default function Notification({ collateral }) {
                   className={styles.telegramLink}
                   onClick={() => handleNotificationSetup(false)}
                 >
-                  {isLoading ? 'Signing...' : 'Sign'}
+                  {isLoading ? "Signing..." : "Sign"}
                 </button>
               )}
               <button onClick={() => setShowTelegramModal(false)}>Close</button>
