@@ -1,6 +1,6 @@
-import styles from "../../styles/dapp.module.scss";
-import { useRouter } from "next/router";
-import { formatNumber } from "../../utils/helpers";
+import styles from '../../styles/dapp.module.scss';
+import { useRouter } from 'next/router';
+import { formatNumber } from '../../utils/helpers';
 
 export default function Collateral({ props }) {
   const router = useRouter();
@@ -8,6 +8,7 @@ export default function Collateral({ props }) {
   const {
     mcr,
     borrowingRate,
+    interestRate,
     redemptionRate,
     mintedBitUSD,
     tvl,
@@ -40,7 +41,11 @@ export default function Collateral({ props }) {
           <span>{mcr}%</span>
         </div>
         <div className={styles.dataItem}>
-          <p>Borrow interest rate</p>
+          <p>Interest rate</p>
+          <span>{interestRate}%</span>
+        </div>
+        <div className={styles.dataItem}>
+          <p>Borrowing fee</p>
           <span>{borrowingRate}%</span>
         </div>
         <div className={styles.dataItem}>
@@ -52,7 +57,7 @@ export default function Collateral({ props }) {
         className={styles.button}
         onClick={() =>
           router.push({
-            pathname: "/Vault/[vault]",
+            pathname: '/Vault/[vault]',
             query: { vault: address },
           })
         }

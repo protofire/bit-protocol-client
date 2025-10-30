@@ -1,59 +1,86 @@
 .footer {
-  background: #0c0b0b;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 228px;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 24px;
-  padding: 0 112px;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px;
+  padding: 40px 0;
+  background-color: #000;
+  color: #fff;
 
-  .list {
-    margin-top: 32px;
+  .leftSection {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
     display: flex;
-    gap: 24px;
-    cursor: pointer;
+    flex-direction: column;
+    gap: 30px;
 
-    span {
-      &:hover {
-        opacity: 0.8;
+    .logoSection {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      .logo {
+        cursor: pointer;
+      }
+
+      .disclaimer {
+        font-size: 12px;
+        color: #999;
+        line-height: 1.5;
+        max-width: 800px;
+        margin: 0;
       }
     }
-  }
 
-  .iconList {
-    display: flex;
-    gap: 16px;
-    cursor: pointer;
+    .list {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      flex-wrap: wrap;
 
-    img {
-      &:hover {
-        opacity: 0.8;
+      span {
+        cursor: pointer;
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: #00FFD1;
+        }
+      }
+
+      .some {
+        display: flex;
+        gap: 15px;
+        margin-left: auto;
+
+        .iconLink {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: opacity 0.3s ease;
+
+          &:hover {
+            opacity: 0.8;
+          }
+
+          .whiteIcon {
+            filter: brightness(0) invert(1);
+          }
+        }
       }
     }
   }
 }
 
-@media screen and (max-width: 798px) {
+@media (max-width: 768px) {
   .footer {
-    flex-wrap: wrap;
-    padding: 0 15px;
-    justify-content: center;
+    .leftSection {
+      .list {
+        gap: 20px;
+        justify-content: center;
 
-    .list {
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+        .some {
+          margin-left: 0;
+          width: 100%;
+          justify-content: center;
+        }
+      }
     }
   }
 }

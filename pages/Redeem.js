@@ -33,6 +33,7 @@ export default function Redeem() {
     bitUSDBalance,
     collaterals,
     redeemCollateral,
+    getCollateralPrice,
   } = useContext(BlockchainContext);
 
   useEffect(() => {
@@ -53,6 +54,17 @@ export default function Redeem() {
     }, 30000);
     return () => clearInterval(timerLoading.current);
   }, [collaterals]);
+
+  useEffect(() => {
+    async function getPrice() {
+      if (!selectCollateral) return;
+      const price = await getCollateralPrice(
+        collaterals[selectCollateral]?.collateral?.address
+      );
+      setRosePrice(price);
+    }
+    getPrice();
+  }, [selectCollateral]);
 
   const onKeyDown = (e) => {
     // Prevent minus sign, plus sign, 'e' and 'E' (exponential notation)
@@ -149,8 +161,10 @@ export default function Redeem() {
 
   const queryData = async () => {
     if (Object.keys(collaterals).length !== 0) {
-      const price = getRosePrice();
-      setRosePrice(price);
+      // const price = selectCollateral
+      //   ? getCollateralPrice(selectCollateral)
+      //   : getRosePrice();
+      // setRosePrice(price);
 
       // Only set initial collateral if it hasn't been set yet
       if (selectCollateral === '' && !initializedRef.current) {

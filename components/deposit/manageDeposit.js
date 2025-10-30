@@ -550,6 +550,7 @@ export default function ManageDeposit({ address }) {
             <h3>Manage Your Vault</h3>
             <Notification collateral={collateral?.collateral?.name} />
           </div>
+
           <div className={styles.rose}>
             <div className={styles.CoinType}>
               <div className={styles.collateral}>
